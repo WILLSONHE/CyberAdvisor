@@ -51,6 +51,9 @@ if errorlevel 1 goto :fail
 
 cd /d "%~dp0"
 echo.
+echo [可选] 推送到飞书...
+python "%~dp0scripts\feishu_notify.py" --pipeline-done
+echo.
 echo ============================================================
 echo  全部完成: %DATE% %TIME%
 echo  下一步: 对 AI 说 sug （报告写入 SugVault\）

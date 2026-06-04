@@ -73,6 +73,25 @@ python scripts/sync_portfolio_from_xlsx.py --init
 
 约 15–20 分钟。完成后对 AI 说 **`sug`**，得到交易策略报告；报告会写入 `SugVault/YYYY-MM-DD_sug.md`。
 
+### 飞书对接
+
+| 能力 | 配置 | 说明 |
+|------|------|------|
+| **群推送** | `FEISHU_WEBHOOK_URL` | `daily.bat` 跑完后自动推送摘要到飞书群 |
+| **本机 Bot** | `FEISHU_APP_*` + 双击 `feishu_bot.bat` | 飞书里发 `sug`/`持仓`/`日报`/`帮助` |
+
+**推送（推荐先做）**：飞书群 → 自定义机器人 → 复制 Webhook → 写入 `.env` 的 `FEISHU_WEBHOOK_URL` → `python scripts/feishu_notify.py --test`
+
+**本机 Bot**：飞书开放平台创建应用 → 开机器人 + `im.message.receive_v1` 事件 → Request URL 指向 `http://<公网>:8765/feishu/event` → 填 `.env` → 运行 `feishu_bot.bat`
+
+**Bot 权限（私聊 / 群聊分开）**：
+- 私聊：`im:message.p2p_msg:readonly`
+- 群聊 @：`im:message.group_at_msg:readonly`（须先把**应用机器人**拉进群，再 @ 发指令）
+- 回复：`im:message:send_as_bot`
+- 改权限后 **创建版本并发布**
+
+> 电脑关机后 Bot 不可用；完整 AI（ing/qry）仍走 Cursor。
+
 手动逐步跑：
 
 ```bash
@@ -125,6 +144,7 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 ```
 CyberAdvisor/
 ├── daily.bat                ← 每日一键流水线（双击）
+├── feishu_bot.bat           ← 飞书 Bot 本机服务
 ├── 持仓.xlsx                ← 持仓数据源（同步到 portfolio / trade_template）
 ├── SKILL.md                 ← AI skill 文件（必须安装）
 ├── portfolio.md             ← 你的持仓（sug 读取）
@@ -142,6 +162,9 @@ CyberAdvisor/
 │   ├── 博主/
 │   └── 数据/                ← 脚本输出
 └── scripts/
+    ├── feishu_notify.py     ← 飞书 Webhook 推送
+    ├── feishu_bot.py        ← 飞书 Bot 事件服务
+    ├── feishu/              ← 飞书 SDK 模块
     ├── sync_portfolio_from_xlsx.py  ← 持仓.xlsx → portfolio / trade_template
     ├── portfolio.py         ← 持仓配置（脚本用）
     ├── coarse_screen.py

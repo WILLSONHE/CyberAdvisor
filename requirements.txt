@@ -3,3 +3,4 @@ requests
 pandas
 stockstats
 openpyxl
+pycryptodome
