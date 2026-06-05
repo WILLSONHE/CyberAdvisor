@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from pathlib import Path
 
 from bilibili.env import ROOT
@@ -11,7 +12,12 @@ WIKI = os.path.join(ROOT, "Wiki")
 RAW = os.path.join(ROOT, "Raw")
 TRACK_DIR = os.path.join(WIKI, "博主", "标的追踪")
 OVERVIEW_MD = os.path.join(WIKI, "博主", "标的总览.md")
-PENDING_VIDEO = os.path.join(WIKI, "待审阅视频文稿")
+
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+from raw_paths import RAW_PENDING_VIDEO, RAW_APPROVED_VIDEO  # noqa: E402
+
+PENDING_VIDEO = RAW_PENDING_VIDEO
+APPROVED_VIDEO = RAW_APPROVED_VIDEO
 POOL_MD = os.path.join(WIKI, "数据", "博主标的池日报.md")
 LOG_MD = os.path.join(WIKI, "log.md")
 
@@ -51,8 +57,6 @@ def iter_wiki_md(*, include_pending_video: bool = True) -> list[Path]:
     root = Path(WIKI)
     paths: list[Path] = []
     for p in root.rglob("*.md"):
-        if not include_pending_video and "待审阅视频文稿" in p.parts:
-            continue
         paths.append(p)
     return paths
 

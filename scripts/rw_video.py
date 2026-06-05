@@ -3,7 +3,7 @@
 视频文字稿 rw（rewrite）：格式化 + ASR 术语校正 + 可选重拉 B 站字幕。
 
 目标目录：
-  - Wiki/待审阅视频文稿/  （rw 后用户 txtcfm 审批，再 ing）
+  - Raw/未审阅视频文稿/  （rw 后用户 txtcfm 审批 → 已审阅视频文稿，再 ing）
   - Raw/已分析归档/视频*.md、周复盘*.md
 
 用法:
@@ -24,7 +24,10 @@ import time
 from datetime import datetime
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-PENDING_DIR = os.path.join(ROOT, "Wiki", "待审阅视频文稿")
+sys.path.insert(0, os.path.dirname(__file__))
+from raw_paths import RAW_PENDING_VIDEO  # noqa: E402
+
+PENDING_DIR = RAW_PENDING_VIDEO
 ARCHIVED_DIR = os.path.join(ROOT, "Raw", "已分析归档")
 
 sys.path.insert(0, os.path.dirname(__file__))

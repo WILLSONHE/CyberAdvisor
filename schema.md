@@ -13,11 +13,11 @@
 ├── Raw/
 │   ├── 未分析归档/          ← ingest 输入（手动专栏/动态 md）
 │   ├── 已分析归档/          ← ingest 完成后的原稿
-│   └── （根目录不再存放待处理稿）
+│   ├── 未审阅视频文稿/      ← 视频字幕稿待审区（bilibili_fetch 写入）
+│   └── 已审阅视频文稿/      ← txtcfm 审批后的视频稿（ing 输入）
 ├── Wiki/
 │   ├── index.md             ← 全局索引（LLM 每次 ingest 后更新）
 │   ├── log.md               ← 操作日志（追加式，记录所有 ingest/query/lint 操作）
-│   ├── 待审阅视频文稿/      ← 视频字幕稿待审区（bilibili_fetch 写入）
 │   ├── 投资方法论/          ← 博主投资体系的拆解
 │   │   ├── 选股框架.md
 │   │   ├── 技术分析体系.md
@@ -75,9 +75,9 @@
 
 ### 视频字幕稿 ingest
 
-来源：`Wiki/待审阅视频文稿/`（`review_status: approved` 优先；用户 `txtcfm` 批量审批后 ingest）。
+来源：`Raw/已审阅视频文稿/`（`review_status: approved`；用户 `txtcfm` 批量审批后移入此目录）。
 
-流程：`bilibili_fetch` → `rw` → **`txtcfm`** → `ing`。ing 完成后可将 `review_status` 标为 `ingested`（文件仍留待审区或按需归档）。
+流程：`bilibili_fetch` → `Raw/未审阅视频文稿/` → `rw` → **`txtcfm`**（→ `已审阅视频文稿/`）→ `ing`。ing 完成后可将 `review_status` 标为 `ingested`（文件留已审阅目录）。
 
 ---
 
@@ -88,10 +88,20 @@
 执行：`python scripts/txtcfm.py`
 
 扫描目录：
-- `Wiki/待审阅视频文稿/`
+- `Raw/未审阅视频文稿/`
 - `Raw/未分析归档/`（及旧 `Raw/待分析归档/`）
 
-规则：凡 `review_status` 非 `approved`/`ingested` 的稿一律设为 `approved`，写入 `approved_at`，视频稿引用行「待审阅」改为「已审阅」。无 frontmatter 的手动 Raw 稿补写 frontmatter。不移动文件、不 ingest。追加 `log.md`。
+规则：凡 `review_status` 非 `approved`/`ingested` 的稿一律设为 `approved`，写入 `approved_at`，视频稿引用行「待审阅」改为「已审阅」；**视频稿随后移入 `Raw/已审阅视频文稿/`**（类似未分析→已分析归档）。无 frontmatter 的手动 Raw 稿补写 frontmatter、不移动。不 ingest。追加 `log.md`。
+
+---
+
+## 三·二、飞书 Bot 与 Cursor 分工
+
+- **飞书 Bot**（`feishu_bot.bat`）：本机在线时读本地 Wiki / SugVault；`sug` 只读已有报告，不生成。
+- **Cursor + skill**：`ing` / `sug` 生成 / `sum` / 深度 `qry`·`chk`·`trk`。
+- **Webhook 推送**：`daily.bat` 完成后群发摘要，非交互 Bot。
+
+用户向对照表见项目根目录 `README.md` →「飞书 Bot vs Cursor 命令对照」。
 
 ---
 

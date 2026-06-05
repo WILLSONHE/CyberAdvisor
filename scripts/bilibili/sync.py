@@ -1,9 +1,10 @@
-"""B 站内容同步：视频字幕 → 待审阅（专栏/动态改用手动放入 Raw/未分析归档）。"""
+"""B 站内容同步：视频字幕 → Raw/未审阅视频文稿/（专栏/动态改用手动放入 Raw/未分析归档）。"""
 from __future__ import annotations
 
 import json
 import os
 import re
+import sys
 import time
 from datetime import datetime
 from typing import Any
@@ -14,7 +15,10 @@ from .naming import pending_video_filename, raw_filename, title_to_timestamp
 from .transcript import pick_subtitle
 
 RAW_DIR = os.path.join(ROOT, "Raw")
-PENDING_DIR = os.path.join(ROOT, "Wiki", "待审阅视频文稿")
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+from raw_paths import RAW_PENDING_VIDEO  # noqa: E402
+
+PENDING_DIR = RAW_PENDING_VIDEO
 STATE_PATH = os.path.join(ROOT, "Wiki", "数据", "bilibili_sync.json")
 
 META_BVID = re.compile(r"^bvid:\s*(\S+)", re.M)
@@ -344,7 +348,7 @@ def sync_all(
     client = BiliClient(cfg)
     try:
         if videos:
-            print("\n[视频] 拉取投稿列表 + 字幕 → Wiki/待审阅视频文稿/")
+            print("\n[视频] 拉取投稿列表 + 字幕 → Raw/未审阅视频文稿/")
             for v in client.iter_videos():
                 bvid = v.get("bvid") or ""
                 if not bvid or bvid in known_bvids or bvid in state["videos"]:

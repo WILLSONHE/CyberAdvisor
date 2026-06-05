@@ -1,4 +1,4 @@
-"""Raw / 待审阅 文件名生成（对齐现有命名习惯）。"""
+"""Raw / 未审阅 文件名生成（对齐现有命名习惯）。"""
 from __future__ import annotations
 
 import re

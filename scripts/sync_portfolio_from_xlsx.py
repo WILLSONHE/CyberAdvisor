@@ -158,7 +158,7 @@ def _write_portfolio_md(holdings: list[dict], cash_by_holder: dict[str, float], 
     lines = [
         "# 持仓总览",
         "",
-        "> 多人持仓。AI / 飞书执行 `sug {持有人}`、`持仓 {持有人}` 时只读取对应章节。",
+        "> 多人持仓。Cursor 生成 sug、飞书 Bot 读取已有 sug；`持仓 {持有人}` / `标的池 {持有人}` 均只读对应章节。",
         f"> 现价同步于 {synced_at}；**投资成本** = 成本×股数，**市值** = 现价×股数，现金计入两项合计。",
         "",
         f"**持有人列表**：{holder_list}",

@@ -15,7 +15,13 @@ POOL_MD = os.path.join(ROOT, "Wiki", "数据", "博主标的池日报.md")
 SUG_VAULT = os.path.join(ROOT, "SugVault")
 
 HOLDER_SECTION = re.compile(r"^##\s+持有人：(.+)\s*$", re.MULTILINE)
-SUG_FILE = re.compile(r"^(\d{4}-\d{2}-\d{2})(?:_(\d{4}))?_(.+)_sug\.md$", re.IGNORECASE)
+SUG_SESSIONS = frozenset({"早盘", "午盘"})
+SUG_ALL_ALIASES = frozenset({"全员", "全部", "all"})
+# YYYY-MM-DD[_HHMM]_Holder_sug.md 或 YYYY-MM-DD[_HHMM]_Holder_sug 早盘.md
+SUG_FILE = re.compile(
+    r"^(\d{4}-\d{2}-\d{2})(?:_(\d{4}))?_(.+?)_sug(?: (早盘|午盘))?\.md$",
+    re.IGNORECASE,
+)
 
 FORMAT_HINT = "请校对格式{cmd} {{持有人}}，以精确搜索"
 
@@ -84,7 +90,80 @@ def parse_holder_arg(text: str, verbs: tuple[str, ...]) -> tuple[str | None, str
     return canonical, None
 
 
-def extract_holder_section(text: str, holder: str) -> str | None:
+def parse_sug_command(text: str) -> tuple[str | None, str | None, str | None] | None:
+    """
+    解析 sug / 交易策略 / 开仓 指令。
+    返回 None 表示非 sug 组；否则 (holder_or___ALL__, session, error_msg)。
+    session 为「早盘」或「午盘」，未指定则为 None。
+    """
+    stripped = text.strip()
+    if not stripped:
+        return None
+    parts = stripped.split()
+    verb = parts[0]
+    if verb.lower() not in {"sug", "交易策略", "开仓", "买什么", "持仓分析"}:
+        return None
+    if len(parts) < 2:
+        return None, None, format_hint("sug")
+
+    names = load_holder_names()
+    if not names:
+        return None, None, "尚无持仓数据，请先运行 daily.bat 同步 持仓.xlsx"
+
+    rest_parts = parts[1:]
+    session: str | None = None
+    if rest_parts[-1] in SUG_SESSIONS:
+        session = rest_parts[-1]
+        rest_parts = rest_parts[:-1]
+    if not rest_parts:
+        return None, None, format_hint("sug")
+
+    target = " ".join(rest_parts)
+    if target.lower() in {a.lower() for a in SUG_ALL_ALIASES}:
+        return "__ALL__", session, None
+
+    canonical = resolve_holder(target, names)
+    if not canonical:
+        return None, None, f"未找到持有人「{target}」。可选：{', '.join(names)}"
+    return canonical, session, None
+
+
+def sug_archive_basename(
+    holder: str,
+    session: str | None = None,
+    *,
+    date: str | None = None,
+    hhmm: str | None = None,
+) -> str:
+    """生成 SugVault 归档文件名（不含目录）。"""
+    from datetime import datetime
+
+    d = date or datetime.now().strftime("%Y-%m-%d")
+    prefix = f"{d}_{hhmm}_" if hhmm else f"{d}_"
+    if session and session in SUG_SESSIONS:
+        return f"{prefix}{holder}_sug {session}.md"
+    return f"{prefix}{holder}_sug.md"
+
+
+def latest_sug_path(holder: str, session: str | None = None) -> str | None:
+    import glob
+
+    hl = holder.lower()
+    matched: list[str] = []
+    for path in glob.glob(os.path.join(SUG_VAULT, "*.md")):
+        base = os.path.basename(path)
+        m = SUG_FILE.match(base)
+        if not m or m.group(3).lower() != hl:
+            continue
+        file_session = m.group(4)  # 早盘/午盘 or None
+        if session:
+            if file_session == session:
+                matched.append(path)
+        elif file_session is None:
+            matched.append(path)
+    if not matched:
+        return None
+    return sorted(matched, reverse=True)[0]
     """从 markdown 提取 ## 持有人：XXX 章节（至下一同级章节或 EOF）。"""
     lines = text.splitlines()
     start: int | None = None
@@ -128,20 +207,7 @@ def filter_pool_md(holder: str) -> str:
     return f"{header}\n\n{section}"
 
 
-def latest_sug_path(holder: str) -> str | None:
-    import glob
-
-    files = sorted(glob.glob(os.path.join(SUG_VAULT, "*_sug.md")), reverse=True)
-    hl = holder.lower()
-    for path in files:
-        base = os.path.basename(path)
-        m = SUG_FILE.match(base)
-        if m and m.group(3).lower() == hl:
-            return path
-    return None
-
-
-def holdings_for_holder(holder: str) -> list[dict]:
+def extract_holder_section(text: str, holder: str) -> str | None:
     mod = _import_portfolio()
     hl = holder.lower()
     return [h for h in mod.HOLDINGS if h.get("holder", "").lower() == hl]

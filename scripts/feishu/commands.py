@@ -10,7 +10,10 @@ from portfolio_utils import (
     filter_portfolio_md,
     format_hint,
     latest_sug_path,
+    load_holder_names,
     parse_holder_arg,
+    parse_sug_command,
+    sug_archive_basename,
 )
 from wiki import run_chk, search_wiki, track_stock
 from wiki.common import format_hint as wiki_format_hint
@@ -56,6 +59,48 @@ def _handle_holder_command(text: str, verbs: tuple[str, ...], handler) -> str | 
     return handler(holder)
 
 
+def _sug_missing_message(holder: str, session: str | None) -> str:
+    example = f"sug {holder}"
+    if session:
+        example += f" {session}"
+    fname = sug_archive_basename(holder, session)
+    return (
+        f"尚无 {holder} 的 sug 报告"
+        f"{f'（{session}）' if session else ''}。"
+        f"请在 Cursor 说「{example}」（会写入 SugVault/{fname}）。"
+    )
+
+
+def _read_sug(holder: str, session: str | None) -> str:
+    path = latest_sug_path(holder, session)
+    if path:
+        return _read_tail(path, MAX_CHUNK * 2)
+    return _sug_missing_message(holder, session)
+
+
+def _read_sug_all(session: str | None) -> str:
+    names = load_holder_names()
+    if not names:
+        return "尚无持仓数据，请先运行 daily.bat 同步 持仓.xlsx"
+    blocks: list[str] = []
+    for h in names:
+        blocks.append(f"=== {h} ===\n{_read_sug(h, session)}")
+    return _truncate("\n\n".join(blocks), MAX_CHUNK * 2)
+
+
+def _handle_sug_command(text: str) -> str | None:
+    parsed = parse_sug_command(text)
+    if parsed is None:
+        return None
+    holder, session, err = parsed
+    if err:
+        return err
+    assert holder is not None
+    if holder == "__ALL__":
+        return _read_sug_all(session)
+    return _read_sug(holder, session)
+
+
 def _handle_tail_command(text: str, verbs: tuple[str, ...], handler, *, arg_label: str) -> str | None:
     parsed = parse_tail_arg(text, verbs)
     if parsed is None:
@@ -84,7 +129,8 @@ def handle_command(text: str) -> str:
         return (
             "CyberAdvisor 飞书 Bot（本机）\n\n"
             "【持仓 / 交易】（需持有人）\n"
-            "• sug {持有人}\n"
+            "• sug {持有人} [早盘|午盘]\n"
+            "• sug 全员 [早盘|午盘]\n"
             "• 持仓 {持有人}\n"
             "• 标的池 {持有人}\n\n"
             "【Wiki 查询】\n"
@@ -92,7 +138,7 @@ def handle_command(text: str) -> str:
             "• chk — Wiki 体检\n"
             "• qry {问题} — Wiki 关键词检索\n\n"
             "• ping — 连通测试\n\n"
-            f"示例：sug Wilson / trk 寒武纪 / qry 存储{names_hint}\n\n"
+            f"示例：sug Wilson 早盘 / sug 全员 / trk 寒武纪 / qry 存储{names_hint}\n\n"
             "深度 ing / AI 版 qry·chk·sug 生成 → Cursor + finance-wiki skill。"
         )
 
@@ -114,16 +160,7 @@ def handle_command(text: str) -> str:
     if reply is not None:
         return reply
 
-    reply = _handle_holder_command(
-        cmd,
-        SUG_VERBS,
-        lambda holder: _read_tail(latest_sug_path(holder) or "", MAX_CHUNK * 2)
-        if latest_sug_path(holder)
-        else (
-            f"尚无 {holder} 的 sug 报告。请在 Cursor 说「sug {holder}」"
-            f"（会写入 SugVault/YYYY-MM-DD_{holder}_sug.md）。"
-        ),
-    )
+    reply = _handle_sug_command(cmd)
     if reply is not None:
         return reply
 

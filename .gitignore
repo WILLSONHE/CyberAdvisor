@@ -3,3 +3,6 @@
 !.env.example
 secrets/
 *.cookie
+__pycache__/
+*.pyc
+Wiki/数据/feishu_debug.log

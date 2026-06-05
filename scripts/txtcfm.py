@@ -3,10 +3,11 @@
 批量审批未审阅文稿（txtcfm = text confirm）。
 
 扫描目录：
-  - Wiki/待审阅视频文稿/
+  - Raw/未审阅视频文稿/
   - Raw/未分析归档/（及旧称 Raw/待分析归档/）
 
 将 review_status 设为 approved，更新引用行，写入 approved_at。
+视频稿审批后移入 Raw/已审阅视频文稿/（类似未分析→已分析归档）。
 已 approved / ingested 的跳过。
 
 用法:
@@ -24,11 +25,15 @@ import sys
 from datetime import datetime
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-PENDING_VIDEO_DIR = os.path.join(ROOT, "Wiki", "待审阅视频文稿")
 LOG_PATH = os.path.join(ROOT, "Wiki", "log.md")
 
 sys.path.insert(0, os.path.dirname(__file__))
-from raw_paths import list_pending_files  # noqa: E402
+from raw_paths import (  # noqa: E402
+    RAW_PENDING_VIDEO,
+    ensure_raw_dirs,
+    list_pending_files,
+    move_video_to_approved,
+)
 
 FM_SPLIT = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.S)
 META_REVIEW = re.compile(r"^review_status:\s*(\S+)", re.M)
@@ -58,7 +63,7 @@ def _prepend_frontmatter(body: str, stamp: str) -> str:
 
 
 def approve_file(path: str, *, dry_run: bool) -> dict:
-    result = {"path": path, "action": "skip", "reason": "", "old_status": ""}
+    result = {"path": path, "action": "skip", "reason": "", "old_status": "", "kind": "raw"}
     text = open(path, encoding="utf-8").read()
     m = FM_SPLIT.match(text)
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -90,9 +95,9 @@ def approve_file(path: str, *, dry_run: bool) -> dict:
 
 
 def collect_files() -> list[tuple[str, str]]:
-    """返回 (path, kind) 列表。"""
+    """返回 (path, kind) 列表；kind 为 video 或 raw。"""
     items: list[tuple[str, str]] = []
-    for p in sorted(glob.glob(os.path.join(PENDING_VIDEO_DIR, "*.md"))):
+    for p in sorted(glob.glob(os.path.join(RAW_PENDING_VIDEO, "*.md"))):
         items.append((p, "video"))
     for p in list_pending_files():
         items.append((p, "raw"))
@@ -103,13 +108,13 @@ def append_log(approved: list[dict], *, dry_run: bool) -> None:
     if dry_run or not approved:
         return
     today = datetime.now().strftime("%Y-%m-%d")
-    video_n = sum(1 for r in approved if "待审阅视频文稿" in r["path"])
+    video_n = sum(1 for r in approved if r.get("kind") == "video")
     raw_n = len(approved) - video_n
     lines = [
         f"## [{today}] txtcfm × {len(approved)} | 批量审批文稿",
         "",
         "- 操作类型：txtcfm（`scripts/txtcfm.py`）",
-        f"- 视频待审阅：{video_n} 篇 → review_status: approved",
+        f"- 视频未审阅：{video_n} 篇 → approved，移入 Raw/已审阅视频文稿/",
     ]
     if raw_n:
         lines.append(f"- Raw/未分析归档：{raw_n} 篇 → review_status: approved")
@@ -138,16 +143,25 @@ def main() -> None:
     ap.add_argument("--no-log", action="store_true", help="不追加 Wiki/log.md")
     args = ap.parse_args()
 
+    ensure_raw_dirs()
     files = collect_files()
     approved: list[dict] = []
     skipped = 0
     for path, kind in files:
         r = approve_file(path, dry_run=args.dry_run)
+        r["kind"] = kind
         name = os.path.basename(path)
         tag = "[DRY] " if args.dry_run else ""
         if r["action"] == "approve":
+            if kind == "video":
+                if args.dry_run:
+                    dest = move_video_to_approved(path, dry_run=True)
+                    r["path"] = dest
+                else:
+                    r["path"] = move_video_to_approved(path)
             approved.append(r)
-            print(f"{tag}approve  [{kind}] {name}  ({r['old_status']} → approved)")
+            dest_note = f" → {os.path.basename(r['path'])}" if kind == "video" else ""
+            print(f"{tag}approve  [{kind}] {name}  ({r['old_status']} → approved{dest_note})")
         else:
             skipped += 1
             print(f"{tag}skip    [{kind}] {name}  ({r['reason']})")
