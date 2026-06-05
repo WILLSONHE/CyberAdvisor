@@ -24,6 +24,13 @@ MIN_TRADE_YUAN = 50_000.0
 EQUITY_TARGET_BELOW_CLEAR = 0.35
 EQUITY_TARGET_NORMAL = 0.75
 
+# 交易节奏：每 15 分钟采集；仅在有明确信号时成交
+BUY_MIN_GAP = 0.05  # 仓位低于目标至少 5% 才考虑买入
+NO_BUY_BELOW_CLEAR = True  # 上证 < 4033 不开新仓
+MAX_BUYS_PER_TICK = 1  # 单次 tick 最多新开 1 笔
+REBALANCE_MIN_HOLD_DAYS = 1  # 建仓当日不因「超配」强制卖出
+PRICE_SANITY_BAND = 0.15  # 卖出价偏离成本超过 15% 时改用 tick/成本价
+
 # 短线：持仓超过 N 日且盈利可减仓；长线标签仅日志
 SHORT_HOLD_DAYS = 5
 STOP_LOSS_PCT = -5.0

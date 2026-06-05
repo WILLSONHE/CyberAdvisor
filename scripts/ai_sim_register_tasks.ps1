@@ -17,3 +17,4 @@ foreach ($t in $Ticks) {
     Write-Host "Created: $name @ $t"
 }
 Write-Host "Done. Tasks run ai_sim_tick.bat at each session tick (Mon-Fri)."
+Write-Host "Ensure project root .env has CURSOR_API_KEY for Cloud Agent (see .env.example)."

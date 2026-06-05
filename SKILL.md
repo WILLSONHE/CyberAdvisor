@@ -124,15 +124,29 @@ CLI：`python scripts/sim_portfolio.py buy …` / `sell` / `sync` / `init`
 - 上午：9:30 → 每 15 分钟 → 11:30  
 - 下午：13:00 → 每 15 分钟 → 15:00  
 
-### 自动决策（规则引擎）
+### 自动决策（规则引擎 + Cloud Agent 调参）
+
+> **每 15 分钟 tick 默认只采集行情，不必成交。** 仅在有明确信号（止损/止盈/显著欠配且允许开仓）时才写入 xlsx。  
+> 现金以 `Wiki/数据/AI模拟盘现金.json` 为准（买卖实际增减），非「500 万 − 持仓成本」估算。  
+> **Cloud Agent**（无人值守）：每 tick 分析行情，可选写入 `Wiki/数据/AI模拟盘参数.override.json`；规则引擎读取后执行。
 
 脚本 `scripts/ai_sim_tick.py`（单次 tick）：
 
 1. 采集指数 + 标的池现价 → `Raw/每15分钟市场数据/`  
-2. 读 Wiki **市场状态日报**、**投资方法论/风控**（4033 软约束）  
-3. **买入**：仓位低于目标 + 池内 `track`/`daily_gain` 未持仓标的，按 slot 分批  
-4. **卖出**：止损 **-5%**、止盈 **+12%**、或 4033 环境下整体降仓  
-5. 成交写入 `模拟持仓.xlsx`；摘要追加 **AI模拟交易日志**  
+2. **Cloud Agent 分析**（需 `CURSOR_API_KEY`，见根目录 `.env.example`）→ 调参 override + 日志「Agent 分析」  
+3. 读 Wiki **市场状态日报**、**投资方法论/风控**（4033 软约束）  
+4. **买入**（可选）：上证 ≥4033 且仓位显著低于目标 + 候选标的当日涨幅 ≥0；单次 tick 最多 1 笔  
+5. **卖出**（可选）：止损 **-5%**、止盈 **+12%**、或超配降仓（建仓当日不降仓，每次最多减 1 只）  
+6. 成交写入 `模拟持仓.xlsx`；摘要追加 **AI模拟交易日志**（含买卖原因）  
+
+环境变量（项目根 `.env`）：
+
+| 变量 | 说明 |
+|------|------|
+| `CURSOR_API_KEY` | Cursor Dashboard → Integrations |
+| `CURSOR_CLOUD_REPO` | 可选，`owner/repo`，Agent 可读完整 Wiki |
+| `AI_SIM_AGENT=0` | 关闭 Agent，仅规则引擎 |
+| `AI_SIM_AGENT_TIMEOUT` | 轮询超时秒数，默认 600 |
 
 注册计划任务（管理员 PowerShell）：
 
@@ -141,11 +155,11 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\ai_sim_register_tasks.ps1
 ```
 
-手动单次：`ai_sim_tick.bat --force` 或 `python scripts/ai_sim_tick.py --force`
+手动单次：`ai_sim_tick.bat --force` 或 `python scripts/ai_sim_tick.py --force`（`--no-agent` 跳过 Cloud Agent）
 
-### Cursor Agent 职责
+### Cursor Agent 职责（人工复盘层）
 
-- 盘前/盘后阅读 **AI模拟交易日志** + 最新 tick 数据，必要时调整 `scripts/ai_sim/config.py` 参数  
+- 盘前/盘后阅读 **AI模拟交易日志** + 最新 tick 数据，必要时调整 `scripts/ai_sim/config.py` 默认值  
 - 重大 Wiki 变化（博主转向、4033 破线）时在日志 **写一条「Agent 备注」**  
 - **禁止**在未跑 tick 的情况下手工改 xlsx 成本/股数（除用户明确要求）
 

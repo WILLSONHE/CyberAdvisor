@@ -11,6 +11,7 @@ PORTFOLIO_INT_COLS = ("股数",)
 
 SIM_MONEY_COLS = ("成本", "现价", "市值", "盈亏")
 SIM_INT_COLS = ("股数", "持仓时间(天)")
+TEXT_COLS = ("代码",)
 
 
 def apply_column_formats(
@@ -18,6 +19,7 @@ def apply_column_formats(
     *,
     money_cols: tuple[str, ...] = (),
     int_cols: tuple[str, ...] = (),
+    text_cols: tuple[str, ...] = (),
     sheet: str | None = None,
 ) -> None:
     """为已存在的 xlsx 设置列数字格式（不改变单元格数值）。"""
@@ -44,6 +46,20 @@ def apply_column_formats(
             if isinstance(cell.value, (int, float)) and not isinstance(cell.value, bool):
                 cell.number_format = INT_FMT
 
+    for col_name in text_cols:
+        ci = col_idx.get(col_name)
+        if not ci:
+            continue
+        for row in range(2, ws.max_row + 1):
+            cell = ws.cell(row=row, column=ci)
+            if cell.value is None or str(cell.value).strip() == "":
+                continue
+            s = str(cell.value).strip().replace(".0", "")
+            if s.isdigit() and len(s) < 6:
+                s = s.zfill(6)
+            cell.value = s
+            cell.number_format = "@"
+
     wb.save(path)
 
 
@@ -53,9 +69,17 @@ def write_dataframe_xlsx(
     *,
     money_cols: tuple[str, ...] = (),
     int_cols: tuple[str, ...] = (),
+    text_cols: tuple[str, ...] = TEXT_COLS,
 ) -> None:
-    df.to_excel(path, index=False)
-    apply_column_formats(path, money_cols=money_cols, int_cols=int_cols)
+    out = df.copy()
+    if "代码" in out.columns:
+        out["代码"] = out["代码"].apply(
+            lambda c: str(c).strip().replace(".0", "").zfill(6)
+            if str(c).strip().replace(".0", "").isdigit() and len(str(c).strip().replace(".0", "")) <= 6
+            else c
+        )
+    out.to_excel(path, index=False)
+    apply_column_formats(path, money_cols=money_cols, int_cols=int_cols, text_cols=text_cols)
 
 
 def format_portfolio_xlsx(path: str) -> None:
@@ -63,4 +87,6 @@ def format_portfolio_xlsx(path: str) -> None:
 
 
 def format_sim_xlsx(path: str) -> None:
-    apply_column_formats(path, money_cols=SIM_MONEY_COLS, int_cols=SIM_INT_COLS)
+    apply_column_formats(
+        path, money_cols=SIM_MONEY_COLS, int_cols=SIM_INT_COLS, text_cols=TEXT_COLS
+    )

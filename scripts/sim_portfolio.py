@@ -61,7 +61,14 @@ def _norm_code(code) -> str:
     s = str(code).strip().replace(".0", "")
     if not s:
         return ""
-    return normalize_stock_code(s)
+    digits = re.sub(r"\D", "", s)
+    if not digits:
+        return ""
+    # Excel 常将 000887 读成 887；模拟持仓均为 A 股时补全 6 位
+    if len(digits) < 6 and ".HK" not in s.upper() and not s.upper().startswith("HK"):
+        if len(digits) <= 4 or digits.zfill(6).startswith(("00", "30", "60", "68", "83", "87")):
+            digits = digits.zfill(6)
+    return normalize_stock_code(digits)
 
 
 def _build_name_code_map() -> dict[str, str]:
@@ -266,6 +273,8 @@ def _load_df() -> pd.DataFrame:
         if col not in df.columns:
             df[col] = None
     df = df[list(ALL_COLS)]
+    if "代码" in df.columns:
+        df["代码"] = df["代码"].apply(_norm_code)
     return df[df.apply(_is_data_row, axis=1)].reset_index(drop=True)
 
 

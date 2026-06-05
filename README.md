@@ -105,17 +105,25 @@ sim 卖 利通电子            # 模拟卖出并冻结盈亏
 
 ### 4. AI 模拟持仓（500 万自主盘）
 
-根目录 **`模拟持仓.xlsx`**，持有人 **AI**，总资金 **500 万元**。盘中由计划任务每 **15 分钟** 执行 `ai_sim_tick.bat`：采集行情 → 自动买卖 → 写入 **`Wiki/数据/AI模拟交易日志.md`**。行情快照：`Raw/每15分钟市场数据/`。
+根目录 **`模拟持仓.xlsx`**，持有人 **AI**，总资金 **500 万元**。盘中由计划任务每 **15 分钟** 执行 `ai_sim_tick.bat`：**采集 → Cloud Agent 分析/调参 → 规则引擎买卖（有信号才成交）** → 写入 **`Wiki/数据/AI模拟交易日志.md`**。行情快照：`Raw/每15分钟市场数据/`。
+
+首次启用 Cloud Agent：复制 `.env.example` 为 `.env`，填入 `CURSOR_API_KEY`（[Cursor Integrations](https://cursor.com/dashboard/integrations)）。
 
 | 操作 | 说明 |
 |------|------|
 | 注册计划任务 | 管理员 PowerShell：`.\scripts\ai_sim_register_tasks.ps1` |
-| 手动跑一次 | `ai_sim_tick.bat --force` |
+| 手动跑一次 | `.\ai_sim_tick.bat --force`；加 `--no-agent` 跳过 Cloud Agent |
+| 归零重启 | `python scripts/ai_sim_reset.py` |
 | 手动干预 | `sim 买/卖 …`（飞书 Bot 或 CLI，见 `sim_portfolio.py`） |
 
-```bash
-python scripts/ai_sim_tick.py --force    # 采集 + 决策 + 日志
-python scripts/sim_portfolio.py sync     # 刷新现价
+```powershell
+# 项目根目录（PowerShell 须加 .\）
+.\ai_sim_tick.bat --force
+
+# 或在 scripts 目录
+cd scripts
+python ai_sim_tick.py --force
+# 或 .\ai_sim_tick.bat --force
 ```
 
 规范见 `SKILL.md` → **AI 自主模拟盘**。
@@ -332,7 +340,9 @@ CyberAdvisor/
     ├── feishu_download_portfolio.py  ← 飞书云文档 → 持仓.xlsx
     ├── wiki_cli.py          ← trk / chk / qry / sim-sync / track-maintain
     ├── wiki/                ← Wiki 轻量查询模块
-    ├── sim_portfolio.py     ← sim 买/卖/sync/rebuild
+    ├── ai_sim/              ← AI 自主模拟（采集/策略/日志）
+    ├── ai_sim_tick.py       ← 单次 tick 入口
+    ├── sim_portfolio.py     ← sim 买/卖/sync（手动干预）
     ├── feishu_notify.py     ← 飞书 Webhook 推送
     ├── feishu_bot.py        ← 飞书 Bot 事件服务
     ├── feishu/              ← 飞书 SDK 模块（commands / wiki_local / drive）
