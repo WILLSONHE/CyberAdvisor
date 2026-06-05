@@ -12,7 +12,7 @@
 - **Wiki 知识库**：博主 2025.10~2026.05 全部方法论 + 121 天每日复盘 + 标的全追踪
 - **选股脚本**：全市场粗筛 → 博主 F10 框架精筛 → 七轨布林线扫描
 - **交易策略**：持仓诊断 + 开仓建议 + 做 T 策略 + 每日市场状态
-- **模拟持仓（sim）**：按博主建议虚拟建仓/平仓，100 万起/标的，独立于真实 `持仓.xlsx`
+- **AI 模拟持仓**：500 万自主盘，盘中每 15 分钟采集 + 自动买卖（`ai_sim_tick.bat`）
 - **AI 集成**：配套 skill 文件，AI 助手直接加载
 
 ---
@@ -103,27 +103,22 @@ sim 卖 利通电子            # 模拟卖出并冻结盈亏
 
 成交额 = 成本 × 股数（投资成本）；市值 = 现价 × 股数（同步时自动拉取）。`sug Wilson` 时以 `portfolio.md` 中 Wilson 章节为准。
 
-### 4. 模拟持仓（可选）
+### 4. AI 模拟持仓（500 万自主盘）
 
-根目录 **`模拟持仓.xlsx`** 用于按博主信号**虚拟跟单**，与真实持仓分离。列 = `持仓.xlsx` 五列 + `现价`、`市值`、`盈亏`、`盈亏比`、`卖出？(Y/N)`、`建仓日期`、`持仓时间(天)`；持有人固定为 **模拟**。
+根目录 **`模拟持仓.xlsx`**，持有人 **AI**，总资金 **500 万元**。盘中由计划任务每 **15 分钟** 执行 `ai_sim_tick.bat`：采集行情 → 自动买卖 → 写入 **`Wiki/数据/AI模拟交易日志.md`**。行情快照：`Raw/每15分钟市场数据/`。
 
-| 指令 | 行为 |
+| 操作 | 说明 |
 |------|------|
-| `sim 买 利通电子，江波龙` | 默认 **100 万元/标的**；买不到（须 >100 股）则自动升至 200 万、300 万…；**成本**锁定 |
-| `sim 卖 利通电子` | 按卖出时刻市价冻结盈亏，标记 `卖出？(Y/N)=Y`，**整行不再更新** |
-| `sim rebuild` | 按最新预算规则重算**未卖出**持仓（已卖出行冻结） |
-
-CLI：
+| 注册计划任务 | 管理员 PowerShell：`.\scripts\ai_sim_register_tasks.ps1` |
+| 手动跑一次 | `ai_sim_tick.bat --force` |
+| 手动干预 | `sim 买/卖 …`（飞书 Bot 或 CLI，见 `sim_portfolio.py`） |
 
 ```bash
-python scripts/sim_portfolio.py init          # 创建空表
-python scripts/sim_portfolio.py buy 利通电子   # 模拟买入
-python scripts/sim_portfolio.py sell 利通电子  # 模拟卖出
-python scripts/sim_portfolio.py sync          # 刷新未卖出行的现价/盈亏
-python scripts/wiki_cli.py sim-sync           # 同上
+python scripts/ai_sim_tick.py --force    # 采集 + 决策 + 日志
+python scripts/sim_portfolio.py sync     # 刷新现价
 ```
 
-Cursor 对话或飞书 Bot 均可：`sim 买 …` / `sim 卖 …`。生成 `sug` 前 Cursor 会自动跑 `sim_portfolio.py sync`（跳过已标记卖出的行）。表末有 **合计** 行汇总投资成本、市值与组合盈亏比；**Excel 金额列** 保存为 `#,##0.00` 千位显示。
+规范见 `SKILL.md` → **AI 自主模拟盘**。
 
 ---
 
@@ -315,7 +310,8 @@ CyberAdvisor/
 ├── daily.bat                ← 每日一键流水线（双击；含 daily_report.py）
 ├── feishu_bot.bat           ← 飞书 Bot 本机服务
 ├── 持仓.xlsx                ← 真实持仓数据源（同步到 portfolio / trade_template）
-├── 模拟持仓.xlsx            ← sim 买/卖 虚拟盘（持有人=模拟）
+├── ai_sim_tick.bat          ← AI 模拟盘 15 分钟 tick
+├── 模拟持仓.xlsx            ← AI 自主盘（500 万；持有人=AI）
 ├── SKILL.md                 ← AI skill 文件（必须安装）
 ├── portfolio.md             ← 多人持仓（按持有人分章，sug 读取）
 ├── trade_template.md        ← sug 回复模板

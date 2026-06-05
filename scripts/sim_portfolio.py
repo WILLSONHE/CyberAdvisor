@@ -34,7 +34,7 @@ SIM_XLSX = os.path.join(ROOT, "模拟持仓.xlsx")
 PORTFOLIO_XLSX = os.path.join(ROOT, "持仓.xlsx")
 COARSE_CSV = os.path.join(ROOT, "Wiki", "数据", "粗筛结果.csv")
 
-SIM_HOLDER = "模拟"
+SIM_HOLDER = "AI"  # AI 自主模拟盘（总资金 500 万，见 ai_sim/）
 BUDGET_PER_STOCK = 1_000_000  # 100 万为预算单位；不足则自动升至 200 万、300 万…
 MAX_BUDGET_MULTIPLIER = 20  # 最高 2000 万，防止极端高价股死循环
 MIN_SHARES = 100  # 必须 > 100，即至少 200 股（100 股整数倍）
