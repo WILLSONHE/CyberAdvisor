@@ -2,10 +2,14 @@
 from __future__ import annotations
 
 import json
+import mimetypes
+import os
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
+import requests
 
 _TOKEN_CACHE: dict[str, float | str] = {"token": "", "expire_at": 0.0}
 
@@ -53,6 +57,58 @@ def send_text_to_chat(app_id: str, app_secret: str, chat_id: str, text: str) -> 
         ensure_ascii=False,
     ).encode("utf-8")
     _api_post(token, url, payload, action="发送消息")
+
+
+def upload_im_file(
+    app_id: str,
+    app_secret: str,
+    file_path: str,
+    *,
+    file_type: str = "pdf",
+) -> str:
+    """上传文件到飞书 IM，返回 file_key。"""
+    token = get_tenant_access_token(app_id, app_secret)
+    url = "https://open.feishu.cn/open-apis/im/v1/files"
+    fname = os.path.basename(file_path)
+    mime = mimetypes.guess_type(fname)[0] or "application/octet-stream"
+    with open(file_path, "rb") as f:
+        resp = requests.post(
+            url,
+            headers={"Authorization": f"Bearer {token}"},
+            data={"file_type": file_type, "file_name": fname},
+            files={"file": (fname, f, mime)},
+            timeout=120,
+        )
+    try:
+        body = resp.json()
+    except ValueError as e:
+        raise RuntimeError(f"飞书上传文件响应非 JSON: {resp.text[:500]}") from e
+    if body.get("code") != 0:
+        raise RuntimeError(f"飞书上传文件失败: {body}")
+    file_key = (body.get("data") or {}).get("file_key")
+    if not file_key:
+        raise RuntimeError(f"飞书上传文件无 file_key: {body}")
+    return str(file_key)
+
+
+def reply_file(app_id: str, app_secret: str, message_id: str, file_key: str) -> None:
+    token = get_tenant_access_token(app_id, app_secret)
+    url = f"https://open.feishu.cn/open-apis/im/v1/messages/{message_id}/reply"
+    content = json.dumps({"file_key": file_key}, ensure_ascii=False)
+    payload = json.dumps({"msg_type": "file", "content": content}, ensure_ascii=False).encode("utf-8")
+    _api_post(token, url, payload, action="回复文件")
+
+
+def send_file_to_chat(app_id: str, app_secret: str, chat_id: str, file_key: str) -> None:
+    token = get_tenant_access_token(app_id, app_secret)
+    qs = urllib.parse.urlencode({"receive_id_type": "chat_id"})
+    url = f"https://open.feishu.cn/open-apis/im/v1/messages?{qs}"
+    content = json.dumps({"file_key": file_key}, ensure_ascii=False)
+    payload = json.dumps(
+        {"receive_id": chat_id, "msg_type": "file", "content": content},
+        ensure_ascii=False,
+    ).encode("utf-8")
+    _api_post(token, url, payload, action="发送文件")
 
 
 def _api_post(token: str, url: str, payload: bytes, *, action: str) -> None:

@@ -11,7 +11,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 
 from bilibili.env import ROOT
-from feishu.client import reply_text, send_text_to_chat
+from feishu.client import (
+    reply_file,
+    reply_text,
+    send_file_to_chat,
+    send_text_to_chat,
+    upload_im_file,
+)
 from feishu.commands import handle_command, split_reply
 from feishu.decrypt import decrypt_event
 from feishu.env import FeishuConfig
@@ -190,19 +196,56 @@ def _extract_text_from_event(body: dict) -> tuple[str, str, str] | None:
 def _process_message(cfg: FeishuConfig, message_id: str, chat_id: str, text: str) -> None:
     log.info("处理指令: %r message_id=%s chat_id=%s", text, message_id, chat_id)
     try:
-        reply = handle_command(text)
-        for i, chunk in enumerate(split_reply(reply)):
+        result = handle_command(text)
+        file_key = ""
+        if result.file_path and os.path.isfile(result.file_path):
             try:
-                if i == 0:
-                    reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
-                else:
-                    send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
+                file_key = upload_im_file(
+                    cfg.app_id,
+                    cfg.app_secret,
+                    result.file_path,
+                    file_type=result.file_type or "pdf",
+                )
             except Exception as e:
-                log.warning("reply 失败，改 send_to_chat: %s", e)
+                log.exception("上传 PDF 失败")
+                err = f"PDF 上传失败：{e}"
                 if chat_id:
-                    send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
+                    send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, err)
                 else:
-                    raise
+                    reply_text(cfg.app_id, cfg.app_secret, message_id, err)
+                file_key = ""
+
+        if result.text:
+            for i, chunk in enumerate(split_reply(result.text)):
+                try:
+                    if i == 0:
+                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
+                    elif chat_id:
+                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
+                    else:
+                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
+                except Exception as e:
+                    log.warning("reply 失败，改 send_to_chat: %s", e)
+                    if chat_id:
+                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
+                    else:
+                        raise
+        elif not file_key:
+            reply_text(cfg.app_id, cfg.app_secret, message_id, "（无回复内容）")
+
+        if file_key:
+            try:
+                if chat_id:
+                    send_file_to_chat(cfg.app_id, cfg.app_secret, chat_id, file_key)
+                else:
+                    reply_file(cfg.app_id, cfg.app_secret, message_id, file_key)
+            except Exception as e:
+                log.exception("发送 PDF 失败")
+                err = f"PDF 发送失败：{e}"
+                if chat_id:
+                    send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, err)
+                else:
+                    reply_text(cfg.app_id, cfg.app_secret, message_id, err)
         log.info("已回复 %r", text)
     except Exception as e:
         log.exception("处理失败")

@@ -159,6 +159,18 @@ Cursor 对话或飞书 Bot 均可：`sim 买 …` / `sim 卖 …`。生成 `sug`
 
 **本机 Bot**：飞书开放平台创建应用 → 开机器人 + `im.message.receive_v1` 事件 → Request URL 指向 `http://<公网>:8765/feishu/event` → 填 `.env` → 运行 `feishu_bot.bat`
 
+Bot 发送 PDF（`打开 …`）还需权限 **`im:file:write`**（上传/发送文件）；改权限后 **发版**。
+
+**Wiki 文件**（飞书 Bot）：
+
+```
+策略文件              # 回复 Wiki/ 目录树
+打开 仓位管理          # 导出 Wiki/投资方法论/仓位管理.md 为 PDF 并发送
+打开 每日复盘/2026-06-05
+```
+
+PDF 导出：优先本机 `pandoc`（若已安装）；否则 `fpdf2` + Windows 中文字体。
+
 **Bot 权限（私聊 / 群聊分开）**：
 
 - 私聊：`im:message.p2p_msg:readonly`
@@ -189,6 +201,8 @@ Cursor 对话或飞书 Bot 均可：`sim 买 …` / `sim 卖 …`。生成 `sug`
 | `trk {标的}`               | ✅ 轻量   | ✅ 深度           | Bot：追踪页 + grep；Cursor：可刷新页、态度分析                        |
 | `chk`                    | ✅ 轻量   | ✅ 深度           | Bot：待 ing 计数、断链/时效抽样；Cursor：可修复、归档                     |
 | `qry {问题}`               | ✅ 轻量   | ✅ 深度           | Bot：Wiki 关键词检索；Cursor：多页综合作答                           |
+| `策略文件`                   | ✅ 读    | —              | Bot：列出 `Wiki/` 完整目录树                                      |
+| `打开 {路径或文件名}`           | ✅ 读    | —              | Bot：将 Wiki `.md` 导出 PDF 并发送（如 `打开 仓位管理`）                 |
 | `sim 买/卖 {标的…}`        | ✅ 写    | ✅ 写            | 模拟持仓 `模拟持仓.xlsx`；Cursor `sug` 前自动 `sim sync`              |
 | `帮助` / `ping`            | ✅      | —              | Bot 连通测试与指令列表                                          |
 | `daily.bat`              | —      | —              | 双击运行；完成后 Webhook **推送**摘要（非 Bot 对话）                    |
@@ -325,7 +339,7 @@ CyberAdvisor/
     ├── sim_portfolio.py     ← sim 买/卖/sync/rebuild
     ├── feishu_notify.py     ← 飞书 Webhook 推送
     ├── feishu_bot.py        ← 飞书 Bot 事件服务
-    ├── feishu/              ← 飞书 SDK 模块
+    ├── feishu/              ← 飞书 SDK 模块（commands / wiki_local / drive）
     ├── sync_portfolio_from_xlsx.py  ← 持仓.xlsx → portfolio / trade_template
     ├── portfolio_utils.py     ← fmt_money、港股/AH 对照、行情拉取
     ├── portfolio.py         ← 持仓配置（脚本用）
