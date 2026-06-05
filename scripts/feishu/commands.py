@@ -12,12 +12,18 @@ from portfolio_utils import (
     latest_sug_path,
     parse_holder_arg,
 )
+from wiki import run_chk, search_wiki, track_stock
+from wiki.common import format_hint as wiki_format_hint
+from wiki.common import parse_tail_arg
 
 MAX_CHUNK = 3500
 
 SUG_VERBS = ("sug", "交易策略", "开仓")
 HOLDING_VERBS = ("持仓", "portfolio")
 POOL_VERBS = ("日报", "pool", "标的池")
+TRK_VERBS = ("trk", "追踪", "track")
+CHK_VERBS = ("chk", "体检", "check")
+QRY_VERBS = ("qry", "问", "query")
 
 
 def _read_tail(path: str, max_chars: int = 6000) -> str:
@@ -50,6 +56,17 @@ def _handle_holder_command(text: str, verbs: tuple[str, ...], handler) -> str | 
     return handler(holder)
 
 
+def _handle_tail_command(text: str, verbs: tuple[str, ...], handler, *, arg_label: str) -> str | None:
+    parsed = parse_tail_arg(text, verbs)
+    if parsed is None:
+        return None
+    arg, err = parsed
+    if err:
+        return err
+    assert arg is not None
+    return handler(arg)
+
+
 def handle_command(text: str) -> str:
     cmd = text.strip()
     lower = cmd.lower()
@@ -66,17 +83,36 @@ def handle_command(text: str) -> str:
             pass
         return (
             "CyberAdvisor 飞书 Bot（本机）\n\n"
-            "可用指令（均需指定持有人，不区分大小写）：\n"
-            "• sug {持有人} — 最新交易策略报告\n"
-            "• 持仓 {持有人} / portfolio {持有人} — 该持有人持仓\n"
-            "• 日报 {持有人} / 标的池 {持有人} — 标的池 + 该持有人做T\n"
+            "【持仓 / 交易】（需持有人）\n"
+            "• sug {持有人}\n"
+            "• 持仓 {持有人}\n"
+            "• 标的池 {持有人}\n\n"
+            "【Wiki 查询】\n"
+            "• trk {标的} — 博主痕迹追踪\n"
+            "• chk — Wiki 体检\n"
+            "• qry {问题} — Wiki 关键词检索\n\n"
             "• ping — 连通测试\n\n"
-            f"示例：sug Wilson{names_hint}\n\n"
-            "完整 ing / qry / 深度 sug 请在 Cursor 对话（需加载 finance-wiki skill）。"
+            f"示例：sug Wilson / trk 寒武纪 / qry 存储{names_hint}\n\n"
+            "深度 ing / AI 版 qry·chk·sug 生成 → Cursor + finance-wiki skill。"
         )
 
     if lower in ("ping", "测试", "test"):
         return "pong — CyberAdvisor Bot 在线"
+
+    if lower in CHK_VERBS:
+        return _truncate(run_chk(), MAX_CHUNK * 2)
+
+    reply = _handle_tail_command(
+        cmd, TRK_VERBS, lambda name: _truncate(track_stock(name), MAX_CHUNK * 2), arg_label="标的"
+    )
+    if reply is not None:
+        return reply
+
+    reply = _handle_tail_command(
+        cmd, QRY_VERBS, lambda q: _truncate(search_wiki(q), MAX_CHUNK * 2), arg_label="问题"
+    )
+    if reply is not None:
+        return reply
 
     reply = _handle_holder_command(
         cmd,
@@ -107,13 +143,16 @@ def handle_command(text: str) -> str:
     if reply is not None:
         return reply
 
-    # 裸指令 → 格式提示
     if lower in SUG_VERBS:
         return format_hint("sug")
     if lower in HOLDING_VERBS:
         return format_hint("持仓")
     if lower in POOL_VERBS:
         return format_hint("标的池")
+    if lower in TRK_VERBS:
+        return wiki_format_hint("trk", "标的")
+    if lower in QRY_VERBS:
+        return wiki_format_hint("qry", "问题")
 
     return (
         f"未识别指令：{cmd}\n"

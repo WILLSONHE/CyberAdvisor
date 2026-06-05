@@ -1,7 +1,7 @@
 @echo off
-REM 双击：在新终端窗口运行每日流水线（窗口保持打开）
+REM Double-click: open a new terminal and keep it open (cmd /k)
 if /i not "%~1"=="_run" (
-  start "CyberAdvisor Daily" cmd /k "%~f0" _run
+  start "CyberAdvisor Daily" cmd /k call "%~f0" _run
   exit /b 0
 )
 
@@ -10,24 +10,24 @@ title CyberAdvisor Daily Pipeline
 cd /d "%~dp0"
 
 echo ============================================================
-echo  CyberAdvisor 每日流水线
-echo  根目录: %CD%
-echo  开始: %DATE% %TIME%
+echo  CyberAdvisor Daily Pipeline
+echo  Root: %CD%
+echo  Start: %DATE% %TIME%
 echo ============================================================
 echo.
 
-echo [1/7] 从飞书云文档下载 持仓.xlsx ...
+echo [1/7] feishu_download_portfolio.py ...
 python "%~dp0scripts\feishu_download_portfolio.py"
 if errorlevel 1 (
-    echo [失败] 飞书持仓下载出错
+    echo [FAIL] Feishu portfolio download
     goto :end
 )
 echo.
 
-echo [2/7] 从 持仓.xlsx 同步持仓...
+echo [2/7] sync_portfolio_from_xlsx.py ...
 python "%~dp0scripts\sync_portfolio_from_xlsx.py"
 if errorlevel 1 (
-    echo [失败] 持仓同步出错
+    echo [FAIL] Portfolio sync
     goto :end
 )
 echo.
@@ -48,31 +48,31 @@ python daily_report.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [6/7] bilibili_fetch.py （视频字幕）...
+echo [6/7] bilibili_fetch.py ...
 python bilibili_fetch.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [7/7] bilibili_fetch.py --dry-run （预览）...
+echo [7/7] bilibili_fetch.py --dry-run ...
 python bilibili_fetch.py --dry-run
 if errorlevel 1 goto :fail
 
 cd /d "%~dp0"
 echo.
-echo [可选] 推送到飞书...
+echo [optional] feishu_notify.py --pipeline-done ...
 python "%~dp0scripts\feishu_notify.py" --pipeline-done
 echo.
 echo ============================================================
-echo  全部完成: %DATE% %TIME%
-echo  下一步: 对 AI 说 sug {持有人} （如 sug Wilson，报告写入 SugVault\）
+echo  Done: %DATE% %TIME%
+echo  Next: say "sug Wilson" in Cursor - report in SugVault\
 echo ============================================================
 goto :end
 
 :fail
 cd /d "%~dp0"
 echo.
-echo [失败] 流水线中断，请查看上方报错。
-goto :end
+echo [FAIL] Pipeline stopped. See errors above.
 
 :end
 echo.
+pause

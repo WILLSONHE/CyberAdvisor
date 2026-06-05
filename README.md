@@ -104,7 +104,7 @@ sug Wilson          # 交易策略 → SugVault/YYYY-MM-DD_Wilson_sug.md
 | 能力 | 配置 | 说明 |
 |------|------|------|
 | **群推送** | `FEISHU_WEBHOOK_URL` | `daily.bat` 跑完后自动推送摘要到飞书群 |
-| **本机 Bot** | `FEISHU_APP_*` + 双击 `feishu_bot.bat` | 飞书里发 `sug Wilson` / `持仓 Wilson` / `标的池 Wilson` / `帮助` |
+| **本机 Bot** | `FEISHU_APP_*` + 双击 `feishu_bot.bat` | `sug Wilson` / `持仓 Wilson` / `标的池 Wilson` / `trk 寒武纪` / `chk` / `qry 问题` / `帮助` |
 
 **推送（推荐先做）**：飞书群 → 自定义机器人 → 复制 Webhook → 写入 `.env` 的 `FEISHU_WEBHOOK_URL` → `python scripts/feishu_notify.py --test`
 
@@ -116,7 +116,7 @@ sug Wilson          # 交易策略 → SugVault/YYYY-MM-DD_Wilson_sug.md
 - 回复：`im:message:send_as_bot`
 - 改权限后 **创建版本并发布**
 
-> 电脑关机后 Bot 不可用；完整 AI（ing/qry）仍走 Cursor。
+> 电脑关机后 Bot 不可用。`ing`、AI 深度 `qry`/`chk`/`sug` 生成仍走 Cursor；`trk`/`chk`/`qry` 轻量版已支持飞书 Bot。
 
 **云持仓（daily 自动下载）**：在 `.env` 配置 `FEISHU_PORTFOLIO_URL`（飞书电子表格链接）或 `FEISHU_PORTFOLIO_NAME=持仓`；`daily.bat` 第一步会先覆盖本地 `持仓.xlsx`。权限：`drive:export:readonly`、发版。
 
@@ -159,9 +159,9 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 |------|----------|
 | `ing` | 消化 `Raw/未分析归档/` 中未处理稿，更新 Wiki，完成后移入 `已分析归档/` |
 | `sug {持有人}` | 按持有人：持仓分析 + 大盘判断 + 开仓建议 + 仓位分配 |
-| `qry {问题}` | 基于 Wiki 知识库回答 |
-| `trk {标的}` | 拉取某只标的的博主全痕迹 |
-| `chk` | Wiki 健康检查 |
+| `qry {问题}` | 基于 Wiki 知识库回答（Cursor AI）；飞书 Bot 为关键词检索 |
+| `trk {标的}` | 拉取某只标的的博主全痕迹（飞书 Bot 可读追踪页 + grep） |
+| `chk` | Wiki 健康检查（飞书 Bot 只读体检；修复走 Cursor AI） |
 | `rw` | 校对视频文字稿（ASR 校正 + **补标点分段**） | `python scripts/rw_video.py --pending-only` |
 | `txtcfm` | **批量审批**未审阅文稿（全部通过） | `python scripts/txtcfm.py` |
 
@@ -191,6 +191,8 @@ CyberAdvisor/
 │   └── 数据/                ← 脚本输出
 └── scripts/
     ├── feishu_download_portfolio.py  ← 飞书云文档 → 持仓.xlsx
+    ├── wiki_cli.py          ← trk / chk / qry（飞书 Bot 共用）
+    ├── wiki/                ← Wiki 轻量查询模块
     ├── feishu_notify.py     ← 飞书 Webhook 推送
     ├── feishu_bot.py        ← 飞书 Bot 事件服务
     ├── feishu/              ← 飞书 SDK 模块
