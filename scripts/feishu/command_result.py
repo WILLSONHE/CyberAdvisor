@@ -9,7 +9,7 @@ class CommandResult:
     text: str = ""
     file_path: str | None = None
     file_name: str | None = None
-    file_type: str = "pdf"
+    file_type: str = "stream"
 
     @classmethod
     def from_text(cls, text: str) -> "CommandResult":

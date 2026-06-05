@@ -64,12 +64,13 @@ def upload_im_file(
     app_secret: str,
     file_path: str,
     *,
-    file_type: str = "pdf",
+    file_type: str = "stream",
+    file_name: str | None = None,
 ) -> str:
     """上传文件到飞书 IM，返回 file_key。"""
     token = get_tenant_access_token(app_id, app_secret)
     url = "https://open.feishu.cn/open-apis/im/v1/files"
-    fname = os.path.basename(file_path)
+    fname = file_name or os.path.basename(file_path)
     mime = mimetypes.guess_type(fname)[0] or "application/octet-stream"
     with open(file_path, "rb") as f:
         resp = requests.post(

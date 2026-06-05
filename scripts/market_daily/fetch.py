@@ -272,7 +272,7 @@ def _em_clist(session: requests.Session, *, fs: str, fid: str, po: int, pz: int,
     return []
 
 
-def fetch_concept_boards(*, top_n: int = 10) -> tuple[list[BoardQuote], list[BoardQuote]]:
+def fetch_concept_boards(*, top_n: int = 3) -> tuple[list[BoardQuote], list[BoardQuote]]:
     """概念板块涨跌幅 TopN / BottomN"""
     session = _make_session()
     fs = "m:90+t:3"
@@ -297,7 +297,7 @@ def fetch_concept_boards(*, top_n: int = 10) -> tuple[list[BoardQuote], list[Boa
     return to_board(gain_raw), to_board(loss_raw)
 
 
-def fetch_board_mcap_top_stocks(board: BoardQuote, *, top_n: int = 10) -> list[tuple[StockQuote, BoardQuote]]:
+def fetch_board_mcap_top_stocks(board: BoardQuote, *, top_n: int = 5) -> list[tuple[StockQuote, BoardQuote]]:
     """板块内按估算市值变化排序的 Top 标的"""
     session = _make_session()
     items = _em_clist(

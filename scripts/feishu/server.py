@@ -198,17 +198,19 @@ def _process_message(cfg: FeishuConfig, message_id: str, chat_id: str, text: str
     try:
         result = handle_command(text)
         file_key = ""
-        if result.file_path and os.path.isfile(result.file_path):
+        file_path = result.file_path if result.file_path and os.path.isfile(result.file_path) else ""
+        if file_path:
             try:
                 file_key = upload_im_file(
                     cfg.app_id,
                     cfg.app_secret,
-                    result.file_path,
-                    file_type=result.file_type or "pdf",
+                    file_path,
+                    file_type=result.file_type or "stream",
+                    file_name=result.file_name,
                 )
             except Exception as e:
-                log.exception("上传 PDF 失败")
-                err = f"PDF 上传失败：{e}"
+                log.exception("上传文件失败")
+                err = f"文件上传失败：{e}"
                 if chat_id:
                     send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, err)
                 else:
@@ -239,9 +241,10 @@ def _process_message(cfg: FeishuConfig, message_id: str, chat_id: str, text: str
                     send_file_to_chat(cfg.app_id, cfg.app_secret, chat_id, file_key)
                 else:
                     reply_file(cfg.app_id, cfg.app_secret, message_id, file_key)
+                log.info("已发送文件 %s", file_path)
             except Exception as e:
-                log.exception("发送 PDF 失败")
-                err = f"PDF 发送失败：{e}"
+                log.exception("发送文件失败")
+                err = f"文件发送失败：{e}"
                 if chat_id:
                     send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, err)
                 else:

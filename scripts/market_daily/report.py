@@ -23,6 +23,10 @@ TRACK_DIR = WIKI / "博主" / "标的追踪"
 WIKI_MARKET = WIKI / "市场分析"
 WIKI_METHOD = WIKI / "投资方法论"
 
+# 概念板块涨/跌榜数量；各板块内 Δ市值标的数量
+CONCEPT_BOARD_TOP = 3
+BOARD_MCAP_STOCK_TOP = 5
+
 # 博主机械化纪律线（与 Wiki 一致）
 LINE_CLEAR = 4033
 LINE_FULL = 4130
@@ -168,7 +172,7 @@ def _generate_summary(
     if rot:
         lines.append("- **博主当日主线（Wiki）**：上游材料 + 机器人日内胜出（见 [[板块轮动记录]] 2026-06-05 节）")
         if gain_boards:
-            robot_hit = any("机器人" in b.name for b in gain_boards[:10])
+            robot_hit = any("机器人" in b.name for b in gain_boards[:CONCEPT_BOARD_TOP])
             lines.append(
                 f"- 盘面概念榜{'**含**机器人相关板块走强' if robot_hit else '与博主「机器人胜出」需人工核对概念名称'}，"
                 f"与 [[2026-06-05]] 11:51 动态对照"
@@ -261,20 +265,19 @@ def build_report() -> str:
     lines.append("")
 
     # 2. 板块涨跌幅
-    lines.append("## 二、概念板块涨跌幅 Top10")
+    lines.append(f"## 二、概念板块涨跌幅 Top{CONCEPT_BOARD_TOP}")
     lines.append("")
-    gain_boards, loss_boards = fetch_concept_boards(top_n=10)
+    gain_boards, loss_boards = fetch_concept_boards(top_n=CONCEPT_BOARD_TOP)
     if gain_boards:
-        lines.extend(_fmt_board_table(gain_boards, "涨幅 Top10"))
+        lines.extend(_fmt_board_table(gain_boards, f"涨幅 Top{CONCEPT_BOARD_TOP}"))
     else:
         lines.append("（涨幅榜获取失败）\n")
     if loss_boards:
-        lines.extend(_fmt_board_table(loss_boards, "跌幅 Top10"))
+        lines.extend(_fmt_board_table(loss_boards, f"跌幅 Top{CONCEPT_BOARD_TOP}"))
     else:
         lines.append("（跌幅榜获取失败）\n")
 
-    # 3. 板块内市值变化 Top10
-    lines.append("## 三、板块内市值变化 Top10")
+    lines.append(f"## 三、板块内市值变化 Top{BOARD_MCAP_STOCK_TOP}")
     lines.append("")
     lines.append("> Δ市值 = 总市值 × 涨跌幅 / (100+涨跌幅)，单位：**亿元**（东方财富成分股 + 腾讯行情补充）")
     lines.append("")
@@ -282,8 +285,8 @@ def build_report() -> str:
     def _board_mcap_section(boards: list[BoardQuote], heading: str) -> None:
         lines.append(f"### {heading}")
         lines.append("")
-        for b in boards[:10]:
-            stocks = fetch_board_mcap_top_stocks(b, top_n=10)
+        for b in boards[:CONCEPT_BOARD_TOP]:
+            stocks = fetch_board_mcap_top_stocks(b, top_n=BOARD_MCAP_STOCK_TOP)
             if not stocks:
                 continue
             lines.append(f"#### {b.name}（{b.code}，板块 {b.change_pct:+.2f}%）")
@@ -298,9 +301,9 @@ def build_report() -> str:
             lines.append("")
 
     if gain_boards:
-        _board_mcap_section(gain_boards, "3.1 涨幅 Top10 板块内")
+        _board_mcap_section(gain_boards, f"3.1 涨幅 Top{CONCEPT_BOARD_TOP} 板块内")
     if loss_boards:
-        _board_mcap_section(loss_boards, "3.2 跌幅 Top10 板块内")
+        _board_mcap_section(loss_boards, f"3.2 跌幅 Top{CONCEPT_BOARD_TOP} 板块内")
 
     # 4. 活跃追踪标的
     lines.append("## 四、活跃标的追踪（Wiki/博主/标的追踪/）")

@@ -139,7 +139,7 @@ Cursor 对话或飞书 Bot 均可：`sim 买 …` / `sim 卖 …`。生成 `sug`
 | 2 | `sync_portfolio_from_xlsx.py` | `持仓.xlsx` → `portfolio.md` / `trade_template.md` |
 | 3 | `coarse_screen.py` | 全市场粗筛 |
 | 4 | `fine_screen.py` | 精筛 + 博主标的池 + 布林线 → `Wiki/数据/博主标的池日报.md` |
-| 5 | **`daily_report.py`** | **市场状态日报** → `Wiki/数据/市场状态日报.md`（指数、板块 Top10、追踪标的、Wiki 对照总结） |
+| 5 | **`daily_report.py`** | **市场状态日报** → `Wiki/数据/市场状态日报.md`（指数、板块 Top3、Δ市值 Top5、追踪标的、Wiki 对照总结） |
 | 6–7 | `bilibili_fetch.py` | 抓取新视频字幕 + `--dry-run` 预览 |
 
 **是的**：`daily.bat` **会自动运行** `daily_report.py`（第 5 步），无需单独双击。跑完后可选 Webhook 推送摘要。
@@ -159,23 +159,23 @@ Cursor 对话或飞书 Bot 均可：`sim 买 …` / `sim 卖 …`。生成 `sug`
 
 **本机 Bot**：飞书开放平台创建应用 → 开机器人 + `im.message.receive_v1` 事件 → Request URL 指向 `http://<公网>:8765/feishu/event` → 填 `.env` → 运行 `feishu_bot.bat`
 
-Bot 发送 PDF（`打开 …`）还需权限 **`im:file:write`**（上传/发送文件）；改权限后 **发版**。
-
 **Wiki 文件**（飞书 Bot）：
 
 ```
-策略文件              # 回复 Wiki/ 目录树
-打开 仓位管理          # 导出 Wiki/投资方法论/仓位管理.md 为 PDF 并发送
+策略文件              # Wiki 目录树（每日复盘/ 不展开文件列表）
+打开 仓位管理          # 发送 Wiki/投资方法论/仓位管理.md
 打开 每日复盘/2026-06-05
 ```
 
-PDF 导出：优先本机 `pandoc`（若已安装）；否则 `fpdf2` + Windows 中文字体。
+发送 `.md` 需权限 **`im:resource`**（「获取与上传图片或文件资源」）。
 
 **Bot 权限（私聊 / 群聊分开）**：
 
 - 私聊：`im:message.p2p_msg:readonly`
 - 群聊 @：`im:message.group_at_msg:readonly`（须先把**应用机器人**拉进群，再 @ 发指令）
-- 回复：`im:message:send_as_bot`
+- 回复 / 发消息：`im:message:send_as_bot`（或 `im:message`）
+- **发送文件**（`打开 …`）：`im:resource` — 中文名 **「获取与上传图片或文件资源」**
+  - 路径：开放平台 → 你的应用 → **权限管理** → 搜索 **上传文件** 或 **im:resource** → 开通 → **创建版本并发布**
 - 改权限后 **创建版本并发布**
 
 > 电脑关机后 Bot 不可用。`ing`、AI 深度 `qry`/`chk`/`sug` **生成**仍走 Cursor；`trk`/`chk`/`qry`/`sug`/`持仓`/`标的池` **读取**已支持飞书 Bot。详见下表。
@@ -201,8 +201,8 @@ PDF 导出：优先本机 `pandoc`（若已安装）；否则 `fpdf2` + Windows 
 | `trk {标的}`               | ✅ 轻量   | ✅ 深度           | Bot：追踪页 + grep；Cursor：可刷新页、态度分析                        |
 | `chk`                    | ✅ 轻量   | ✅ 深度           | Bot：待 ing 计数、断链/时效抽样；Cursor：可修复、归档                     |
 | `qry {问题}`               | ✅ 轻量   | ✅ 深度           | Bot：Wiki 关键词检索；Cursor：多页综合作答                           |
-| `策略文件`                   | ✅ 读    | —              | Bot：列出 `Wiki/` 完整目录树                                      |
-| `打开 {路径或文件名}`           | ✅ 读    | —              | Bot：将 Wiki `.md` 导出 PDF 并发送（如 `打开 仓位管理`）                 |
+| `策略文件`                   | ✅ 读    | —              | Bot：Wiki 目录树（`每日复盘/` 不列文件）                              |
+| `打开 {路径或文件名}`           | ✅ 读    | —              | Bot：发送 Wiki `.md` 原文件（如 `打开 仓位管理`）                 |
 | `sim 买/卖 {标的…}`        | ✅ 写    | ✅ 写            | 模拟持仓 `模拟持仓.xlsx`；Cursor `sug` 前自动 `sim sync`              |
 | `帮助` / `ping`            | ✅      | —              | Bot 连通测试与指令列表                                          |
 | `daily.bat`              | —      | —              | 双击运行；完成后 Webhook **推送**摘要（非 Bot 对话）                    |

@@ -16,7 +16,7 @@ from portfolio_utils import (
     sug_archive_basename,
 )
 from feishu.command_result import CommandResult
-from feishu.wiki_local import WIKI_ROOT, build_wiki_tree, export_md_to_pdf, find_wiki_md
+from feishu.wiki_local import WIKI_ROOT, build_wiki_tree, find_wiki_md
 from sim_portfolio import handle_sim_command
 from wiki import run_chk, search_wiki, track_stock
 from wiki.common import format_hint as wiki_format_hint
@@ -42,7 +42,7 @@ def _text_result(text: str) -> CommandResult:
 
 def _handle_wiki_tree() -> CommandResult:
     tree = build_wiki_tree()
-    header = "Wiki 目录（`Wiki/` 下全部文件）\n\n"
+    header = "Wiki 目录（`每日复盘/` 仅显示文件夹，不列文件）\n\n"
     return _text_result(header + tree)
 
 
@@ -51,7 +51,7 @@ def _handle_open_wiki(query: str) -> CommandResult:
     if not matches:
         return _text_result(
             f"未找到 Wiki 文件：{query}\n"
-            "发送「策略文件」查看完整目录；示例：打开 仓位管理 / 打开 每日复盘/2026-06-05"
+            "发送「策略文件」查看目录；示例：打开 仓位管理 / 打开 每日复盘/2026-06-05"
         )
     if len(matches) > 1:
         lines = [f"「{query}」匹配到多个文件，请更精确："]
@@ -64,17 +64,15 @@ def _handle_open_wiki(query: str) -> CommandResult:
 
     md_path = matches[0]
     rel = os.path.relpath(md_path, WIKI_ROOT).replace("\\", "/")
-    try:
-        pdf_path = export_md_to_pdf(md_path)
-    except Exception as e:
-        return _text_result(f"导出 PDF 失败（{rel}）：{e}")
-
     return CommandResult(
-        text=f"已导出：Wiki/{rel}",
-        file_path=str(pdf_path),
-        file_name=f"{md_path.stem}.pdf",
-        file_type="pdf",
+        text=f"Wiki/{rel}",
+        file_path=str(md_path),
+        file_name=md_path.name,
+        file_type="stream",
     )
+
+
+def _read_tail(path: str, max_chars: int = 6000) -> str:
     if not os.path.isfile(path):
         return f"（文件不存在：{path}）"
     with open(path, encoding="utf-8") as f:
@@ -182,7 +180,7 @@ def handle_command(text: str) -> CommandResult:
             "• sim 买 {标的…} / sim 卖 {标的} — 模拟持仓\n\n"
             "【Wiki 查询】\n"
             "• 策略文件 — Wiki 目录树\n"
-            "• 打开 {路径或文件名} — 导出 Wiki .md 为 PDF 并发送\n"
+            "• 打开 {路径或文件名} — 发送 Wiki .md 原文件\n"
             "• trk {标的} — 博主痕迹追踪\n"
             "• chk — Wiki 体检\n"
             "• qry {问题} — Wiki 关键词检索\n\n"
