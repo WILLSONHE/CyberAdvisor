@@ -11,6 +11,7 @@ from bilibili.env import ROOT
 WIKI = os.path.join(ROOT, "Wiki")
 RAW = os.path.join(ROOT, "Raw")
 TRACK_DIR = os.path.join(WIKI, "博主", "标的追踪")
+TRACK_INACTIVE_DIR = os.path.join(TRACK_DIR, "不活跃标的")
 OVERVIEW_MD = os.path.join(WIKI, "博主", "标的总览.md")
 
 sys.path.insert(0, os.path.join(ROOT, "scripts"))

@@ -5,6 +5,7 @@ Wiki 轻量查询 CLI（与飞书 Bot 共用逻辑）。
 用法:
   python wiki_cli.py trk 寒武纪
   python wiki_cli.py chk
+  python wiki_cli.py track-maintain
   python wiki_cli.py qry 博主怎么看存储
   python wiki_cli.py sim-sync
   python wiki_cli.py sim-handle "sim 买 利通电子"
@@ -15,7 +16,7 @@ import argparse
 import sys
 
 from sim_portfolio import handle_sim_command, sync_sim_prices
-from wiki import run_chk, search_wiki, track_stock
+from wiki import run_chk, run_track_maintenance, search_wiki, track_stock
 
 
 def main() -> None:
@@ -32,6 +33,8 @@ def main() -> None:
 
     sub.add_parser("chk", help="Wiki 体检")
 
+    sub.add_parser("track-maintain", help="标的追踪：归档/建页/回迁")
+
     p_qry = sub.add_parser("qry", help="Wiki 关键词检索")
     p_qry.add_argument("question", help="问题或关键词")
 
@@ -44,6 +47,8 @@ def main() -> None:
         print(track_stock(args.name))
     elif args.cmd == "chk":
         print(run_chk())
+    elif args.cmd == "track-maintain":
+        print(run_track_maintenance())
     elif args.cmd == "qry":
         print(search_wiki(args.question))
     elif args.cmd == "sim-sync":

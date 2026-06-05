@@ -7,19 +7,18 @@ from pathlib import Path
 
 from bilibili.env import ROOT
 from wiki.common import OVERVIEW_MD, RAW, TRACK_DIR, WIKI, iter_wiki_md, read_text
+from wiki.track_manage import INACTIVE_DIR, collect_mentions, find_track_path, list_track_page_names
 
 
 def _list_track_names() -> list[str]:
-    if not os.path.isdir(TRACK_DIR):
-        return []
-    return sorted(f[:-3] for f in os.listdir(TRACK_DIR) if f.endswith(".md"))
+    return list_track_page_names(include_inactive=True)
 
 
 def resolve_stock_name(query: str) -> str:
     q = query.strip()
     if not q:
         return q
-    if os.path.isfile(os.path.join(TRACK_DIR, f"{q}.md")):
+    if find_track_path(q):
         return q
     for name in _list_track_names():
         if name.lower() == q.lower():
@@ -39,55 +38,21 @@ def _overview_snippet(name: str) -> str:
     return ""
 
 
+def _track_location_hint(path: str | None) -> str:
+    if not path:
+        return ""
+    if path.startswith(INACTIVE_DIR):
+        return "（不活跃标的/）"
+    return ""
+
+
 def _grep_mentions(name: str, limit: int = 12) -> str:
     hits: list[str] = []
-    raw_dirs = [
-        os.path.join(RAW, "已分析归档"),
-        os.path.join(RAW, "未分析归档"),
-    ]
-    for base in raw_dirs:
-        if not os.path.isdir(base):
-            continue
-        for fname in sorted(os.listdir(base), reverse=True):
-            if not fname.endswith(".md"):
-                continue
-            path = os.path.join(base, fname)
-            try:
-                text = read_text(path)
-            except OSError:
-                continue
-            if name not in text:
-                continue
-            for line in text.splitlines():
-                if name in line and len(line.strip()) > 4:
-                    rel = Path(path).relative_to(ROOT)
-                    hits.append(f"- {rel}: {line.strip()[:120]}")
-                    break
-            if len(hits) >= limit:
-                break
-
-    if len(hits) < limit:
-        wiki_root = Path(WIKI)
-        for p in sorted(iter_wiki_md(), key=lambda x: x.stat().st_mtime, reverse=True):
-            if p.parent.name == "标的追踪" and p.stem == name:
-                continue
-            try:
-                text = read_text(p)
-            except OSError:
-                continue
-            if name not in text:
-                continue
-            for line in text.splitlines():
-                if name in line and not line.strip().startswith("#"):
-                    rel = p.relative_to(wiki_root)
-                    hits.append(f"- Wiki/{rel}: {line.strip()[:120]}")
-                    break
-            if len(hits) >= limit:
-                break
-
+    for h in collect_mentions(name)[:limit]:
+        hits.append(f"- {h.source}: {h.context[:120] if h.context else '—'}")
     if not hits:
         return f"（Wiki/Raw 中未 grep 到「{name}」）"
-    return "【补充提及（grep）】\n" + "\n".join(hits[:limit])
+    return "【补充提及（grep）】\n" + "\n".join(hits)
 
 
 def track_stock(query: str) -> str:
@@ -98,8 +63,12 @@ def track_stock(query: str) -> str:
     if overview:
         parts.extend([overview, ""])
 
-    track_path = os.path.join(TRACK_DIR, f"{name}.md")
-    if os.path.isfile(track_path):
+    track_path = find_track_path(name)
+    if track_path:
+        loc = _track_location_hint(track_path)
+        rel = Path(track_path).relative_to(ROOT)
+        parts.append(f"📁 `{rel.as_posix()}` {loc}".strip())
+        parts.append("")
         parts.append(read_text(track_path))
     else:
         parts.append(f"（尚无专用追踪页 Wiki/博主/标的追踪/{name}.md）")

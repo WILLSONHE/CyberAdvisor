@@ -12,6 +12,7 @@ from wiki.common import (
     LOG_MD,
     POOL_MD,
     TRACK_DIR,
+    TRACK_INACTIVE_DIR,
     WIKI,
     WIKI_LINK,
     build_wiki_index,
@@ -89,7 +90,18 @@ def run_chk() -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     raw_pending = list_pending_files()
     video_pending = pending_video_files()
-    track_count = len([f for f in os.listdir(TRACK_DIR) if f.endswith(".md")]) if os.path.isdir(TRACK_DIR) else 0
+    track_count = 0
+    inactive_count = 0
+    if os.path.isdir(TRACK_DIR):
+        track_count = len(
+            [
+                f
+                for f in os.listdir(TRACK_DIR)
+                if f.endswith(".md") and os.path.isfile(os.path.join(TRACK_DIR, f))
+            ]
+        )
+    if os.path.isdir(TRACK_INACTIVE_DIR):
+        inactive_count = len([f for f in os.listdir(TRACK_INACTIVE_DIR) if f.endswith(".md")])
     broken_n, broken_sample = _check_broken_links()
     stale = _stale_active_overview()
 
@@ -117,7 +129,7 @@ def run_chk() -> str:
             "## 结构",
             "",
             f"- Wiki 页面数：{_count_wiki_pages()}",
-            f"- 标的追踪专页：{track_count}",
+            f"- 标的追踪专页：{track_count}（活跃目录）+ {inactive_count}（不活跃标的/）",
             f"- 断链 [[...]]：{broken_n} 处",
         ]
     )
