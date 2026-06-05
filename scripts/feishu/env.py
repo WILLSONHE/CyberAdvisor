@@ -40,3 +40,27 @@ class FeishuConfig:
     @property
     def bot_enabled(self) -> bool:
         return bool(self.app_id and self.app_secret and self.verification_token)
+
+
+@dataclass
+class PortfolioCloudConfig:
+    url: str
+    token: str
+    doc_type: str
+    name: str
+    folder_token: str
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.url or (self.token and self.doc_type) or self.name)
+
+
+def load_portfolio_cloud_config() -> PortfolioCloudConfig:
+    cfg = load_config()
+    return PortfolioCloudConfig(
+        url=cfg.get("FEISHU_PORTFOLIO_URL", "").strip(),
+        token=cfg.get("FEISHU_PORTFOLIO_TOKEN", "").strip(),
+        doc_type=cfg.get("FEISHU_PORTFOLIO_TYPE", "").strip(),
+        name=cfg.get("FEISHU_PORTFOLIO_NAME", "").strip(),
+        folder_token=cfg.get("FEISHU_PORTFOLIO_FOLDER_TOKEN", "").strip(),
+    )

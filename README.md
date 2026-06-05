@@ -40,13 +40,21 @@ skill 加载后，你的 AI 助手会拥有这些能力。
 
 ### 3. 配置你的持仓
 
-**推荐**：编辑根目录 `持仓.xlsx`（列：标的、代码、成本、股数），双击 `daily.bat` 会自动同步到 `portfolio.md`、`scripts/portfolio.py`、`trade_template.md`。
+**推荐**：编辑根目录 `持仓.xlsx`（列：标的、代码、成本、股数），或 **在飞书电子表格维护「持仓」**，由 `daily.bat` 自动下载覆盖本地文件后同步。
 
-首次生成模板：
+飞书云持仓（`.env` 任选一种）：
 
-```bash
-python scripts/sync_portfolio_from_xlsx.py --init
+```env
+# 推荐：粘贴浏览器里打开的表格链接
+FEISHU_PORTFOLIO_URL=https://xxx.feishu.cn/sheets/shtxxxxxxxx
+
+# 或按名称在云盘搜索（名称为「持仓」或「持仓.xlsx」）
+# FEISHU_PORTFOLIO_NAME=持仓
 ```
+
+需应用权限：`drive:export:readonly`（导出表格）、`drive:drive:readonly`（按名称搜索时）。改权限后 **发版**。
+
+测试：`python scripts/feishu_download_portfolio.py --dry-run`
 
 也可直接编辑 `portfolio.md`（及 `scripts/portfolio.py`），格式如下：
 
@@ -67,7 +75,7 @@ python scripts/sync_portfolio_from_xlsx.py --init
 
 **一键流水线**（双击根目录 `daily.bat`，在新终端依次执行）：
 
-1. 从 `持仓.xlsx` 同步持仓
+1. 从 `持仓.xlsx` 同步持仓（可先由飞书云文档下载覆盖）
 2. `coarse_screen.py` → `fine_screen.py` → `daily_report.py`
 3. `bilibili_fetch.py`（字幕）→ `bilibili_fetch.py --dry-run`（预览）
 
@@ -91,6 +99,8 @@ python scripts/sync_portfolio_from_xlsx.py --init
 - 改权限后 **创建版本并发布**
 
 > 电脑关机后 Bot 不可用；完整 AI（ing/qry）仍走 Cursor。
+
+**云持仓（daily 自动下载）**：在 `.env` 配置 `FEISHU_PORTFOLIO_URL`（飞书电子表格链接）或 `FEISHU_PORTFOLIO_NAME=持仓`；`daily.bat` 第一步会先覆盖本地 `持仓.xlsx`。权限：`drive:export:readonly`、发版。
 
 手动逐步跑：
 
@@ -162,6 +172,7 @@ CyberAdvisor/
 │   ├── 博主/
 │   └── 数据/                ← 脚本输出
 └── scripts/
+    ├── feishu_download_portfolio.py  ← 飞书云文档 → 持仓.xlsx
     ├── feishu_notify.py     ← 飞书 Webhook 推送
     ├── feishu_bot.py        ← 飞书 Bot 事件服务
     ├── feishu/              ← 飞书 SDK 模块
