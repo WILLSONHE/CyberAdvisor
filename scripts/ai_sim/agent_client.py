@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.request
@@ -47,12 +48,40 @@ def _request(method: str, path: str, body: dict | None = None, *, timeout: int =
         raise AgentClientError(f"网络错误: {e.reason}", retryable=True) from e
 
 
+def _github_default_branch(owner: str, repo: str) -> str | None:
+    url = f"https://api.github.com/repos/{owner}/{repo}"
+    req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+        return str(data.get("default_branch") or "") or None
+    except Exception:
+        return None
+
+
+def resolve_starting_ref(repo: str, *, fallback: str = "main") -> str:
+    """CURSOR_CLOUD_REF → GitHub default_branch → fallback。"""
+    explicit = (os.environ.get("CURSOR_CLOUD_REF") or "").strip()
+    if explicit:
+        return explicit
+    m = re.match(r"https?://github\.com/([^/]+)/([^/]+?)(?:\.git)?/?$", repo, re.I)
+    if not m:
+        owner_repo = repo.lstrip("/")
+        if "/" in owner_repo and not owner_repo.startswith("http"):
+            parts = owner_repo.split("/", 1)
+            detected = _github_default_branch(parts[0], parts[1].removesuffix(".git"))
+            return detected or fallback
+        return fallback
+    detected = _github_default_branch(m.group(1), m.group(2).removesuffix(".git"))
+    return detected or fallback
+
+
 def create_cloud_run(
     prompt_text: str,
     *,
     model_id: str = "composer-2.5",
     repo_url: str = "",
-    starting_ref: str = "main",
+    starting_ref: str = "",
 ) -> tuple[str, str]:
     """创建 Cloud Agent 并返回 (agent_id, run_id)。"""
     body: dict[str, Any] = {
@@ -65,7 +94,8 @@ def create_cloud_run(
     if repo:
         if not repo.startswith("http"):
             repo = f"https://github.com/{repo.lstrip('/')}"
-        body["repos"] = [{"url": repo, "startingRef": starting_ref}]
+        branch = resolve_starting_ref(repo, fallback=starting_ref or "main")
+        body["repos"] = [{"url": repo, "startingRef": branch}]
         body["workOnCurrentBranch"] = True
 
     resp = _request("POST", "/agents", body)
