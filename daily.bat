@@ -64,7 +64,7 @@ python "%~dp0scripts\feishu_notify.py" --pipeline-done
 echo.
 echo ============================================================
 echo  全部完成: %DATE% %TIME%
-echo  下一步: 对 AI 说 sug （报告写入 SugVault\）
+echo  下一步: 对 AI 说 sug {持有人} （如 sug Wilson，报告写入 SugVault\）
 echo ============================================================
 goto :end
 

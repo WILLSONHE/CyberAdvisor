@@ -2,15 +2,14 @@
 from __future__ import annotations
 
 import argparse
-import glob
 import os
-import re
 from datetime import datetime
 
 from bilibili.env import ROOT
-from feishu.commands import _extract_one_liner, _latest_sug_path
+from feishu.commands import _extract_one_liner
 from feishu.env import FeishuConfig
 from feishu.webhook import send_post, send_text
+from portfolio_utils import latest_sug_path, load_holder_names
 
 
 def _read_head(path: str, lines: int = 25) -> str:
@@ -24,34 +23,37 @@ def build_pipeline_summary() -> tuple[str, list[tuple[str, str]]]:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     title = f"CyberAdvisor 每日流水线完成 {now}"
 
-    sug_path = _latest_sug_path()
+    holders = load_holder_names()
+    holder_line = ", ".join(holders) if holders else "（暂无）"
+
     one_liner = ""
-    if sug_path:
-        with open(sug_path, encoding="utf-8") as f:
-            one_liner = _extract_one_liner(f.read())
+    if holders:
+        path = latest_sug_path(holders[0])
+        if path:
+            with open(path, encoding="utf-8") as f:
+                one_liner = _extract_one_liner(f.read())
     if not one_liner:
-        one_liner = "（今日尚未生成 sug，请在 Cursor 说 sug）"
+        one_liner = f"（今日尚未生成 sug，请在 Cursor 说 sug {{持有人}}，如 sug {holders[0] if holders else 'Wilson'}）"
 
     pool_head = _read_head(os.path.join(ROOT, "Wiki", "数据", "博主标的池日报.md"), 18)
     pool_lines = [ln for ln in pool_head.splitlines() if ln.strip()][:8]
     pool_snip = "\n".join(pool_lines) if pool_lines else "（暂无标的池日报）"
 
-    portfolio = _read_head(os.path.join(ROOT, "portfolio.md"), 12)
-
     text = (
         f"{title}\n\n"
+        f"【持有人】\n{holder_line}\n\n"
         f"【今日一句话】\n{one_liner}\n\n"
-        f"【持仓】\n{portfolio}\n\n"
         f"【标的池摘要】\n{pool_snip}\n\n"
-        f"完整 sug → SugVault/\n"
-        f"深度对话 → Cursor + finance-wiki skill"
+        f"完整 sug → SugVault/YYYY-MM-DD_{{持有人}}_sug.md\n"
+        f"深度对话 → Cursor + finance-wiki skill（sug {{持有人}}）"
     )
 
     post_lines: list[tuple[str, str]] = [
         ("text", f"完成时间：{now}"),
+        ("text", f"持有人：{holder_line}"),
         ("text", f"今日一句话：{one_liner}"),
-        ("text", "持仓见 portfolio.md；标的池见 Wiki/数据/博主标的池日报.md"),
-        ("text", "下一步：Cursor 说 sug 生成完整交易策略"),
+        ("text", "标的池见 Wiki/数据/博主标的池日报.md"),
+        ("text", "下一步：Cursor 说 sug {持有人} 生成完整交易策略"),
     ]
     return text, post_lines
 

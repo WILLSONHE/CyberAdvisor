@@ -40,7 +40,13 @@ skill 加载后，你的 AI 助手会拥有这些能力。
 
 ### 3. 配置你的持仓
 
-**推荐**：编辑根目录 `持仓.xlsx`（列：标的、代码、成本、股数），或 **在飞书电子表格维护「持仓」**，由 `daily.bat` 自动下载覆盖本地文件后同步。
+**推荐**：编辑根目录 `持仓.xlsx`（列：**持有人**、标的、代码、成本、股数），或 **在飞书电子表格维护「持仓」**，由 `daily.bat` 自动下载覆盖本地文件后同步。
+
+| 持有人 | 标的 | 代码 | 成本 | 股数 |
+|--------|------|------|------|------|
+| Wilson | 上海电力 | 600021 | 19.9102 | 100 |
+
+现金行：`A股现金` 写在标的列，金额写在成本列，**持有人列必填**。
 
 飞书云持仓（`.env` 任选一种）：
 
@@ -56,16 +62,28 @@ FEISHU_PORTFOLIO_URL=https://xxx.feishu.cn/sheets/shtxxxxxxxx
 
 测试：`python scripts/feishu_download_portfolio.py --dry-run`
 
-也可直接编辑 `portfolio.md`（及 `scripts/portfolio.py`），格式如下：
+也可直接编辑 `portfolio.md`（及 `scripts/portfolio.py`），按 `## 持有人：XXX` 分章。
+
+**多人指令格式**（Cursor / 飞书 Bot 一致，持有人名不区分大小写，须与 xlsx 精确匹配）：
 
 ```
-我的持仓：
+sug Wilson          # 交易策略 → SugVault/YYYY-MM-DD_Wilson_sug.md
+持仓 Wilson          # 查看该持有人持仓
+标的池 Wilson        # 博主池 + 该持有人做T
+```
+
+格式错误时回复：`请校对格式sug {持有人}，以精确搜索`
+
+示例录入：
+
+```
+我的持仓（Wilson）：
 - 上海电力 成本 19.9102 元 100 股
 - ST美丽 成本 1.9920 元 2500 股
 - 电光科技 成本 34.7286 元 300 股
 ```
 
-成交额 = 成本 × 股数（含交易成本）。`sug` 回复时以 `portfolio.md` 为准。
+成交额 = 成本 × 股数（投资成本）；市值 = 现价 × 股数（同步时自动拉取）。`sug Wilson` 时以 `portfolio.md` 中 Wilson 章节为准。
 
 ---
 
@@ -79,14 +97,14 @@ FEISHU_PORTFOLIO_URL=https://xxx.feishu.cn/sheets/shtxxxxxxxx
 2. `coarse_screen.py` → `fine_screen.py` → `daily_report.py`
 3. `bilibili_fetch.py`（字幕）→ `bilibili_fetch.py --dry-run`（预览）
 
-约 15–20 分钟。完成后对 AI 说 **`sug`**，得到交易策略报告；报告会写入 `SugVault/YYYY-MM-DD_sug.md`。
+约 15–20 分钟。完成后对 AI 说 **`sug {持有人}`**（如 `sug Wilson`），得到交易策略报告；报告会写入 `SugVault/YYYY-MM-DD_{持有人}_sug.md`。
 
 ### 飞书对接
 
 | 能力 | 配置 | 说明 |
 |------|------|------|
 | **群推送** | `FEISHU_WEBHOOK_URL` | `daily.bat` 跑完后自动推送摘要到飞书群 |
-| **本机 Bot** | `FEISHU_APP_*` + 双击 `feishu_bot.bat` | 飞书里发 `sug`/`持仓`/`日报`/`帮助` |
+| **本机 Bot** | `FEISHU_APP_*` + 双击 `feishu_bot.bat` | 飞书里发 `sug Wilson` / `持仓 Wilson` / `标的池 Wilson` / `帮助` |
 
 **推送（推荐先做）**：飞书群 → 自定义机器人 → 复制 Webhook → 写入 `.env` 的 `FEISHU_WEBHOOK_URL` → `python scripts/feishu_notify.py --test`
 
@@ -140,7 +158,7 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 | 你说 | AI 做什么 |
 |------|----------|
 | `ing` | 消化 `Raw/未分析归档/` 中未处理稿，更新 Wiki，完成后移入 `已分析归档/` |
-| `sug` | 持仓分析 + 大盘判断 + 开仓建议 + 仓位分配 |
+| `sug {持有人}` | 按持有人：持仓分析 + 大盘判断 + 开仓建议 + 仓位分配 |
 | `qry {问题}` | 基于 Wiki 知识库回答 |
 | `trk {标的}` | 拉取某只标的的博主全痕迹 |
 | `chk` | Wiki 健康检查 |
@@ -157,9 +175,9 @@ CyberAdvisor/
 ├── feishu_bot.bat           ← 飞书 Bot 本机服务
 ├── 持仓.xlsx                ← 持仓数据源（同步到 portfolio / trade_template）
 ├── SKILL.md                 ← AI skill 文件（必须安装）
-├── portfolio.md             ← 你的持仓（sug 读取）
+├── portfolio.md             ← 多人持仓（按持有人分章，sug 读取）
 ├── trade_template.md        ← sug 回复模板
-├── SugVault/                ← sug 历史报告（YYYY-MM-DD_sug.md）
+├── SugVault/                ← sug 历史报告（YYYY-MM-DD_{持有人}_sug.md）
 ├── schema.md                ← Wiki 操作规范
 ├── Raw/                     ← 原始文字稿
 │   ├── 未分析归档/          ← 手动放入待 ing 的 md（专栏/动态）
