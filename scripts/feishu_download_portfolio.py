@@ -66,6 +66,9 @@ def main() -> None:
         folder_token=pcfg.folder_token,
     )
     print(f"已下载持仓.xlsx ← 飞书 {dtype}/{token[:12]}...")
+    from xlsx_utils import format_portfolio_xlsx
+
+    format_portfolio_xlsx(XLSX_PATH)
 
 
 if __name__ == "__main__":

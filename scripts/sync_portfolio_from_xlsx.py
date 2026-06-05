@@ -6,6 +6,9 @@
 | 标的 | 代码 | 成本 | 股数 | 持有人 |
 | 上海电力 | 600021 | 19.9102 | 100 | Wilson |
 
+可选列 **A股对照**（非 A 股持仓填写 6 位 A 股代码，供布林/K 线；不填则用内置 AH 表）：
+| 中国平安 | 02318 | 50.0 | 200 | Wilson | 601318 |
+
 可选现金行（同一 sheet，标的列写「A股现金」，持有人列必填）：
 | A股现金 | | 2.90 | | Wilson |
 
@@ -23,7 +26,8 @@ from datetime import datetime
 
 import pandas as pd
 
-from portfolio_utils import enrich_holdings_with_prices, pad_a_share_code
+from portfolio_utils import enrich_holdings_with_prices, fmt_money, normalize_stock_code
+from xlsx_utils import format_portfolio_xlsx, PORTFOLIO_INT_COLS, PORTFOLIO_MONEY_COLS
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 XLSX_PATH = os.path.join(ROOT, "持仓.xlsx")
@@ -37,6 +41,7 @@ COL_ALIASES = {
     "cost": ("成本", "成本价", "cost", "买入价"),
     "shares": ("股数", "数量", "shares", "持仓数量"),
     "holder": ("持有人", "holder", "账户", "账号", "用户"),
+    "a_proxy": ("A股对照", "A股代码", "a_share", "a_code", "对照A股"),
 }
 
 
@@ -53,10 +58,14 @@ def _find_col(cols: list[str], keys: tuple[str, ...]) -> str | None:
     return None
 
 
+def _digits_only(code: str) -> str:
+    return re.sub(r"\D", "", str(code).strip())
+
+
 def _norm_code(code) -> str:
     s = str(code).strip()
     s = s.replace(".0", "") if s.endswith(".0") else s
-    return pad_a_share_code(s) if s.isdigit() else s
+    return normalize_stock_code(s) if _digits_only(s) or ".HK" in s.upper() or s.upper().startswith("HK") else s
 
 
 def _read_holdings(path: str) -> tuple[list[dict], dict[str, float], list[str]]:
@@ -67,6 +76,7 @@ def _read_holdings(path: str) -> tuple[list[dict], dict[str, float], list[str]]:
     c_cost = _find_col(list(df.columns), COL_ALIASES["cost"])
     c_shares = _find_col(list(df.columns), COL_ALIASES["shares"])
     c_holder = _find_col(list(df.columns), COL_ALIASES["holder"])
+    c_a_proxy = _find_col(list(df.columns), COL_ALIASES["a_proxy"])
     if not all([c_name, c_code, c_cost, c_shares, c_holder]):
         raise ValueError(
             f"持仓.xlsx 缺少列，需要：标的、代码、成本、股数、持有人。当前列：{list(df.columns)}"
@@ -109,15 +119,20 @@ def _read_holdings(path: str) -> tuple[list[dict], dict[str, float], list[str]]:
         if pd.isna(code) or pd.isna(cost) or pd.isna(shares):
             continue
 
-        holdings.append(
-            {
-                "holder": holder,
-                "name": name_s,
-                "code": _norm_code(code),
-                "cost": round(float(cost), 4),
-                "shares": int(float(shares)),
-            }
-        )
+        entry: dict = {
+            "holder": holder,
+            "name": name_s,
+            "code": _norm_code(code),
+            "cost": round(float(cost), 4),
+            "shares": int(float(shares)),
+        }
+        if c_a_proxy and not pd.isna(row.get(c_a_proxy)) and str(row.get(c_a_proxy)).strip():
+            from portfolio_utils import classify_market, normalize_stock_code
+
+            raw_proxy = str(row.get(c_a_proxy)).strip()
+            if classify_market(raw_proxy) in ("sh", "sz", "bj"):
+                entry["a_share_proxy"] = normalize_stock_code(raw_proxy)
+        holdings.append(entry)
 
     # 兼容「项目/金额」现金块（无持有人则忽略）
     c_item = _find_col(list(df.columns), ("项目", "类型", "item"))
@@ -191,19 +206,19 @@ def _write_portfolio_md(holdings: list[dict], cash_by_holder: dict[str, float], 
             price = h.get("price")
             mkt = h.get("market_value")
             price_s = f"{price:.2f}" if price is not None else "—"
-            mkt_s = f"{mkt:.2f}" if mkt is not None else "—"
+            mkt_s = fmt_money(mkt) if mkt is not None else "—"
             lines.append(
                 f"| {h['name']} | {h['code']} | {h['cost']} | {h['shares']} | "
-                f"{cost_amt:.2f} | {price_s} | {mkt_s} |"
+                f"{fmt_money(cost_amt)} | {price_s} | {mkt_s} |"
             )
         lines.extend(
             [
                 "",
-                f"**{holder} A 股持仓投资成本：{stock_cost:.2f} 元**",
+                f"**{holder} A 股持仓投资成本：{fmt_money(stock_cost)} 元**",
             ]
         )
         if any(h.get("market_value") is not None for h in rows):
-            lines.append(f"**{holder} A 股持仓市值：{stock_mkt:.2f} 元**")
+            lines.append(f"**{holder} A 股持仓市值：{fmt_money(stock_mkt)} 元**")
         lines.extend(
             [
                 "",
@@ -211,14 +226,14 @@ def _write_portfolio_md(holdings: list[dict], cash_by_holder: dict[str, float], 
                 "",
                 "| 类型 | 金额（元） |",
                 "|------|-----------|",
-                f"| A 股现金 | {cash:.2f} |",
+                f"| A 股现金 | {fmt_money(cash)} |",
                 "| 美股/黄金/其他 | （无） |",
                 "",
-                f"**{holder} 投资成本合计：{cost_total:.2f} 元**",
+                f"**{holder} 投资成本合计：{fmt_money(cost_total)} 元**",
             ]
         )
         if mkt_total is not None:
-            lines.append(f"**{holder} 市值合计：{mkt_total:.2f} 元**")
+            lines.append(f"**{holder} 市值合计：{fmt_money(mkt_total)} 元**")
         lines.extend(
             [
                 "",
@@ -232,9 +247,9 @@ def _write_portfolio_md(holdings: list[dict], cash_by_holder: dict[str, float], 
             lines.append(f"- {h['name']} 成本 {h['cost']} 元 {h['shares']} 股")
         lines.extend(["```", ""])
 
-    lines.append(f"**全员投资成本合计：{grand_cost:.2f} 元**")
+    lines.append(f"**全员投资成本合计：{fmt_money(grand_cost)} 元**")
     if grand_mkt:
-        lines.append(f"**全员市值合计：{grand_mkt:.2f} 元**")
+        lines.append(f"**全员市值合计：{fmt_money(grand_mkt)} 元**")
     lines.append("")
     with open(PORTFOLIO_MD, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
@@ -250,6 +265,8 @@ def _write_portfolio_py(holdings: list[dict], cash_by_holder: dict[str, float], 
         mkt = h.get("market_value")
         if price is not None:
             base += f', "price": {price}, "market_value": {mkt}'
+        if h.get("a_share_proxy"):
+            base += f', "a_share_proxy": "{h["a_share_proxy"]}"'
         return base + "}"
 
     rows = ",\n".join(_holding_line(h) for h in holdings)
@@ -289,7 +306,7 @@ def _write_trade_template(holdings: list[dict]) -> None:
         else:
             pnl_s = "[+x%]"
         rows.append(
-            f"| {h['name']} | {h['shares']} | {h['cost']} | {cost_amt:.2f} | "
+            f"| {h['name']} | {h['shares']} | {h['cost']} | {fmt_money(cost_amt)} | "
             f"{price_s} | {pnl_s} | [xx] | [轨道] | [态度] | [操作] |"
         )
     block = "\n".join(rows)
@@ -328,6 +345,7 @@ def init_xlsx() -> None:
         cash = CASH_BY_HOLDER.get(holder, 0.0)
         rows.append({"标的": "A股现金", "代码": "", "成本": cash, "股数": "", "持有人": holder})
     pd.DataFrame(rows).to_excel(XLSX_PATH, index=False)
+    format_portfolio_xlsx(XLSX_PATH)
     print(f"已生成模板：{XLSX_PATH}")
 
 
@@ -353,6 +371,7 @@ def main() -> None:
         f"已同步 {len(holdings)} 条持仓（{len(holders)} 位持有人）"
         f" → portfolio.md / portfolio.py / trade_template.md"
     )
+    format_portfolio_xlsx(XLSX_PATH)
 
 
 if __name__ == "__main__":

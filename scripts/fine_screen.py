@@ -120,7 +120,9 @@ def track_blogger_stocks():
     lines.append("|------|------|------|-----|-----|-----------|------|")
     for name, code in BLOGGER_STOCKS.items():
         try:
-            prefixed = f"sh{code}" if code.startswith(("6","9")) else f"sz{code}"
+            from portfolio_utils import gtimg_symbol
+
+            prefixed = gtimg_symbol(code) or f"sz{code}"
             url = f"https://qt.gtimg.cn/q={prefixed}"
             req = urllib.request.Request(url); req.add_header("User-Agent", "Mozilla/5.0")
             resp = urllib.request.urlopen(req, timeout=10)
@@ -137,6 +139,128 @@ def track_blogger_stocks():
 def generate_zuot_tips():
     """为 portfolio.py 中的持仓生成每日做T建议（按持有人分组）。"""
     from portfolio import HOLDERS, HOLDINGS
+    from portfolio_utils import (
+        classify_market,
+        fetch_spot_price,
+        gtimg_symbol,
+        market_label,
+        normalize_stock_code,
+        resolve_a_share_proxy,
+    )
+
+    def _spot_from_gtimg(code: str) -> float | None:
+        sym = gtimg_symbol(code)
+        if not sym:
+            return None
+        req = urllib.request.Request(f"https://qt.gtimg.cn/q={sym}")
+        req.add_header("User-Agent", "Mozilla/5.0")
+        try:
+            resp = urllib.request.urlopen(req, timeout=10)
+            data = resp.read().decode("gbk", errors="ignore")
+            vals = data.split('"')[1].split("~") if '"' in data else []
+            if len(vals) < 4:
+                return None
+            p = float(vals[3] or 0)
+            return p if p > 0 else None
+        except Exception:
+            return None
+
+    def _render_zuot(h: dict) -> str:
+        code, name = h["code"], h["name"]
+        cost, shares = h["cost"], h["shares"]
+        mkt = classify_market(code)
+        ml = market_label(code)
+
+        hold_price = fetch_spot_price(code) or _spot_from_gtimg(code)
+        hold_price_s = f"{hold_price:.2f}" if hold_price is not None else "—"
+        pnl_pct = (hold_price / cost - 1) * 100 if hold_price and cost > 0 else 0.0
+
+        a_code = resolve_a_share_proxy(code, explicit_proxy=h.get("a_share_proxy"))
+        if not a_code:
+            return (
+                f"\n### {name} 每日做T策略\n\n"
+                f"> 现价 {hold_price_s} | 成本 {cost:.4f} | {shares} 股 | {ml} {code}\n\n"
+                f"### 今日策略\n"
+                f"⚪ **无 A 股对照数据**，无法计算布林做 T\n"
+                f"- 未收录 AH 自动映射；可在 `持仓.xlsx` 增加 **A股对照** 列填写 6 位 A 股代码\n\n"
+                f"### 提醒\n"
+                f"- 单次做T不超过该标的持仓的 1/4\n"
+            )
+
+        kl = get_kline(a_code, 60)
+        if kl is None:
+            return f"\n### {name} 每日做T策略\n\nK线数据获取失败（A股对照 `{a_code}`）\n"
+
+        b = compute_bollinger_position(kl)
+        if not b or b.get("error"):
+            return f"\n### {name} 每日做T策略\n\n布林线计算失败（A股对照 `{a_code}`）\n"
+
+        mid = b["mid"]
+        t2 = b["track2"]
+        t4 = 2 * mid - t2 if mid > 0 and t2 > 0 else mid * 0.95
+        bw = b["bandwidth_pct"]
+        zone = b["zone"]
+        conv = b["converging"]
+        a_price = float(b.get("price") or 0)
+
+        change = turnover = 0.0
+        if mkt in ("sh", "sz", "bj") and a_code == normalize_stock_code(code):
+            sym = gtimg_symbol(code)
+            if sym:
+                try:
+                    req = urllib.request.Request(f"https://qt.gtimg.cn/q={sym}")
+                    req.add_header("User-Agent", "Mozilla/5.0")
+                    resp = urllib.request.urlopen(req, timeout=10)
+                    data = resp.read().decode("gbk", errors="ignore")
+                    vals = data.split('"')[1].split("~") if '"' in data else []
+                    if len(vals) >= 53:
+                        change = float(vals[32] or 0)
+                        turnover = float(vals[38] or 0)
+                except Exception:
+                    pass
+
+        lines = [f"\n### {name} 每日做T策略\n"]
+        header = (
+            f"> 现价 {hold_price_s} | 成本 {cost:.4f} | {shares} 股 | "
+            f"浮盈 {pnl_pct:+.1f}%"
+        )
+        if mkt in ("sh", "sz", "bj") and a_code == normalize_stock_code(code):
+            header += f" | 涨跌 {change:+.1f}% | 换手 {turnover:.1f}%"
+        header += "\n"
+        lines.append(header)
+        if mkt == "hk" or h.get("a_share_proxy") or a_code != normalize_stock_code(code):
+            lines.append(
+                f"> 📎 布林/K线参照 **A股 {a_code}** 现价 {a_price:.2f}（持仓为{ml} `{code}`）\n"
+            )
+        lines.append("| 指标 | 数值 |")
+        lines.append("|------|------|")
+        lines.append(f"| 中轨(20MA) | {mid:.2f} |")
+        lines.append(f"| 二轨(+1DEV) | {t2:.2f} |")
+        lines.append(f"| 四轨(-1DEV) | {t4:.2f} |")
+        lines.append(f"| 带宽 | {bw:.1f}% |")
+        lines.append(f"| 当前位置（A股） | {zone} |")
+        lines.append("")
+        lines.append("### 今日策略")
+        if a_price > t2 and t2 > 0:
+            lines.append("🟢 **适合做T出（早卖午接）**")
+            lines.append(f"- A股对标价在二轨({t2:.2f})以上，处于卖点区间")
+            lines.append("- **开盘后若缩量冲高 → 卖出部分仓位 → 等回落接回**")
+        elif a_price < t4 and t4 > 0:
+            lines.append("🔵 **适合做T进（早买午抛）**")
+            lines.append(f"- A股对标价在四轨({t4:.2f})以下，处于买点区间")
+            lines.append("- **开盘后若放量下探 → 买入部分仓位 → 反弹卖出**")
+        elif conv:
+            lines.append("🟡 **收敛中，不适合做T**")
+            lines.append(f"- 带宽({bw:.1f}%)收窄，波动空间不够")
+        else:
+            lines.append("⚪ **不适合做T**")
+            lines.append("- A股对标价在中轨~二轨之间，区间太窄")
+        lines.append("")
+        lines.append("### 提醒")
+        lines.append("- 单次做T不超过该标的持仓的 1/4")
+        if mkt == "hk":
+            lines.append("- 做 T 信号按 **A股对标** 轨道判断，现价仍为本币（港元）")
+        return "\n".join(lines)
 
     by_holder: dict[str, list] = {}
     for h in HOLDINGS:
@@ -150,74 +274,12 @@ def generate_zuot_tips():
             continue
         sections.append(f"\n---\n## 持有人：{holder} — 持仓做T\n")
         for h in items:
-            code, name = h["code"], h["name"]
-            prefixed = f"sh{code}" if code.startswith(("6", "9")) else f"sz{code}"
-            url = f'https://qt.gtimg.cn/q={prefixed}'
-            req = urllib.request.Request(url)
-            req.add_header('User-Agent', 'Mozilla/5.0')
             try:
-                resp = urllib.request.urlopen(req, timeout=10)
-                data = resp.read().decode('gbk', errors='ignore')
-                vals = data.split('"')[1].split('~') if '"' in data else []
-                if len(vals) < 53:
-                    sections.append(f'\n### {name} 做T策略\n\n数据获取失败\n')
-                    continue
-                price = float(vals[3] or 0)
-                change = float(vals[32] or 0)
-                turnover = float(vals[38] or 0)
-                cost = h["cost"]
-                shares = h["shares"]
-                pnl_pct = (price / cost - 1) * 100 if cost > 0 else 0
-                kl = get_kline(code, 60)
-                if kl is None:
-                    sections.append(f'\n### {name} 做T策略\n\nK线数据获取失败\n')
-                    continue
-                b = compute_bollinger_position(kl)
-                if not b:
-                    sections.append(f'\n### {name} 做T策略\n\n布林线计算失败\n')
-                    continue
-                mid = b['mid']
-                t2 = b['track2']
-                t4 = 2 * mid - t2 if mid > 0 and t2 > 0 else mid * 0.95
-                bw = b['bandwidth_pct']
-                zone = b['zone']
-                conv = b['converging']
-                lines = [f'\n### {name} 每日做T策略\n']
-                lines.append(
-                    f'> 现价 {price:.2f} | 成本 {cost:.4f} | {shares} 股 | '
-                    f'浮盈 {pnl_pct:+.1f}% | 涨跌 {change:+.1f}% | 换手 {turnover:.1f}%\n'
-                )
-                lines.append('| 指标 | 数值 |')
-                lines.append('|------|------|')
-                lines.append(f'| 中轨(20MA) | {mid:.2f} |')
-                lines.append(f'| 二轨(+1DEV) | {t2:.2f} |')
-                lines.append(f'| 四轨(-1DEV) | {t4:.2f} |')
-                lines.append(f'| 带宽 | {bw:.1f}% |')
-                lines.append(f'| 当前位置 | {zone} |')
-                lines.append('')
-                lines.append('### 今日策略')
-                if price > t2 and t2 > 0:
-                    lines.append('🟢 **适合做T出（早卖午接）**')
-                    lines.append(f'- 价格在二轨({t2:.2f})以上，处于卖点区间')
-                    lines.append('- **开盘后若缩量冲高 → 卖出部分仓位 → 等回落接回**')
-                elif price < t4 and t4 > 0:
-                    lines.append('🔵 **适合做T进（早买午抛）**')
-                    lines.append(f'- 价格在四轨({t4:.2f})以下，处于买点区间')
-                    lines.append('- **开盘后若放量下探 → 买入部分仓位 → 反弹卖出**')
-                elif conv:
-                    lines.append('🟡 **收敛中，不适合做T**')
-                    lines.append(f'- 带宽({bw:.1f}%)收窄，波动空间不够')
-                else:
-                    lines.append('⚪ **不适合做T**')
-                    lines.append('- 价格在中轨~二轨之间，区间太窄')
-                lines.append('')
-                lines.append('### 提醒')
-                lines.append('- 单次做T不超过该标的持仓的 1/4')
-                sections.append('\n'.join(lines))
+                sections.append(_render_zuot(h))
             except Exception as e:
-                sections.append(f'\n### {name} 做T策略\n\n错误: {e}\n')
+                sections.append(f'\n### {h["name"]} 做T策略\n\n错误: {e}\n')
             time.sleep(0.2)
-    return ''.join(sections) if sections else '\n\n（无持仓配置）\n'
+    return "".join(sections) if sections else "\n\n（无持仓配置）\n"
 
 def main():
     if not os.path.exists(COARSE_CSV):

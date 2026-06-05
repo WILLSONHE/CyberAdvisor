@@ -4,6 +4,7 @@ from __future__ import annotations
 import time
 import urllib.request
 from dataclasses import dataclass
+from pathlib import Path
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -45,7 +46,17 @@ def _make_session() -> requests.Session:
 
 
 def _prefix_code(code: str) -> str:
-    code = str(code).strip().zfill(6) if code.isdigit() and len(code) <= 6 else code.strip()
+    import sys
+
+    scripts = str(Path(__file__).resolve().parents[1])
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    from portfolio_utils import gtimg_symbol, normalize_stock_code
+
+    sym = gtimg_symbol(code)
+    if sym:
+        return sym
+    code = normalize_stock_code(code)
     if code.startswith(("6", "9")):
         return f"sh{code}"
     if code.startswith(("8", "4")):

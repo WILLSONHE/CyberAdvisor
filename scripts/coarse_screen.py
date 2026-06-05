@@ -46,6 +46,11 @@ def _make_session() -> requests.Session:
 
 
 def _prefix_code(code: str) -> str:
+    from portfolio_utils import gtimg_symbol
+
+    sym = gtimg_symbol(code)
+    if sym:
+        return sym
     code = code.strip()
     if code.startswith(("6", "9")):
         return f"sh{code}"

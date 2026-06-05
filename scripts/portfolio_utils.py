@@ -26,6 +26,14 @@ SUG_FILE = re.compile(
 FORMAT_HINT = "请校对格式{cmd} {{持有人}}，以精确搜索"
 
 
+def fmt_money(amount: float | int | None, *, decimals: int = 2, signed: bool = False) -> str:
+    """报告用金额：千位逗号 + 固定小数（例 90,000,000.00）。"""
+    if amount is None:
+        return "—"
+    spec = f"{{:+,.{decimals}f}}" if signed else f"{{:,.{decimals}f}}"
+    return spec.format(float(amount))
+
+
 def format_hint(cmd: str) -> str:
     return FORMAT_HINT.format(cmd=cmd)
 
@@ -220,19 +228,153 @@ def holdings_for_holder(holder: str) -> list[dict]:
 
 
 def pad_a_share_code(code: str) -> str:
+    """A 股 6 位代码补零（港股请用 normalize_stock_code）。"""
     s = str(code).strip().replace(".0", "")
+    if classify_market(s) == "hk":
+        return normalize_stock_code(s)
     if s.isdigit() and len(s) < 6:
         return s.zfill(6)
     return s
 
 
-def fetch_spot_price(code: str) -> float | None:
-    """从腾讯行情接口获取 A 股现价（元）。"""
-    code = pad_a_share_code(code)
-    if not code:
+def _digits_only(code: str) -> str:
+    return re.sub(r"\D", "", str(code).strip())
+
+
+def classify_market(code: str) -> str:
+    """
+    识别市场：sh / sz / bj / hk / unknown。
+    - 6 位数字 → A 股/北交所
+    - 1–5 位数字，或含 .HK / HK 前缀 → 港股
+    """
+    raw = str(code).strip().upper()
+    if ".HK" in raw or raw.startswith("HK"):
+        return "hk"
+    digits = _digits_only(code)
+    if not digits:
+        return "unknown"
+    if len(digits) == 6:
+        if digits.startswith(("6", "9")):
+            return "sh"
+        if digits.startswith(("8", "4")):
+            return "bj"
+        return "sz"
+    if len(digits) <= 5:
+        return "hk"
+    return "unknown"
+
+
+# 常见 AH 同股同权（港股 5 位 → A 股 6 位）；无 A 股则不在此表，可用手工「A股对照」列
+HK_TO_A_SHARE: dict[str, str] = {
+    "00386": "600028",  # 中国石化
+    "00390": "600688",  # 上海石化
+    "00489": "600808",  # 鞍钢股份
+    "00548": "600548",  # 深高速
+    "00564": "600011",  # 华能国际
+    "00588": "600332",  # 白云山
+    "00670": "000338",  # 潍柴动力
+    "00696": "600876",  # 凯盛新能
+    "00753": "000921",  # 海信家电
+    "00763": "601808",  # 中海油服
+    "00857": "601857",  # 中国石油
+    "00874": "600585",  # 海螺水泥
+    "00914": "600585",  # 海螺水泥（H）
+    "00939": "601939",  # 建设银行
+    "00941": "600941",  # 中国移动
+    "00998": "601998",  # 中信银行
+    "01055": "600029",  # 南方航空
+    "01088": "600011",  # 华能国际（H）
+    "01138": "000898",  # 鞍钢股份
+    "01171": "601117",  # 中国化学
+    "01186": "601186",  # 中国铁建
+    "01288": "601328",  # 交通银行
+    "01336": "601336",  # 新华保险
+    "01398": "601398",  # 工商银行
+    "01658": "601658",  # 邮储银行
+    "01766": "601211",  # 国泰君安
+    "01787": "601788",  # 光大证券
+    "01898": "601898",  # 中煤能源
+    "01919": "601919",  # 中远海控
+    "02007": "601800",  # 中国交建
+    "02068": "601068",  # 中铝国际
+    "02318": "601318",  # 中国平安
+    "02333": "601633",  # 长城汽车
+    "02338": "601390",  # 中国中铁
+    "02359": "601238",  # 广汽集团
+    "02601": "601601",  # 中国太保
+    "02628": "601628",  # 中国人寿
+    "02883": "601808",  # 中海油田服务
+    "02899": "601899",  # 紫金矿业
+    "03606": "601318",  # 中国平安（旧 H 代码，兼容）
+    "03968": "600036",  # 招商银行
+    "03988": "601988",  # 中国银行
+    "03969": "603993",  # 洛阳钼业
+    "06030": "601318",  # 中国平安（另一 H 代码段，实际 2318）
+    "06181": "601881",  # 中国银河
+    "06837": "600837",  # 海通证券（已退市 A，保留映射供历史）
+}
+
+def normalize_stock_code(code: str) -> str:
+    """统一代码字符串：A 股 6 位、港股 5 位。"""
+    market = classify_market(code)
+    digits = _digits_only(code)
+    if market == "hk":
+        return digits.zfill(5)
+    if market in ("sh", "sz", "bj"):
+        return digits.zfill(6)
+    return digits
+
+
+def resolve_a_share_proxy(
+    code: str,
+    *,
+    explicit_proxy: str | None = None,
+) -> str | None:
+    """
+    解析用于 K 线/布林的 A 股代码。
+    - A 股/北交所：返回自身 6 位代码
+    - 港股等：先读 explicit_proxy（持仓.xlsx「A股对照」列），再查 HK_TO_A_SHARE
+    - 无对照：None
+    """
+    market = classify_market(code)
+    if market in ("sh", "sz", "bj"):
+        return normalize_stock_code(code)
+    if explicit_proxy is not None and str(explicit_proxy).strip():
+        exp = str(explicit_proxy).strip()
+        if classify_market(exp) in ("sh", "sz", "bj"):
+            return normalize_stock_code(exp)
         return None
-    prefixed = f"sh{code}" if code.startswith(("6", "9")) else f"sz{code}"
-    url = f"https://qt.gtimg.cn/q={prefixed}"
+    if market == "hk":
+        return HK_TO_A_SHARE.get(normalize_stock_code(code))
+    return None
+
+
+def market_label(code: str) -> str:
+    m = classify_market(code)
+    return {"sh": "上证", "sz": "深证", "bj": "北交所", "hk": "港股"}.get(m, "非A股")
+
+
+def gtimg_symbol(code: str) -> str | None:
+    """腾讯 qt.gtimg 行情前缀（A 股 sh/sz/bj，港股 hk）。"""
+    market = classify_market(code)
+    norm = normalize_stock_code(code)
+    if market == "hk":
+        return f"hk{norm}"
+    if market == "sh":
+        return f"sh{norm}"
+    if market == "bj":
+        return f"bj{norm}"
+    if market == "sz":
+        return f"sz{norm}"
+    return None
+
+
+def fetch_spot_price(code: str) -> float | None:
+    """从腾讯行情接口获取现价（A 股/北交所/港股，单位：元或港元）。"""
+    sym = gtimg_symbol(code)
+    if not sym:
+        return None
+    url = f"https://qt.gtimg.cn/q={sym}"
     req = urllib.request.Request(url)
     req.add_header("User-Agent", "Mozilla/5.0")
     try:

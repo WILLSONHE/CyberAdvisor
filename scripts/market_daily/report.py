@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+from portfolio_utils import fmt_money
+
 from market_daily.fetch import (
     BoardQuote,
     IndexQuote,
@@ -79,7 +81,7 @@ def _fmt_index_table(indices: list[IndexQuote]) -> list[str]:
         lines.append(
             f"| {q.name} | {q.code} | {q.close:.2f} | {q.change:+.2f} | {q.change_pct:+.2f}% "
             f"| {q.open:.2f} | {q.high:.2f} | {q.low:.2f} | {q.amplitude_pct:.2f}% "
-            f"| {q.avg_price:.2f} | {q.turnover_yi:.2f} | {q.volume:,} |"
+            f"| {q.avg_price:.2f} | {fmt_money(q.turnover_yi)} | {q.volume:,} |"
         )
     return lines
 
@@ -87,7 +89,7 @@ def _fmt_index_table(indices: list[IndexQuote]) -> list[str]:
 def _fmt_board_table(boards: list[BoardQuote], title: str) -> list[str]:
     lines = [f"### {title}", "", "| 板块 | 代码 | 涨跌幅 | 涨跌点数 | 板块总市值(亿) |", "|------|------|--------|----------|----------------|"]
     for b in boards:
-        lines.append(f"| {b.name} | {b.code} | {b.change_pct:+.2f}% | {b.change_pts:+.2f} | {b.mcap_yi:.2f} |")
+        lines.append(f"| {b.name} | {b.code} | {b.change_pct:+.2f}% | {b.change_pts:+.2f} | {fmt_money(b.mcap_yi)} |")
     lines.append("")
     return lines
 
@@ -95,8 +97,8 @@ def _fmt_board_table(boards: list[BoardQuote], title: str) -> list[str]:
 def _fmt_stock_detail(q: StockQuote) -> str:
     return (
         f"收 {q.price:.2f}（{q.change_pct:+.2f}%）开 {q.open:.2f} 高 {q.high:.2f} 低 {q.low:.2f} "
-        f"额 {q.turnover_yi:.2f}亿 换手 {q.turnover_rate_pct:.2f}% PE {q.pe_ttm:.1f} PB {q.pb:.2f} "
-        f"市值 {q.mcap_yi:.2f}亿 Δ市值 {q.mcap_change_yi:+.2f}亿"
+        f"额 {fmt_money(q.turnover_yi)}亿 换手 {q.turnover_rate_pct:.2f}% PE {q.pe_ttm:.1f} PB {q.pb:.2f} "
+        f"市值 {fmt_money(q.mcap_yi)}亿 Δ市值 {fmt_money(q.mcap_change_yi, signed=True)}亿"
     )
 
 
@@ -113,8 +115,8 @@ def _fmt_track_table(quotes: dict[str, StockQuote], names: list[str], code_map: 
             continue
         lines.append(
             f"| {name} | {q.code} | {q.price:.2f} | {q.change_pct:+.2f}% | {q.open:.2f} | {q.high:.2f} | {q.low:.2f} "
-            f"| {q.amplitude_pct:.2f}% | {q.turnover_yi:.2f} | {q.turnover_rate_pct:.2f}% | {q.pe_ttm:.1f} | {q.pb:.2f} "
-            f"| {q.mcap_yi:.2f} | {q.mcap_change_yi:+.2f} |"
+            f"| {q.amplitude_pct:.2f}% | {fmt_money(q.turnover_yi)} | {q.turnover_rate_pct:.2f}% | {q.pe_ttm:.1f} | {q.pb:.2f} "
+            f"| {fmt_money(q.mcap_yi)} | {fmt_money(q.mcap_change_yi, signed=True)} |"
         )
     return lines
 
@@ -145,7 +147,7 @@ def _generate_summary(
         lines.append(f"- {disc}（对照 [[风控逻辑]]、[[2026-06-05]] 4033/4130 标准）")
         lines.append(
             f"- 全日：开 {sh.open:.2f} → 高 {sh.high:.2f} / 低 {sh.low:.2f} → 收 {sh.close:.2f}，"
-            f"跌 {sh.change:.2f}（{sh.change_pct:+.2f}%），成交额约 **{sh.turnover_yi:.0f} 亿元**"
+            f"跌 {sh.change:.2f}（{sh.change_pct:+.2f}%），成交额约 **{fmt_money(sh.turnover_yi)} 亿元**"
         )
     if cyb and sh:
         lines.append(
@@ -290,8 +292,8 @@ def build_report() -> str:
             lines.append("|------|------|-----------|--------|------|------------|------------|")
             for q, _ in stocks:
                 lines.append(
-                    f"| {q.name} | {q.code} | {q.mcap_change_yi:+.2f} | {q.change_pct:+.2f}% "
-                    f"| {q.price:.2f} | {q.mcap_yi:.2f} | {q.turnover_yi:.2f} |"
+                    f"| {q.name} | {q.code} | {fmt_money(q.mcap_change_yi, signed=True)} | {q.change_pct:+.2f}% "
+                    f"| {q.price:.2f} | {fmt_money(q.mcap_yi)} | {fmt_money(q.turnover_yi)} |"
                 )
             lines.append("")
 

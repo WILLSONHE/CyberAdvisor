@@ -25,7 +25,8 @@ from datetime import date, datetime
 
 import pandas as pd
 
-from portfolio_utils import fetch_spot_price, pad_a_share_code
+from portfolio_utils import fetch_spot_price, fmt_money, normalize_stock_code
+from xlsx_utils import write_dataframe_xlsx, SIM_INT_COLS, SIM_MONEY_COLS
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
@@ -58,7 +59,9 @@ def _norm_code(code) -> str:
     if pd.isna(code):
         return ""
     s = str(code).strip().replace(".0", "")
-    return pad_a_share_code(s) if s.isdigit() else s
+    if not s:
+        return ""
+    return normalize_stock_code(s)
 
 
 def _build_name_code_map() -> dict[str, str]:
@@ -269,7 +272,7 @@ def _load_df() -> pd.DataFrame:
 def _save_df(df: pd.DataFrame) -> None:
     positions = df[df.apply(_is_data_row, axis=1)].reset_index(drop=True) if not df.empty else _empty_df()
     out = _with_summary_rows(positions)
-    out.to_excel(SIM_XLSX, index=False)
+    write_dataframe_xlsx(out, SIM_XLSX, money_cols=SIM_MONEY_COLS, int_cols=SIM_INT_COLS)
 
 
 def init_sim_xlsx() -> None:
@@ -337,7 +340,7 @@ def sync_sim_prices(*, sleep_s: float = 0.2) -> str:
     totals = _portfolio_totals(df)
     return (
         f"已同步模拟持仓：更新 {updated} 条，冻结 {frozen} 条（已卖出）；"
-        f"合计 成本 {totals['total_cost']:,.2f} 元 / 市值 {totals['total_mkt']:,.2f} 元 "
+        f"合计 成本 {fmt_money(totals['total_cost'])} 元 / 市值 {fmt_money(totals['total_mkt'])} 元 "
         f"({totals['ratio']})"
     )
 
@@ -405,7 +408,7 @@ def sim_buy(names: list[str], budget: float | None = None) -> str:
         budget_wan = budget / 10_000
         lines.append(
             f"买入 {name}({code})：{shares} 股 @ {cost:.2f}（预算 {budget_wan:.0f} 万），"
-            f"投入 {invest:,.2f} 元，市值 {metrics['市值']:,.2f} 元"
+            f"投入 {fmt_money(invest)} 元，市值 {fmt_money(metrics['市值'])} 元"
         )
 
     if new_rows:
@@ -482,7 +485,7 @@ def sim_sell(names: list[str]) -> str:
         ratio = metrics.get("盈亏比")
         lines.append(
             f"卖出 {name}({code})：已冻结，"
-            f"盈亏 {pnl if pnl is not None else '—'} 元 ({ratio or '—'})，"
+            f"盈亏 {fmt_money(pnl) if pnl is not None else '—'} 元 ({ratio or '—'})，"
             f"持仓 {metrics['持仓时间(天)']} 天"
         )
 
@@ -609,7 +612,7 @@ def rebuild_active_positions(*, keep_open_date: bool = True) -> str:
         budget_wan = budget / 10_000
         lines.append(
             f"{name}({code})：{shares} 股 @ {cost:.2f}（预算 {budget_wan:.0f} 万），"
-            f"投入 {invest:,.2f} 元"
+            f"投入 {fmt_money(invest)} 元"
         )
 
     _save_df(df)
@@ -617,7 +620,7 @@ def rebuild_active_positions(*, keep_open_date: bool = True) -> str:
     totals = _portfolio_totals(df)
     parts = [f"已按 100 万预算规则重算 {rebuilt} 条持仓，冻结 {frozen} 条（已卖出）"]
     parts.append(
-        f"合计 成本 {totals['total_cost']:,.2f} 元 / 市值 {totals['total_mkt']:,.2f} 元 ({totals['ratio']})"
+        f"合计 成本 {fmt_money(totals['total_cost'])} 元 / 市值 {fmt_money(totals['total_mkt'])} 元 ({totals['ratio']})"
     )
     if lines:
         parts.append("\n".join(f"• {ln}" for ln in lines))
@@ -645,9 +648,9 @@ def format_sim_summary(max_rows: int = 20) -> str:
     lines.extend(
         [
             "",
-            f"**合计** 成本 {totals['total_cost']:,.2f} 元 | "
-            f"市值 {totals['total_mkt']:,.2f} 元 | "
-            f"盈亏 {totals['pnl']:+,.2f} 元 ({totals['ratio']})",
+            f"**合计** 成本 {fmt_money(totals['total_cost'])} 元 | "
+            f"市值 {fmt_money(totals['total_mkt'])} 元 | "
+            f"盈亏 {fmt_money(totals['pnl'], signed=True)} 元 ({totals['ratio']})",
         ]
     )
     return "\n".join(lines)
