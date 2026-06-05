@@ -5,7 +5,7 @@ Raw 归档工具。
 用法:
   python archive_raw.py migrate          # 一次性：根目录已消化 md → 已分析归档
   python archive_raw.py migrate-pending  # 根目录未消化 md → 未分析归档
-  python archive_raw.py archive FILE     # 单篇 ing 完成后移入已分析归档
+  python archive_raw.py archive FILE     # 单篇 ing 完成后移入已分析归档（并自动 track-maintain）
 """
 from __future__ import annotations
 
@@ -37,6 +37,14 @@ def _unique_path(directory: str, filename: str) -> str:
         if not os.path.exists(alt):
             return alt
         i += 1
+
+
+def _run_track_maintenance() -> None:
+    """ing 归档后同步标的追踪目录（活跃池建页 / 非池归档）。"""
+    from wiki import run_track_maintenance
+
+    print("\n[track-maintain]")
+    print(run_track_maintenance())
 
 
 def archive_file(src: str, *, dry_run: bool = False) -> str:
@@ -100,11 +108,15 @@ def main() -> None:
     if args.cmd == "migrate":
         n = migrate_archived(dry_run=args.dry_run)
         print(f"已分析归档 +{n}")
+        if n > 0 and not args.dry_run:
+            _run_track_maintenance()
     elif args.cmd == "migrate-pending":
         n = migrate_pending(dry_run=args.dry_run)
         print(f"未分析归档 +{n}")
     elif args.cmd == "archive":
         archive_file(args.file, dry_run=args.dry_run)
+        if not args.dry_run:
+            _run_track_maintenance()
 
 
 if __name__ == "__main__":

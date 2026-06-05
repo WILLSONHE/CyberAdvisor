@@ -181,7 +181,7 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 
 - **视频字幕**（自动）→ `Raw/未审阅视频文稿/` → `**rw`** → `**txtcfm**`（→ `已审阅视频文稿/`）→ `**ing**`
 - **专栏 / 动态 / 充电文**（手动）→ 复制为 `.md` 放入 `Raw/未分析归档/` → 对 AI 说 `**ing`**
-- **ing 完成后** → 原稿移入 `Raw/已分析归档/`（可用 `python archive_raw.py archive 路径`）
+- **ing 完成后** → 原稿移入 `Raw/已分析归档/`（`python scripts/archive_raw.py archive 路径`，**归档时自动 track-maintain**）
 - 视频同步状态：`Wiki/数据/bilibili_sync.json`
 
 > 专栏/充电文不再自动抓取（B 站 API 易限流）。仅视频走 `bilibili_fetch.py`。
@@ -208,7 +208,7 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 | `sug 全员`          | 对每位持有人分别生成 sug 并各自归档                           | **仅 Cursor**                                         |
 | `qry {问题}`        | 基于 Wiki 回答                                     | Cursor 深度；飞书 Bot 关键词检索                               |
 | `trk {标的}`        | 博主对该标的的全痕迹                                     | Cursor 可刷新；飞书 Bot 读追踪页（含不活跃标的/）               |
-| `track-maintain`    | 归档/建页/回迁标的追踪专页                                 | `python scripts/wiki_cli.py track-maintain`；ing 后自动跑   |
+| `track-maintain`    | 归档/建页/回迁标的追踪专页                                 | `ing` 归档时由 `archive_raw.py` 自动执行；亦可 `python scripts/wiki_cli.py track-maintain` |
 | `chk`             | Wiki 体检                                        | Cursor 可修复；飞书 Bot 只读抽样                               |
 | `sum`             | 跨文章归纳                                          | 仅 Cursor                                             |
 
@@ -293,7 +293,7 @@ CyberAdvisor/
     ├── bilibili_fetch.py    ← B 站视频字幕（仅视频）
     ├── rw_video.py          ← 视频稿 rw 校对
     ├── txtcfm.py            ← 批量审批未审阅文稿
-    └── archive_raw.py       ← Raw 归档迁移
+    └── archive_raw.py       ← Raw 归档迁移（ing 归档时自动 track-maintain）
 ```
 
 ---
@@ -322,7 +322,8 @@ CyberAdvisor/
 | Commit | 说明 |
 |--------|------|
 | `79e948b` | commit 8：模拟持仓 sim 买/卖 + 100 万预算 + 表末合计行 |
-| `f374405` | **commit 9：标的追踪自动维护** — `track-maintain` 归档非池标的至 `不活跃标的/`，活跃池提及≥3 次自动建页/回迁；ing 后跑 `python scripts/wiki_cli.py track-maintain` |
+| `f374405` | commit 9：标的追踪自动维护 — `track-maintain` CLI、不活跃归档、活跃池≥3 次自动建页 |
+| **commit 10** | **ing 归档自动 track-maintain** — `archive_raw.py` archive/migrate 完成后自动同步标的追踪 |
 
 ---
 
