@@ -15,6 +15,7 @@ from portfolio_utils import (
     parse_sug_command,
     sug_archive_basename,
 )
+from sim_portfolio import handle_sim_command
 from wiki import run_chk, search_wiki, track_stock
 from wiki.common import format_hint as wiki_format_hint
 from wiki.common import parse_tail_arg
@@ -22,6 +23,7 @@ from wiki.common import parse_tail_arg
 MAX_CHUNK = 3500
 
 SUG_VERBS = ("sug", "交易策略", "开仓")
+SIM_PREFIX = "sim"
 HOLDING_VERBS = ("持仓", "portfolio")
 POOL_VERBS = ("日报", "pool", "标的池")
 TRK_VERBS = ("trk", "追踪", "track")
@@ -68,6 +70,7 @@ def _sug_missing_message(holder: str, session: str | None) -> str:
         f"尚无 {holder} 的 sug 报告"
         f"{f'（{session}）' if session else ''}。"
         f"请在 Cursor 说「{example}」（会写入 SugVault/{fname}）。"
+        f"未指定盘次时 Bot 会返回时间最新的一份（含早盘/午盘）。"
     )
 
 
@@ -132,7 +135,8 @@ def handle_command(text: str) -> str:
             "• sug {持有人} [早盘|午盘]\n"
             "• sug 全员 [早盘|午盘]\n"
             "• 持仓 {持有人}\n"
-            "• 标的池 {持有人}\n\n"
+            "• 标的池 {持有人}\n"
+            "• sim 买 {标的…} / sim 卖 {标的} — 模拟持仓\n\n"
             "【Wiki 查询】\n"
             "• trk {标的} — 博主痕迹追踪\n"
             "• chk — Wiki 体检\n"
@@ -144,6 +148,12 @@ def handle_command(text: str) -> str:
 
     if lower in ("ping", "测试", "test"):
         return "pong — CyberAdvisor Bot 在线"
+
+    if lower.startswith(SIM_PREFIX):
+        reply = handle_sim_command(cmd)
+        if reply is not None:
+            return _truncate(reply, MAX_CHUNK)
+        return "sim 指令格式：sim 买 利通电子，江波龙 / sim 卖 利通电子"
 
     if lower in CHK_VERBS:
         return _truncate(run_chk(), MAX_CHUNK * 2)

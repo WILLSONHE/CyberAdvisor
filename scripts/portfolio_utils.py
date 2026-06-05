@@ -146,24 +146,30 @@ def sug_archive_basename(
 
 
 def latest_sug_path(holder: str, session: str | None = None) -> str | None:
+    """返回持有人最新 sug 报告路径。未指定盘次时取时间最近的一份（含早盘/午盘）。"""
     import glob
 
     hl = holder.lower()
-    matched: list[str] = []
+    matched: list[tuple[tuple[str, str, str], str]] = []
     for path in glob.glob(os.path.join(SUG_VAULT, "*.md")):
         base = os.path.basename(path)
         m = SUG_FILE.match(base)
         if not m or m.group(3).lower() != hl:
             continue
-        file_session = m.group(4)  # 早盘/午盘 or None
+        file_session = m.group(4)
         if session:
-            if file_session == session:
-                matched.append(path)
-        elif file_session is None:
-            matched.append(path)
+            if file_session != session:
+                continue
+        date_part = m.group(1)
+        hhmm_part = m.group(2) or "0000"
+        matched.append(((date_part, hhmm_part, base), path))
     if not matched:
         return None
-    return sorted(matched, reverse=True)[0]
+    matched.sort(key=lambda x: x[0], reverse=True)
+    return matched[0][1]
+
+
+def extract_holder_section(text: str, holder: str) -> str | None:
     """从 markdown 提取 ## 持有人：XXX 章节（至下一同级章节或 EOF）。"""
     lines = text.splitlines()
     start: int | None = None
@@ -207,7 +213,7 @@ def filter_pool_md(holder: str) -> str:
     return f"{header}\n\n{section}"
 
 
-def extract_holder_section(text: str, holder: str) -> str | None:
+def holdings_for_holder(holder: str) -> list[dict]:
     mod = _import_portfolio()
     hl = holder.lower()
     return [h for h in mod.HOLDINGS if h.get("holder", "").lower() == hl]
