@@ -322,7 +322,7 @@ CyberAdvisor/
 | Commit | 说明 |
 |--------|------|
 | `79e948b` | commit 8：模拟持仓 sim 买/卖 + 100 万预算 + 表末合计行 |
-| **HEAD** | **commit 9：标的追踪自动维护** — `track-maintain` 归档非池标的至 `不活跃标的/`，活跃池提及≥3 次自动建页/回迁；ing 后跑 `python scripts/wiki_cli.py track-maintain` |
+| `f374405` | **commit 9：标的追踪自动维护** — `track-maintain` 归档非池标的至 `不活跃标的/`，活跃池提及≥3 次自动建页/回迁；ing 后跑 `python scripts/wiki_cli.py track-maintain` |
 
 ---
 
