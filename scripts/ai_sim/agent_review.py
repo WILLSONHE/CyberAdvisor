@@ -15,17 +15,9 @@ from sim_portfolio import _portfolio_totals
 
 
 def _load_env_file() -> None:
-    path = os.path.join(ROOT, ".env")
-    if not os.path.isfile(path):
-        return
-    for line in open(path, encoding="utf-8"):
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, v = line.split("=", 1)
-        k, v = k.strip(), v.strip().strip('"').strip("'")
-        if k and k not in os.environ:
-            os.environ[k] = v
+    from bilibili.env import apply_config_to_environ
+
+    apply_config_to_environ()
 
 
 def _read_tail(path: str, max_chars: int = 4000) -> str:

@@ -133,7 +133,7 @@ CLI：`python scripts/sim_portfolio.py buy …` / `sell` / `sync` / `init`
 脚本 `scripts/ai_sim_tick.py`（单次 tick）：
 
 1. 采集指数 + 标的池现价 → `Raw/每15分钟市场数据/`  
-2. **Cloud Agent 分析**（需 `CURSOR_API_KEY`，见根目录 `.env.example`）→ 调参 override + 日志「Agent 分析」  
+2. **Cloud Agent 分析**（需 `.env` 中 `CURSOR_API_KEY`）→ 调参 override + 日志「Agent 分析」  
 3. 读 Wiki **市场状态日报**、**投资方法论/风控**（4033 软约束）  
 4. **买入**（可选）：上证 ≥4033 且仓位显著低于目标 + 候选标的当日涨幅 ≥0；单次 tick 最多 1 笔  
 5. **卖出**（可选）：止损 **-5%**、止盈 **+12%**、或超配降仓（建仓当日不降仓，每次最多减 1 只）  

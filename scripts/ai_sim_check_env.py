@@ -16,17 +16,9 @@ if SCRIPT_DIR not in sys.path:
 
 
 def load_dotenv() -> None:
-    path = os.path.join(ROOT, ".env")
-    if not os.path.isfile(path):
-        return
-    for line in open(path, encoding="utf-8"):
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, v = line.split("=", 1)
-        k, v = k.strip(), v.strip().strip('"').strip("'")
-        if k and k not in os.environ:
-            os.environ[k] = v
+    from bilibili.env import apply_config_to_environ
+
+    apply_config_to_environ()
 
 
 def normalize_repo(raw: str) -> tuple[str, str, str]:
