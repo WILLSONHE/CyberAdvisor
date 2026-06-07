@@ -186,7 +186,7 @@ def handle_command(text: str) -> CommandResult:
             "• qry {问题} — Wiki 关键词检索\n\n"
             "• ping — 连通测试\n\n"
             f"示例：策略文件 / 打开 仓位管理 / sug Wilson 早盘 / trk 寒武纪 / qry 存储{names_hint}\n\n"
-            "深度 ing / AI 版 qry·chk·sug 生成 → Cursor + finance-wiki skill。"
+            "深度 ing / AI 版 qry·chk·sug 生成 → Cursor + 项目 SKILL.md。"
         )
 
     if lower in ("ping", "测试", "test"):

@@ -11,6 +11,8 @@ from ai_sim.agent_client import AgentClientError, run_analysis_prompt
 from ai_sim.config import DAILY_REPORT, JOURNAL_PATH, ROOT
 from ai_sim.portfolio_ops import active_positions, cash_available, total_assets
 from ai_sim.runtime_params import PARAM_SCHEMA, apply_patch, defaults_for_agent, effective_all, snapshot
+from ai_sim.schedule_util import tick_phase, tick_phase_label
+from ai_sim.wiki_context import build_wiki_context
 from sim_portfolio import _portfolio_totals
 
 
@@ -59,7 +61,10 @@ def _positions_summary() -> str:
     return "\n".join(lines)
 
 
-def build_prompt(tick_path: str) -> str:
+def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
+    phase = phase or tick_phase()
+    phase_cn = tick_phase_label(phase)
+    wiki_ctx = build_wiki_context(max_chars=16000)
     tick_json = _read_json(tick_path)
     journal_tail = _read_tail(JOURNAL_PATH, 3500)
     daily_tail = _read_tail(DAILY_REPORT, 3500)
@@ -75,13 +80,38 @@ def build_prompt(tick_path: str) -> str:
             bounds.append(f"max={spec['max']}")
         schema_lines.append(f"- `{k}` ({spec['type'].__name__}, {', '.join(bounds) or 'bool'})")
 
-    return f"""你是 CyberAdvisor 项目的 AI 模拟盘风控分析师。本任务在盘中每 15 分钟运行一次。
+    phase_instructions = {
+        "pre_open": (
+            "【早盘前策略 tick】阅读 Wiki 策略文件、宏观/选股框架、昨日市场日报。"
+            "给出今日风险与仓位意图；**可选**调参；若无需改变请 hold_params=true。"
+        ),
+        "lunch": (
+            "【午休复盘 tick】复盘 9:30–11:30 上午盘面与持仓；对照 Wiki/博主判断。"
+            "为下午 session 定调；**可选**调参；允许维持不变。"
+        ),
+        "post_close": (
+            "【收盘复盘 tick】复盘全天；对照市场状态日报与 Wiki；"
+            "为次日 09:15 早盘前准备；**可选**调参。"
+        ),
+        "intraday": (
+            "【盘中 tick】多数情况不调参；仅环境明显变化时改 1–3 个参数。"
+        ),
+    }.get(phase, "【盘中 tick】")
+
+    return f"""你是 CyberAdvisor 项目的 AI 模拟盘风控分析师。
+
+## 当前阶段
+- **{phase_cn}**（`{phase}`）
+- {phase_instructions}
 
 ## 你的职责
-1. 阅读下方行情 tick、持仓、日志与市场日报摘要
+1. 阅读下方 **Wiki 策略上下文**（含全库索引 + 核心框架）、行情 tick、持仓、日志与市场日报
 2. 给出简短中文行情分析（3–6 句）
-3. **可选**调整规则引擎参数（多数 tick 应保持不变；只有环境明显变化时才改 1–3 个参数）
+3. **可选**调整规则引擎参数（充分分析后可 **维持不变**）
 4. 禁止建议直接改 xlsx 持仓；执行仍由本地规则引擎负责
+
+## Wiki 策略上下文
+{wiki_ctx}
 
 ## 可调参数 schema（只能改这些键）
 {chr(10).join(schema_lines)}
@@ -219,13 +249,14 @@ def _format_agent_block(agent: dict[str, Any] | None) -> list[str]:
     return lines
 
 
-def review_tick(tick_path: str) -> dict[str, Any]:
+def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
     """调用 Cloud Agent；成功时写入 override + 日志。返回摘要 dict。"""
     _load_env_file()
     if os.environ.get("AI_SIM_AGENT", "1").strip() in ("0", "false", "no"):
         return {"skipped": True, "reason": "AI_SIM_AGENT=0", "ok": False}
 
-    prompt = build_prompt(tick_path)
+    phase = phase or tick_phase()
+    prompt = build_prompt(tick_path, phase=phase)
     try:
         meta = run_analysis_prompt(prompt)
     except AgentClientError as e:
@@ -271,5 +302,6 @@ def review_tick(tick_path: str) -> dict[str, Any]:
         "warnings": warnings,
         "notes": notes,
         "hold_params": hold_params,
+        "phase": phase,
         "agent_meta": meta,
     }

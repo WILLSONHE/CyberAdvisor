@@ -48,12 +48,17 @@ python daily_report.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [6/7] bilibili_fetch.py ...
+echo [6/8] bilibili_fetch.py ...
 python bilibili_fetch.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [7/7] bilibili_fetch.py --dry-run ...
+echo [7/8] rw_video.py --pending-only ...
+python rw_video.py --pending-only
+if errorlevel 1 goto :fail
+
+echo.
+echo [8/8] bilibili_fetch.py --dry-run ...
 python bilibili_fetch.py --dry-run
 if errorlevel 1 goto :fail
 

@@ -1,4 +1,4 @@
-# F:\AIGC\Stocks\CyberAdvisor\Wiki\博主赛博青哥 Wiki
+# 赛博青哥 Wiki（CyberAdvisor）
 
 > 基于财经博主「青枫浦上Q」全部公开内容的 AI 知识库 + 交易决策系统。
 > 把你的 AI 助手变成赛博青哥。
@@ -28,19 +28,11 @@ python -m mootdx bestip
 
 > 需要国内 IP（mootdx 连通达信服务器）。若 `bestip` 测速失败导致 `BESTIP` 为空，可手动编辑 `~/.mootdx/config.json`，在 `BESTIP.HQ` 填入可用服务器，例如 `["110.41.147.114", 7709]`。
 
-### 2. 安装 skill
+### 2. 加载 skill（Cursor 推荐）
 
-把项目根目录的 `SKILL.md` 放到你的 AI 助手的 skill 目录：
+**在本仓库内对话即可**：Agent 读取项目根目录 [`SKILL.md`](SKILL.md)（含 rw/ing/sug 等操作代号与 B 站流水线说明）。
 
-
-| 助手          | skill 目录                                             |
-| ----------- | ---------------------------------------------------- |
-| Cursor      | `C:\Users\{用户名}\.cursor\skills-cursor\finance-wiki\` |
-| Claude Code | `~/.claude/skills/finance-wiki/`                     |
-| Codex       | `~/.codex/skills/finance-wiki/`                      |
-
-
-skill 加载后，你的 AI 助手会拥有这些能力。
+其他助手可将 `SKILL.md` 复制到各自 skill 目录，或把其要点写入 Project Rules；**不依赖 Obsidian**。
 
 ### 3. 配置你的持仓
 
@@ -134,7 +126,7 @@ python ai_sim_tick.py --force
 
 ### 每日操作
 
-**一键流水线**（双击根目录 `daily.bat`，在新终端依次执行 **7 步**）：
+**一键流水线**（双击根目录 `daily.bat`，在新终端依次执行 **8 步**）：
 
 | 步 | 脚本 | 说明 |
 |---|------|------|
@@ -143,7 +135,9 @@ python ai_sim_tick.py --force
 | 3 | `coarse_screen.py` | 全市场粗筛 |
 | 4 | `fine_screen.py` | 精筛 + 博主标的池 + 布林线 → `Wiki/数据/博主标的池日报.md` |
 | 5 | **`daily_report.py`** | **市场状态日报** → `Wiki/数据/市场状态日报.md`（指数、板块 Top3、Δ市值 Top5、追踪标的、Wiki 对照总结） |
-| 6–7 | `bilibili_fetch.py` | 抓取新视频字幕 + `--dry-run` 预览 |
+| 6 | `bilibili_fetch.py` | 抓取新视频字幕（含补标点） |
+| 7 | `rw_video.py --pending-only` | 待审阅稿补标点 / ASR 校正 / 空稿重拉 |
+| 8 | `bilibili_fetch.py --dry-run` | 预览 |
 
 **是的**：`daily.bat` **会自动运行** `daily_report.py`（第 5 步），无需单独双击。跑完后可选 Webhook 推送摘要。
 
@@ -381,9 +375,9 @@ CyberAdvisor/
 
 ---
 
-## （可选）用 Obsidian 浏览 Wiki
+## 浏览 Wiki
 
-安装 [Obsidian](https://obsidian.md)，打开本项目根目录作为 vault。
+`Wiki/` 为标准 Markdown + `[[双链]]`，用 Cursor、VS Code 或任意编辑器即可；**无需 Obsidian**。
 
 ---
 

@@ -13,7 +13,12 @@ from ai_sim.agent_review import _load_env_file, review_tick
 from ai_sim.collector import collect_tick
 from ai_sim.journal import append_tick_summary
 from ai_sim.portfolio_ops import ensure_xlsx
-from ai_sim.schedule_util import is_scheduled_tick
+from ai_sim.schedule_util import (
+    is_scheduled_tick,
+    nearest_tick_label,
+    tick_phase,
+    tick_phase_label,
+)
 from ai_sim.strategy import execute_decisions, plan_trades
 
 
@@ -24,11 +29,14 @@ def run(*, force: bool = False, tick_label: str = "", agent: bool = True) -> int
 
     ensure_xlsx()
     _load_env_file()
-    path = collect_tick(force_label=tick_label)
+    label = tick_label or nearest_tick_label()
+    phase = tick_phase(tick_label=label)
+    print(f"阶段：{tick_phase_label(phase)} ({phase}) | tick={label}")
+    path = collect_tick(force_label=label)
     print(f"采集：{path}")
 
     if agent:
-        agent_result = review_tick(path)
+        agent_result = review_tick(path, phase=phase)
         if agent_result.get("skipped"):
             print(f"Agent 跳过：{agent_result.get('reason')}")
         elif agent_result.get("ok"):
@@ -44,13 +52,22 @@ def run(*, force: bool = False, tick_label: str = "", agent: bool = True) -> int
 
     trade_plan = plan_trades(path)
     trades = execute_decisions(trade_plan.decisions, tick_quotes=trade_plan.quotes)
-    append_tick_summary(
+    new_journal = append_tick_summary(
         path,
         trades,
         regime=trade_plan.regime,
         plan=trade_plan,
         agent=agent_result if agent else None,
+        phase=phase,
     )
+
+    try:
+        from feishu.env import FeishuConfig
+        from feishu.notify import push_ai_sim_journal
+
+        push_ai_sim_journal(FeishuConfig.load(), new_block=new_journal)
+    except Exception as e:
+        print(f"飞书推送跳过：{e}")
 
     if trades:
         print(f"成交 {len(trades)} 笔，详见 Wiki/数据/AI模拟交易日志.md")

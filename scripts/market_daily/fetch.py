@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import time
-import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -202,12 +201,24 @@ def parse_stock_line(line: str) -> StockQuote | None:
     )
 
 
-def fetch_gtimg_batch(symbols: list[str]) -> dict[str, str]:
-    """返回 symbol -> raw line"""
+def fetch_gtimg_batch(symbols: list[str], *, max_retries: int = 4) -> dict[str, str]:
+    """返回 symbol -> raw line（带 SSL/网络重试）。"""
+    if not symbols:
+        return {}
     url = "https://qt.gtimg.cn/q=" + ",".join(symbols)
-    req = urllib.request.Request(url, headers={"User-Agent": HEADERS["User-Agent"]})
-    data = urllib.request.urlopen(req, timeout=20).read().decode("gbk", errors="ignore")
-    # 批量响应可能用换行而非分号分隔记录
+    session = _make_session()
+    last_err: Exception | None = None
+    for attempt in range(max_retries):
+        try:
+            r = session.get(url, timeout=25)
+            r.raise_for_status()
+            data = r.content.decode("gbk", errors="ignore")
+            break
+        except Exception as e:
+            last_err = e
+            time.sleep(0.6 * (attempt + 1))
+    else:
+        raise RuntimeError(f"腾讯行情请求失败（{len(symbols)} 个代码）: {last_err}") from last_err
     data = data.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "")
     out: dict[str, str] = {}
     for line in data.strip().split(";"):

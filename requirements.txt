@@ -4,3 +4,6 @@ pandas
 stockstats
 openpyxl
 pycryptodome
+pypdf
+python-pptx
+python-docx

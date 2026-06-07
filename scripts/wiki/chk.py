@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from bilibili.env import ROOT
-from raw_paths import list_pending_files
+from raw_paths import list_pending_files, list_pending_material_files
 from wiki.common import (
     LOG_MD,
     POOL_MD,
@@ -89,6 +89,7 @@ def _pool_updated() -> str:
 def run_chk() -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     raw_pending = list_pending_files()
+    material_pending = list_pending_material_files()
     video_pending = pending_video_files()
     track_count = 0
     inactive_count = 0
@@ -118,6 +119,12 @@ def run_chk() -> str:
         lines.append(f"  - {Path(p).relative_to(ROOT)}")
     if len(raw_pending) > 5:
         lines.append(f"  - …共 {len(raw_pending)} 篇")
+
+    lines.append(f"- 其他材料待 ing：{len(material_pending)} 个")
+    for p in material_pending[:5]:
+        lines.append(f"  - {Path(p).relative_to(ROOT)}")
+    if len(material_pending) > 5:
+        lines.append(f"  - …共 {len(material_pending)} 个")
 
     lines.append(f"- 视频稿待审/未 ing：{len(video_pending)} 篇")
     for p in video_pending[:5]:

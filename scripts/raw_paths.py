@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
+from datetime import datetime
 
 from bilibili.env import ROOT
 
@@ -11,6 +13,12 @@ RAW_PENDING = os.path.join(RAW_ROOT, "未分析归档")
 RAW_ARCHIVED = os.path.join(RAW_ROOT, "已分析归档")
 RAW_PENDING_VIDEO = os.path.join(RAW_ROOT, "未审阅视频文稿")
 RAW_APPROVED_VIDEO = os.path.join(RAW_ROOT, "已审阅视频文稿")
+RAW_PENDING_MATERIALS = os.path.join(RAW_ROOT, "未分析其他材料")
+RAW_ARCHIVED_MATERIALS = os.path.join(RAW_ROOT, "已分析其他材料")
+WIKI_MATERIALS = os.path.join(ROOT, "Wiki", "其他材料")
+
+# 其他材料 ingest 支持的扩展名（小写）
+MATERIAL_EXTENSIONS = frozenset({".md", ".txt", ".pdf", ".pptx", ".docx"})
 
 # 兼容旧路径
 LEGACY_WIKI_PENDING_VIDEO = os.path.join(ROOT, "Wiki", "待审阅视频文稿")
@@ -55,6 +63,9 @@ def ensure_raw_dirs() -> None:
     os.makedirs(RAW_ARCHIVED, exist_ok=True)
     os.makedirs(RAW_PENDING_VIDEO, exist_ok=True)
     os.makedirs(RAW_APPROVED_VIDEO, exist_ok=True)
+    os.makedirs(RAW_PENDING_MATERIALS, exist_ok=True)
+    os.makedirs(RAW_ARCHIVED_MATERIALS, exist_ok=True)
+    os.makedirs(WIKI_MATERIALS, exist_ok=True)
     for leg in (LEGACY_WIKI_PENDING_VIDEO, LEGACY_RAW_PENDING_VIDEO):
         _migrate_legacy_video_inbox(leg)
 
@@ -69,6 +80,100 @@ def move_video_to_approved(src: str, *, dry_run: bool = False) -> str:
         return dest
     shutil.move(src, dest)
     return dest
+
+
+_FM_SPLIT = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.S)
+_META_TYPE = re.compile(r"^type:\s*(\S+)", re.M)
+_BVID_IN_NAME = re.compile(r"_BV[\w]+\_", re.I)
+
+
+def is_video_transcript(path: str) -> bool:
+    """是否为 B 站视频字幕稿（ing 后留已审阅目录，不进已分析归档）。"""
+    name = os.path.basename(path)
+    if _BVID_IN_NAME.search(name):
+        return True
+    norm = os.path.normpath(path)
+    if RAW_APPROVED_VIDEO in norm or RAW_PENDING_VIDEO in norm:
+        return True
+    try:
+        text = open(path, encoding="utf-8").read(4096)
+    except OSError:
+        return False
+    m = _FM_SPLIT.match(text)
+    if not m:
+        return False
+    fm = m.group(1)
+    tm = _META_TYPE.search(fm)
+    return bool(tm and tm.group(1) == "video_transcript")
+
+
+def _set_meta_field(fm: str, key: str, value: str) -> str:
+    pat = re.compile(rf"^{re.escape(key)}:.*$", re.M)
+    line = f"{key}: {value}"
+    if pat.search(fm):
+        return pat.sub(line, fm, count=1)
+    return fm.rstrip() + "\n" + line
+
+
+def mark_video_ingested(src: str, *, dry_run: bool = False) -> str:
+    """视频稿 ingest 后：review_status→ingested，文件留在已审阅视频文稿。"""
+    ensure_raw_dirs()
+    if not os.path.isfile(src):
+        raise FileNotFoundError(src)
+    if not is_video_transcript(src):
+        raise ValueError(f"not a video transcript: {src}")
+
+    text = open(src, encoding="utf-8").read()
+    m = _FM_SPLIT.match(text)
+    stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    if m:
+        fm = _set_meta_field(m.group(1), "review_status", "ingested")
+        fm = _set_meta_field(fm, "ingested_at", stamp)
+        body = text[m.end() :]
+        out = f"---\n{fm}\n---\n\n{body.lstrip()}"
+    else:
+        out = text
+
+    approved = os.path.normpath(RAW_APPROVED_VIDEO)
+    src_norm = os.path.normpath(os.path.abspath(src))
+    approved_prefix = approved + os.sep
+    if not src_norm.startswith(approved_prefix):
+        dest = _unique_path(RAW_APPROVED_VIDEO, os.path.basename(src))
+        if dry_run:
+            return dest
+        with open(src, "w", encoding="utf-8") as f:
+            f.write(out if out.endswith("\n") else out + "\n")
+        shutil.move(src, dest)
+        return dest
+
+    if dry_run:
+        return src
+    with open(src, "w", encoding="utf-8") as f:
+        f.write(out if out.endswith("\n") else out + "\n")
+    return src
+
+
+def restore_videos_from_archived(*, dry_run: bool = False) -> list[str]:
+    """将误放入已分析归档的视频稿移回已审阅视频文稿。"""
+    ensure_raw_dirs()
+    moved: list[str] = []
+    if not os.path.isdir(RAW_ARCHIVED):
+        return moved
+    for name in sorted(os.listdir(RAW_ARCHIVED)):
+        if not name.endswith(".md"):
+            continue
+        src = os.path.join(RAW_ARCHIVED, name)
+        if not is_video_transcript(src):
+            continue
+        dest = _unique_path(RAW_APPROVED_VIDEO, name)
+        if dry_run:
+            print(f"  [DRY] {name} -> 已审阅视频文稿/")
+            moved.append(dest)
+            continue
+        shutil.move(src, dest)
+        print(f"  [OK] restored {name}")
+        moved.append(dest)
+    return moved
 
 
 def pending_dirs() -> list[str]:
@@ -87,4 +192,22 @@ def list_pending_files() -> list[str]:
         for name in sorted(os.listdir(d)):
             if name.endswith(".md"):
                 out.append(os.path.join(d, name))
+    return out
+
+
+def list_pending_material_files() -> list[str]:
+    """ing 扫描的其他材料（pdf/pptx/docx/txt/md）。"""
+    ensure_raw_dirs()
+    out: list[str] = []
+    if not os.path.isdir(RAW_PENDING_MATERIALS):
+        return out
+    for name in sorted(os.listdir(RAW_PENDING_MATERIALS)):
+        if name.startswith("."):
+            continue
+        path = os.path.join(RAW_PENDING_MATERIALS, name)
+        if not os.path.isfile(path):
+            continue
+        ext = os.path.splitext(name)[1].lower()
+        if ext in MATERIAL_EXTENSIONS:
+            out.append(path)
     return out

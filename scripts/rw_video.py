@@ -124,8 +124,22 @@ def process_file(
 
     old_score = score_subtitle(content, title)
 
+    # 正文为空但有 bvid：尝试重拉（修复 fetch 失败/空文件）
+    if is_pending and (not content.strip() or len(content.strip()) < 30) and bvid and client and not punctuate_only:
+        try:
+            lan, fetched, new_score = _refetch(bvid, client, title)
+            if fetched and len(fetched.strip()) >= 30:
+                new_content = format_transcript(fetched, force_punctuate=True)
+                fm = _set_meta_field(fm, "subtitle_lang", lan)
+                result["action"] = "refetch"
+            else:
+                result["reason"] = "refetch_empty"
+            time.sleep(0.4)
+        except Exception as e:
+            result["reason"] = f"refetch_error:{e}"
+
     # 待审阅：可重拉字幕（仅当新轨评分更高）
-    if is_pending and refetch and not punctuate_only and bvid and client:
+    if is_pending and refetch and not punctuate_only and bvid and client and result["action"] != "refetch":
         try:
             lan, fetched, new_score = _refetch(bvid, client, title)
             if fetched and new_score > old_score + 2:
@@ -145,7 +159,7 @@ def process_file(
     # 标点 + 分段（待审阅默认；已归档仅对无结构长文）
     should_format = is_pending or (not already_structured)
     if should_format and new_content and not re.search(r"^## ", new_content, re.M):
-        force_punct = is_pending and (needs_punctuation(new_content) or punctuate_only)
+        force_punct = is_pending and (needs_punctuation(new_content) or punctuate_only or len(new_content.strip()) < 50)
         if len(new_content) > 80 and (force_punct or punctuate_only or is_pending):
             if punctuate_only:
                 formatted = re_punctuate(new_content)

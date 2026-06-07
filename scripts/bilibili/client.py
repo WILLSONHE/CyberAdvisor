@@ -223,10 +223,8 @@ class BiliClient:
         )
 
     def video_subtitles(self, bvid: str, cid: int) -> list[dict]:
-        data = self.get_json(
-            "https://api.bilibili.com/x/player/v2",
-            params={"bvid": bvid, "cid": cid},
-        )
+        """拉取字幕轨；充电/抢先看视频优先 WBI player（v2 常返回错误 ai 轨）。"""
+        data = self._player_subtitle_payload(bvid, cid)
         subs = ((data.get("subtitle") or {}).get("subtitles")) or []
         result = []
         for sub in subs:
@@ -247,3 +245,11 @@ class BiliClient:
             })
         result.sort(key=lambda x: (x["ai"], x["lan"] != "zh-CN"))
         return result
+
+    def _player_subtitle_payload(self, bvid: str, cid: int) -> dict:
+        params = {"bvid": bvid, "cid": cid}
+        try:
+            return self._wbi_get("https://api.bilibili.com/x/player/wbi/v2", params)
+        except Exception:
+            pass
+        return self.get_json("https://api.bilibili.com/x/player/v2", params=params)

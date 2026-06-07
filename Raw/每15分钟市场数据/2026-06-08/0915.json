@@ -1,0 +1,361 @@
+{
+  "timestamp": "2026-06-08T01:36:24",
+  "tick": "0915",
+  "indices": [
+    {
+      "name": "上证指数",
+      "code": "000001",
+      "close": 4027.74,
+      "change_pct": -0.74,
+      "open": 4044.83,
+      "high": 4078.93,
+      "low": 4015.06,
+      "turnover_yi": 13638.88
+    },
+    {
+      "name": "深证成指",
+      "code": "399001",
+      "close": 15314.7,
+      "change_pct": -2.21,
+      "open": 15595.7,
+      "high": 15710.14,
+      "low": 15243.51,
+      "turnover_yi": 17053.04
+    },
+    {
+      "name": "创业板指",
+      "code": "399006",
+      "close": 3957.94,
+      "change_pct": -3.2,
+      "open": 4079.95,
+      "high": 4105.21,
+      "low": 3933.07,
+      "turnover_yi": 8160.92
+    },
+    {
+      "name": "科创50",
+      "code": "000688",
+      "close": 1668.33,
+      "change_pct": -4.01,
+      "open": 1706.53,
+      "high": 1735.08,
+      "low": 1659.48,
+      "turnover_yi": 1368.54
+    },
+    {
+      "name": "北证50",
+      "code": "899050",
+      "close": 1299.07,
+      "change_pct": 5.59,
+      "open": 1232.53,
+      "high": 1327.47,
+      "low": 1226.58,
+      "turnover_yi": 318.8
+    },
+    {
+      "name": "沪深300",
+      "code": "000300",
+      "close": 4816.92,
+      "change_pct": -1.79,
+      "open": 4886.96,
+      "high": 4924.34,
+      "low": 4798.91,
+      "turnover_yi": 8398.64
+    },
+    {
+      "name": "上证50",
+      "code": "000016",
+      "close": 2865.87,
+      "change_pct": -0.88,
+      "open": 2883.28,
+      "high": 2908.68,
+      "low": 2859.21,
+      "turnover_yi": 1641.69
+    },
+    {
+      "name": "国证2000",
+      "code": "399303",
+      "close": 10904.0,
+      "change_pct": -0.36,
+      "open": 10909.52,
+      "high": 11088.52,
+      "low": 10805.14,
+      "turnover_yi": 9593.7
+    },
+    {
+      "name": "中证500",
+      "code": "000905",
+      "close": 8251.14,
+      "change_pct": -1.26,
+      "open": 8317.64,
+      "high": 8399.41,
+      "low": 8218.14,
+      "turnover_yi": 6122.46
+    },
+    {
+      "name": "创业板综",
+      "code": "399102",
+      "close": 4559.39,
+      "change_pct": -1.69,
+      "open": 4622.55,
+      "high": 4664.35,
+      "low": 4534.6,
+      "turnover_yi": 8160.92
+    }
+  ],
+  "universe_size": 42,
+  "stocks": [
+    {
+      "name": "中国长城",
+      "code": "000066",
+      "source": "track",
+      "price": 17.05
+    },
+    {
+      "name": "中微公司",
+      "code": "688012",
+      "source": "track",
+      "price": 276.0
+    },
+    {
+      "name": "中际旭创",
+      "code": "300308",
+      "source": "track",
+      "price": 1179.99
+    },
+    {
+      "name": "兆易创新",
+      "code": "603986",
+      "source": "track",
+      "price": 488.0
+    },
+    {
+      "name": "光迅科技",
+      "code": "002281",
+      "source": "track",
+      "price": 227.58
+    },
+    {
+      "name": "利通电子",
+      "code": "603629",
+      "source": "track",
+      "price": 180.38
+    },
+    {
+      "name": "北方华创",
+      "code": "002371",
+      "source": "track",
+      "price": 603.36
+    },
+    {
+      "name": "寒武纪",
+      "code": "688256",
+      "source": "track",
+      "price": 1299.2
+    },
+    {
+      "name": "拓荆科技",
+      "code": "688072",
+      "source": "track",
+      "price": 582.3
+    },
+    {
+      "name": "江波龙",
+      "code": "301308",
+      "source": "track",
+      "price": 520.01
+    },
+    {
+      "name": "海光信息",
+      "code": "688041",
+      "source": "track",
+      "price": 274.06
+    },
+    {
+      "name": "澜起科技",
+      "code": "688008",
+      "source": "track",
+      "price": 239.39
+    },
+    {
+      "name": "通富微电",
+      "code": "002156",
+      "source": "track",
+      "price": 66.84
+    },
+    {
+      "name": "长光华芯",
+      "code": "688048",
+      "source": "track",
+      "price": 368.61
+    },
+    {
+      "name": "长电科技",
+      "code": "600584",
+      "source": "track",
+      "price": 75.65
+    },
+    {
+      "name": "龙芯中科",
+      "code": "688047",
+      "source": "track",
+      "price": 136.08
+    },
+    {
+      "name": "绿的谐波",
+      "code": "688017",
+      "source": "daily_gain",
+      "price": 393.0
+    },
+    {
+      "name": "蓝思科技",
+      "code": "300433",
+      "source": "daily_gain",
+      "price": 45.61
+    },
+    {
+      "name": "昊志机电",
+      "code": "300503",
+      "source": "daily_gain",
+      "price": 81.77
+    },
+    {
+      "name": "中鼎股份",
+      "code": "000887",
+      "source": "daily_gain",
+      "price": 21.99
+    },
+    {
+      "name": "兆威机电",
+      "code": "003021",
+      "source": "daily_gain",
+      "price": 105.07
+    },
+    {
+      "name": "三花智控",
+      "code": "002050",
+      "source": "daily_gain",
+      "price": 47.51
+    },
+    {
+      "name": "中大力德",
+      "code": "002896",
+      "source": "daily_gain",
+      "price": 86.77
+    },
+    {
+      "name": "京东方Ａ",
+      "code": "000725",
+      "source": "daily_gain",
+      "price": 6.43
+    },
+    {
+      "name": "深天马Ａ",
+      "code": "000050",
+      "source": "daily_gain",
+      "price": 8.61
+    },
+    {
+      "name": "利亚德",
+      "code": "300296",
+      "source": "daily_gain",
+      "price": 6.88
+    },
+    {
+      "name": "雷曼光电",
+      "code": "300162",
+      "source": "daily_gain",
+      "price": 10.52
+    },
+    {
+      "name": "凡拓数创",
+      "code": "301313",
+      "source": "daily_gain",
+      "price": 49.17
+    },
+    {
+      "name": "豫园股份",
+      "code": "600655",
+      "source": "daily_loss",
+      "price": 4.57
+    },
+    {
+      "name": "国力电子",
+      "code": "688103",
+      "source": "daily_loss",
+      "price": 62.0
+    },
+    {
+      "name": "潮宏基",
+      "code": "002345",
+      "source": "daily_loss",
+      "price": 8.96
+    },
+    {
+      "name": "中国黄金",
+      "code": "600916",
+      "source": "daily_loss",
+      "price": 7.76
+    },
+    {
+      "name": "晶盛机电",
+      "code": "300316",
+      "source": "daily_loss",
+      "price": 48.89
+    },
+    {
+      "name": "电科蓝天",
+      "code": "688818",
+      "source": "daily_loss",
+      "price": 73.2
+    },
+    {
+      "name": "松发股份",
+      "code": "603268",
+      "source": "daily_loss",
+      "price": 142.09
+    },
+    {
+      "name": "恒瑞医药",
+      "code": "600276",
+      "source": "daily_loss",
+      "price": 47.08
+    },
+    {
+      "name": "汇川技术",
+      "code": "300124",
+      "source": "daily_loss",
+      "price": 75.08
+    },
+    {
+      "name": "晶方科技",
+      "code": "603005",
+      "source": "daily_loss",
+      "price": 45.8
+    },
+    {
+      "name": "天马新材",
+      "code": "920971",
+      "source": "daily_loss",
+      "price": null
+    },
+    {
+      "name": "亚威股份",
+      "code": "002559",
+      "source": "daily_loss",
+      "price": 9.94
+    },
+    {
+      "name": "德邦科技",
+      "code": "688035",
+      "source": "daily_loss",
+      "price": 77.55
+    },
+    {
+      "name": "中巨芯-U",
+      "code": "688549",
+      "source": "daily_loss",
+      "price": 15.99
+    }
+  ]
+}

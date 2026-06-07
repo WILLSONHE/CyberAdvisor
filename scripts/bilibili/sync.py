@@ -12,6 +12,7 @@ from typing import Any
 from .client import BiliClient
 from .env import BiliConfig, ROOT
 from .naming import pending_video_filename, raw_filename, title_to_timestamp
+from .rw_format import format_transcript
 from .transcript import pick_subtitle
 
 RAW_DIR = os.path.join(ROOT, "Raw")
@@ -368,10 +369,12 @@ def sync_all(
                     continue
 
                 lan, body = pick_subtitle(subs, title)
-                if not body:
-                    print(f"  [SKIP] {bvid} 无字幕: {title}")
+                if not body or len(body.strip()) < 30:
+                    print(f"  [SKIP] {bvid} 无有效字幕正文: {title}")
                     stats["no_subtitle"] += 1
                     continue
+
+                body = format_transcript(body, force_punctuate=True)
 
                 fname = pending_video_filename(title, bvid, pub_ts)
                 path = _unique_path(PENDING_DIR, fname)

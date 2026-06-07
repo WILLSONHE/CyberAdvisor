@@ -75,7 +75,7 @@ def resolve_wiki_link(target: str, index: dict[str, list[Path]]) -> bool:
         return True
     if key in index:
         return True
-    # Obsidian 别名：文件名含目标
+    # Wiki 双链别名：文件名含目标子串亦视为有效
     for stem in index:
         if stem == key or key in stem:
             return True

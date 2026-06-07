@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 
 from ai_sim.agent_review import _format_agent_block
+from ai_sim.schedule_util import tick_phase, tick_phase_label
 from ai_sim.config import JOURNAL_PATH, TOTAL_CASH
 from ai_sim.portfolio_ops import active_positions, cash_available, equity_ratio, sync_prices, total_assets
 from ai_sim.strategy import TradePlan
@@ -65,21 +66,22 @@ def append_tick_summary(
     regime: str = "",
     plan: TradePlan | None = None,
     agent: dict | None = None,
-) -> None:
+    phase: str = "",
+) -> str:
     _ensure_file()
     sync_prices()
     pos = active_positions()
     totals = _portfolio_totals(pos) if not pos.empty else {"total_cost": 0.0, "total_mkt": 0.0, "ratio": "—"}
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     tick = os.path.basename(tick_path).replace(".json", "")
-
+    phase = phase or tick_phase(tick_label=tick)
+    phase_cn = tick_phase_label(phase)
     target_ratio = plan.target_ratio if plan else None
     current_ratio = plan.current_ratio if plan else equity_ratio()
-
     lines = [
-        f"## {stamp} tick {tick[:2]}:{tick[2:]}",
+        f"## {stamp} tick {tick[:2]}:{tick[2:]} · {phase_cn}",
         "",
-        f"- **环境**：{regime or (plan.regime if plan else '—')}",
+        f"- **阶段**：{phase} | **环境**：{regime or (plan.regime if plan else '—')}",
     ]
     if target_ratio is not None:
         lines.append(
@@ -126,3 +128,4 @@ def append_tick_summary(
 
     with open(JOURNAL_PATH, "a", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
+    return "\n".join(lines) + "\n"

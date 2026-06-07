@@ -32,10 +32,54 @@ def is_trading_day(d: date | None = None) -> bool:
     return d.weekday() < 5
 
 
+LUNCH_TICKS = frozenset({"11:45"})
+PRE_OPEN_TICK = "09:15"
+POST_CLOSE_TICK = "15:15"
+
+
+def _hm_from_tick_label(label: str) -> str:
+    """HHMM 或 HH:MM → HH:MM。"""
+    s = label.strip().replace(":", "")
+    if len(s) >= 4 and s[:4].isdigit():
+        return f"{s[:2]}:{s[2:4]}"
+    return label.strip()
+
+
+def tick_phase_at(hm: str) -> str:
+    """由 tick 时刻 HH:MM 判定阶段。"""
+    if hm == PRE_OPEN_TICK:
+        return "pre_open"
+    if hm in LUNCH_TICKS:
+        return "lunch"
+    if hm == POST_CLOSE_TICK:
+        return "post_close"
+    return "intraday"
+
+
+def tick_phase(now: datetime | None = None, *, tick_label: str = "") -> str:
+    """pre_open | intraday | lunch | post_close"""
+    if tick_label:
+        return tick_phase_at(_hm_from_tick_label(tick_label))
+    now = now or datetime.now()
+    return tick_phase_at(now.strftime("%H:%M"))
+
+
+def tick_phase_label(phase: str) -> str:
+    return {
+        "pre_open": "早盘前策略",
+        "intraday": "盘中",
+        "lunch": "午休复盘",
+        "post_close": "收盘复盘",
+    }.get(phase, phase)
+
+
 def is_in_session(now: datetime | None = None) -> bool:
+    """是否允许采集/Agent（含早盘前、午休、收盘后计划 tick）。"""
     now = now or datetime.now()
     if not is_trading_day(now.date()):
         return False
+    if is_scheduled_tick(now):
+        return True
     t = now.time()
     morning = time(9, 30) <= t <= time(11, 30)
     afternoon = time(13, 0) <= t <= time(15, 0)

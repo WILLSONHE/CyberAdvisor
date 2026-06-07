@@ -39,6 +39,7 @@ def main() -> None:
 
     if not pcfg.enabled:
         print("跳过飞书持仓下载：未配置 FEISHU_PORTFOLIO_URL / TOKEN / NAME")
+        print("  （若 .env 里仍是 .env.example 的 xxx.feishu.cn / shtxxxx 占位符，请改为真实链接）")
         return
 
     if not cfg.app_id or not cfg.app_secret:
@@ -50,12 +51,13 @@ def main() -> None:
         if pcfg.url:
             print(f"  来源 URL: {pcfg.url}")
         elif pcfg.token:
-            print(f"  来源 token: {pcfg.token} type={pcfg.doc_type}")
-        else:
-            print(f"  来源名称: {pcfg.name}")
+            print(f"  来源 token: {pcfg.token[:8]}… type={pcfg.doc_type}")
+        elif pcfg.name:
+            print(f"  来源名称: {pcfg.name}（云盘搜索）")
         return
 
-    token, dtype = download_portfolio_xlsx(
+    try:
+        token, dtype = download_portfolio_xlsx(
         cfg.app_id,
         cfg.app_secret,
         XLSX_PATH,
@@ -64,7 +66,16 @@ def main() -> None:
         doc_type=pcfg.doc_type,
         file_name=pcfg.name,
         folder_token=pcfg.folder_token,
-    )
+        )
+    except RuntimeError as e:
+        if "file token invalid" in str(e) or "1069914" in str(e):
+            raise SystemExit(
+                "飞书持仓 token 无效。\n"
+                "请检查 .env 中 FEISHU_PORTFOLIO_URL 是否为浏览器打开表格时的真实链接\n"
+                "（形如 https://xxx.feishu.cn/sheets/shtXXXXXXXX，勿用 .env.example 占位符）。\n"
+                "或配置 FEISHU_PORTFOLIO_NAME=持仓 让程序在云盘按名称搜索。"
+            ) from e
+        raise
     print(f"已下载持仓.xlsx ← 飞书 {dtype}/{token[:12]}...")
     from xlsx_utils import format_portfolio_xlsx
 
