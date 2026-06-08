@@ -1,1 +1,4 @@
-{}
+{
+  "EQUITY_TARGET_BELOW_CLEAR": 0.2,
+  "MAX_BUYS_PER_TICK": 0
+}
