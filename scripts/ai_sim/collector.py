@@ -12,9 +12,10 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 from ai_sim.config import TICK_ROOT
-from ai_sim.schedule_util import nearest_tick_label
+from ai_sim.schedule_util import nearest_tick_label, tick_phase
 from ai_sim.universe import UniverseEntry, build_universe
 from market_daily.fetch import fetch_indices
+from market_daily.supplement import build_supplement
 from portfolio_utils import fetch_spot_price
 
 
@@ -34,6 +35,8 @@ def collect_tick(*, force_label: str = "") -> str:
     now = datetime.now()
     day = now.strftime("%Y-%m-%d")
     label = force_label or nearest_tick_label(now)
+    phase = tick_phase(tick_label=label)
+    include_overnight = phase == "pre_open" or label in ("0915", "0930")
     out_dir = os.path.join(TICK_ROOT, day)
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir, f"{label}.json")
@@ -55,12 +58,19 @@ def collect_tick(*, force_label: str = "") -> str:
     ]
     stocks = [_quote_row(e) for e in universe]
 
+    try:
+        supplement = build_supplement(include_overnight=include_overnight, kline_limit=20)
+    except Exception as exc:
+        supplement = {"error": str(exc)}
+
     payload = {
         "timestamp": now.isoformat(timespec="seconds"),
         "tick": label,
+        "phase": phase,
         "indices": idx_rows,
         "universe_size": len(universe),
         "stocks": stocks,
+        "supplement": supplement,
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)

@@ -8,7 +8,8 @@ from datetime import datetime
 from typing import Any
 
 from ai_sim.agent_client import AgentClientError, run_analysis_prompt
-from ai_sim.config import DAILY_REPORT, JOURNAL_PATH, ROOT
+from ai_sim.config import DAILY_REPORT, JOURNAL_PATH
+from ai_sim.index_context import format_full_market_context
 from ai_sim.portfolio_ops import active_positions, cash_available, total_assets
 from ai_sim.runtime_params import PARAM_SCHEMA, apply_patch, defaults_for_agent, effective_all, snapshot
 from ai_sim.schedule_util import tick_phase, tick_phase_label
@@ -98,6 +99,8 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
         ),
     }.get(phase, "【盘中 tick】")
 
+    market_ctx_txt = format_full_market_context(tick_path, days=10)
+
     return f"""你是 CyberAdvisor 项目的 AI 模拟盘风控分析师。
 
 ## 当前阶段
@@ -143,6 +146,9 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 {tick_json}
 ```
 
+## 中长期市场上下文（判修复/上涨 — 必读）
+{market_ctx_txt}
+
 ## 交易日志尾部
 {journal_tail}
 
@@ -155,6 +161,11 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
   "analysis": "行情分析…",
   "param_changes": {{}},
   "hold_params": true,
+  "rebound_buy": {{
+    "signal": false,
+    "reason": "是否判断大盘处于中长期调整低点且即将修复/上涨（破4033时由你综合 Wiki+L3–L5 判断）",
+    "confidence": "low|medium|high"
+  }},
   "notes": "给本地规则引擎的补充说明（可选）"
 }}
 ```
@@ -162,6 +173,14 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 规则：
 - `param_changes` 为空对象 {{}} 表示本 tick 不调参
 - 数值必须在 schema 边界内
+- **`rebound_buy.signal`**（兼容 `dip_buy`）：判断 **中长期调整低点 + 大盘即将修复/上涨**（非日内 tick 最低）。须综合：
+  - **60 分钟 K 线**是否出现底部结构（L3）
+  - **近 N 日成交额**是否缩量企稳（L5）
+  - **北向/南向**与 **隔夜外盘**
+  - **上证/深成指/创业板** 多日走势 + Wiki 博主 L3–L5
+  - 仅在修复概率足够高时 `true`；不确定则 `false`
+- `rebound_buy.confidence`：`low` / `medium` / `high`（供日志参考，规则引擎只看 `signal`）
+- 若 `rebound_buy.signal=true`，建议同时将 `MAX_BUYS_PER_TICK` 设为 **≥1**（若当前为 0）
 - **指数纪律多层框架**（必读 `Wiki/投资方法论/指数纪律框架.md`）：
   - **L1** 4033/4130：规则引擎硬参数；上证 < 4033 时通常 `NO_BUY_BELOW_CLEAR: true` 且降低 `EQUITY_TARGET_BELOW_CLEAR`
   - **L2** 硬科技清仓：创业板/深成指趋势破位时叙事须提及
@@ -236,6 +255,21 @@ def _format_agent_block(agent: dict[str, Any] | None) -> list[str]:
         lines.append("*本 tick Agent 未调整参数（维持当前规则引擎配置）*")
         lines.append("")
 
+    rebound = agent.get("rebound_buy") or agent.get("dip_buy") or {}
+    if rebound:
+        sig = rebound.get("signal")
+        reason = (rebound.get("reason") or "").strip()
+        conf = (rebound.get("confidence") or "").strip()
+        if sig is not None:
+            lines.append("#### 修复建仓信号")
+            lines.append("")
+            lines.append(f"- **rebound_buy.signal**：{'是' if sig else '否'}")
+            if conf:
+                lines.append(f"- **置信度**：{conf}")
+            if reason:
+                lines.append(f"- **理由**：{reason}")
+            lines.append("")
+
     notes = (agent.get("notes") or "").strip()
     if notes:
         lines.append("#### 备注")
@@ -295,6 +329,12 @@ def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
     changes = parsed.get("param_changes") or {}
     if not isinstance(changes, dict):
         changes = {}
+    rebound_raw = parsed.get("rebound_buy") or parsed.get("dip_buy") or {}
+    rebound_buy = {
+        "signal": bool(rebound_raw.get("signal")) if isinstance(rebound_raw, dict) else False,
+        "reason": str(rebound_raw.get("reason") or "").strip() if isinstance(rebound_raw, dict) else "",
+        "confidence": str(rebound_raw.get("confidence") or "").strip() if isinstance(rebound_raw, dict) else "",
+    }
 
     applied, warnings = ({}, [])
     if changes and not hold_params:
@@ -307,6 +347,8 @@ def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
         "warnings": warnings,
         "notes": notes,
         "hold_params": hold_params,
+        "rebound_buy": rebound_buy,
+        "dip_buy": rebound_buy,
         "phase": phase,
         "agent_meta": meta,
     }

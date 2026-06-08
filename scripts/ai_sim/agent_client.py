@@ -1,15 +1,20 @@
 """Cursor Cloud Agents API 客户端（无 repo 分析模式 + 可选 GitHub repo）。"""
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
 import time
-import urllib.error
-import urllib.request
 from typing import Any
 
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 API_BASE = "https://api.cursor.com/v1"
+
+_SSL_MARKERS = ("UNEXPECTED_EOF", "SSL", "EOF occurred", "Connection reset")
 
 
 class AgentClientError(Exception):
@@ -25,36 +30,97 @@ def _api_key() -> str:
     return key
 
 
+def _make_session() -> requests.Session:
+    session = requests.Session()
+    session.trust_env = False
+    retry = Retry(
+        total=4,
+        connect=4,
+        read=4,
+        backoff_factor=1.0,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset(["GET", "POST"]),
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.headers.update({"Content-Type": "application/json", "Accept": "application/json"})
+    return session
+
+
+_SESSION: requests.Session | None = None
+
+
+def _session() -> requests.Session:
+    global _SESSION
+    if _SESSION is None:
+        _SESSION = _make_session()
+    return _SESSION
+
+
+def _auth_headers() -> dict[str, str]:
+    token = base64.b64encode(f"{_api_key()}:".encode()).decode()
+    return {"Authorization": f"Basic {token}"}
+
+
+def _is_sslish_error(exc: Exception) -> bool:
+    text = str(exc)
+    reason = getattr(getattr(exc, "args", [None])[0], "reason", None)
+    if reason is not None:
+        text = f"{text} {reason}"
+    return any(m in text for m in _SSL_MARKERS)
+
+
 def _request(method: str, path: str, body: dict | None = None, *, timeout: int = 120) -> dict:
     url = f"{API_BASE}{path}"
-    data = None
-    headers = {"Content-Type": "application/json", "Accept": "application/json"}
-    if body is not None:
-        data = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    import base64
+    headers = _auth_headers()
+    max_attempts = int(os.environ.get("AI_SIM_AGENT_HTTP_RETRIES", "4"))
+    last_err: Exception | None = None
 
-    token = base64.b64encode(f"{_api_key()}:".encode()).decode()
-    req.add_header("Authorization", f"Basic {token}")
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8")
-            return json.loads(raw) if raw.strip() else {}
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode("utf-8", errors="replace")
-        retryable = e.code in (429, 500, 502, 503, 504)
-        raise AgentClientError(f"HTTP {e.code}: {detail[:500]}", retryable=retryable) from e
-    except urllib.error.URLError as e:
-        raise AgentClientError(f"网络错误: {e.reason}", retryable=True) from e
+    for attempt in range(1, max_attempts + 1):
+        try:
+            resp = _session().request(
+                method,
+                url,
+                headers=headers,
+                json=body,
+                timeout=timeout,
+            )
+            if resp.status_code >= 400:
+                detail = (resp.text or "")[:500]
+                retryable = resp.status_code in (429, 500, 502, 503, 504)
+                err = AgentClientError(f"HTTP {resp.status_code}: {detail}", retryable=retryable)
+                if retryable and attempt < max_attempts:
+                    time.sleep(min(2 ** attempt, 8))
+                    continue
+                raise err
+            if not resp.text.strip():
+                return {}
+            return resp.json()
+        except AgentClientError:
+            raise
+        except requests.RequestException as e:
+            last_err = e
+            retryable = _is_sslish_error(e) or isinstance(
+                e, (requests.ConnectionError, requests.Timeout, requests.ChunkedEncodingError)
+            )
+            if retryable and attempt < max_attempts:
+                time.sleep(min(2 ** attempt, 8))
+                continue
+            raise AgentClientError(f"网络错误: {e}", retryable=retryable) from e
+
+    raise AgentClientError(f"网络错误: {last_err}", retryable=True) from last_err
 
 
 def _github_default_branch(owner: str, repo: str) -> str | None:
     url = f"https://api.github.com/repos/{owner}/{repo}"
-    req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json"})
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode())
-        return str(data.get("default_branch") or "") or None
+        resp = _session().get(
+            url,
+            headers={"Accept": "application/vnd.github+json"},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        return str(resp.json().get("default_branch") or "") or None
     except Exception:
         return None
 

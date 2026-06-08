@@ -16,6 +16,8 @@ from market_daily.fetch import (
     fetch_indices,
     fetch_stocks_by_codes,
 )
+from market_daily.history_store import append_daily_snapshot
+from market_daily.supplement import build_supplement, indices_to_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 WIKI = ROOT.parent / "Wiki"
@@ -342,6 +344,45 @@ def build_report() -> str:
 
     # 5. 总结
     lines.extend(_generate_summary(indices, gain_boards, loss_boards, track_quotes, track_names, code_map))
+
+    # 6. 补充数据摘要 + 写入历史 JSON
+    lines.append("## 六、补充数据摘要")
+    lines.append("")
+    try:
+        sup = build_supplement(include_overnight=True, kline_limit=8)
+        nb = sup.get("northbound") or {}
+        if nb:
+            lines.append(
+                f"- **北向净流入**：{nb.get('north_net_yi', '—')} 亿元 | "
+                f"**南向**：{nb.get('south_net_yi', '—')} 亿元"
+            )
+        overnight = sup.get("overnight") or []
+        if overnight:
+            parts = [f"{q['name']} {q['change_pct']:+.2f}%" for q in overnight[:4]]
+            lines.append(f"- **隔夜外盘**：{' | '.join(parts)}")
+        k60 = sup.get("kline_60m") or {}
+        sh_bars = (k60.get("000001") or {}).get("bars") or []
+        if sh_bars:
+            last = sh_bars[-1]
+            lines.append(
+                f"- **上证 60min 最新**：{last.get('time','')} 收 {last['close']:.2f} "
+                f"（低 {last['low']:.2f} 高 {last['high']:.2f}）"
+            )
+        lines.append("")
+        lines.append(f"> 完整序列见 `Wiki/数据/市场历史摘要.json`；tick 含 `supplement` 字段。")
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        append_daily_snapshot(
+            date=date_str,
+            indices=indices_to_snapshot(indices),
+            northbound={
+                "north_net_yi": nb.get("north_net_yi"),
+                "south_net_yi": nb.get("south_net_yi"),
+            },
+            source="daily_report",
+        )
+    except Exception as e:
+        lines.append(f"（补充数据获取失败：{e}）")
+        lines.append("")
 
     lines.append("")
     lines.append("---")

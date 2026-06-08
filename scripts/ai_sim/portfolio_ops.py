@@ -56,7 +56,10 @@ def total_assets() -> float:
 
 
 def equity_ratio() -> float:
-    return total_assets() / TOTAL_CASH if TOTAL_CASH else 0.0
+    """股票市值占总资金比例（与仓位目标同一口径）。"""
+    pos = active_positions()
+    mkt = _portfolio_totals(pos)["total_mkt"] if not pos.empty else 0.0
+    return mkt / TOTAL_CASH if TOTAL_CASH else 0.0
 
 
 def _price_suspect(price: float, cost: float) -> bool:

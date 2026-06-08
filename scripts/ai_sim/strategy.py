@@ -52,12 +52,12 @@ def _sell_reason_kind(pnl_pct: float) -> tuple[str, str]:
     return ("风控降仓", "")
 
 
-def _buy_reason(e: UniverseEntry, target_ratio: float, current_ratio: float, regime: str) -> tuple[str, str]:
+def _buy_reason(e: UniverseEntry, target_ratio: float, current_ratio: float, regime: str, *, rebound: bool = False) -> tuple[str, str]:
     src = _SOURCE_LABEL.get(e.source, e.source)
-    kind = "涨幅榜买入" if e.source == "daily_gain" else "追踪买入"
+    kind = "修复建仓" if rebound else ("涨幅榜买入" if e.source == "daily_gain" else "追踪买入")
     detail = (
         f"{regime}；当前仓位 {current_ratio:.0%} 低于目标 {target_ratio:.0%}，"
-        f"从{src}选股建仓"
+        f"从{src}选股{'（Agent 判定大盘即将修复/上涨）' if rebound else '建仓'}"
     )
     return kind, detail
 
@@ -115,7 +115,7 @@ class TradePlan:
     quotes: dict[str, dict] = field(default_factory=dict)
 
 
-def plan_trades(tick_path: str) -> TradePlan:
+def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
     from ai_sim.runtime_params import reload
 
     reload()
@@ -129,6 +129,9 @@ def plan_trades(tick_path: str) -> TradePlan:
     decisions: list[Decision] = []
     buy_skip = ""
     tick_note = "每 15 分钟采集行情；仅在有明确信号时成交，默认观望"
+    rebound = (agent or {}).get("rebound_buy") or (agent or {}).get("dip_buy") or {}
+    rebound_signal = bool(agent and agent.get("ok") and rebound.get("signal"))
+    rebound_allowed = rebound_signal
 
     # 卖出：止损 / 止盈 / 超配降仓（建仓当日不降仓）
     rebalance_slots = 0
@@ -161,9 +164,19 @@ def plan_trades(tick_path: str) -> TradePlan:
             decisions.append(Decision("sell", name, code, kind, detail, "风控"))
             rebalance_slots += 1
 
-    # 买入：需明确信号，4033 下不开新仓
-    if param("NO_BUY_BELOW_CLEAR") and sh is not None and sh < LINE_CLEAR:
-        buy_skip = f"上证 {sh:.2f} < {LINE_CLEAR}，4033 软约束下不开新仓（本 tick 仅观察）"
+    # 买入：4033 下默认禁买；Agent 判定「中长期低点/即将修复」时可例外
+    blocked_below_clear = param("NO_BUY_BELOW_CLEAR") and sh is not None and sh < LINE_CLEAR
+    if blocked_below_clear and not rebound_allowed:
+        parts = [f"上证 {sh:.2f} < {LINE_CLEAR}，4033 软约束下不开新仓"]
+        if not rebound_signal:
+            parts.append(
+                "需 Agent `rebound_buy.signal=true`（判断大盘处于中长期低点且即将修复/上涨）方可试探建仓"
+            )
+        elif not agent or not agent.get("ok"):
+            parts.append("Agent 未成功分析，无法发出修复建仓信号")
+        else:
+            parts.append("Agent 未给出修复建仓信号")
+        buy_skip = "；".join(parts) + "（本 tick 仅观察）"
     elif len(held) >= MAX_POSITIONS:
         buy_skip = f"已达最大持仓 {MAX_POSITIONS} 只，不再新开仓"
     elif current_ratio >= target_ratio - param("BUY_MIN_GAP"):
@@ -192,22 +205,29 @@ def plan_trades(tick_path: str) -> TradePlan:
             if e.source == "track":
                 score += 0.3
             chg = q.get("change_pct")
-            if chg is not None and float(chg) < 0:
+            if chg is not None and float(chg) < 0 and not rebound_allowed:
                 continue
+            if rebound_allowed and chg is not None and float(chg) < 0:
+                score += 0.2
             candidates.append((score, e))
 
+        if rebound_allowed:
+            tick_note += "；Agent 判定大盘即将修复/上涨，允许破线环境下试探建仓"
+        max_buys = param("MAX_BUYS_PER_TICK")
+        if rebound_allowed and max_buys < 1:
+            max_buys = 1
         candidates.sort(key=lambda x: -x[0])
         if not candidates:
-            buy_skip = "标的池无满足条件的候选（需 tick 有报价且当日涨幅≥0），跳过买入"
+            buy_skip = "标的池无满足条件的候选（需 tick 有报价；修复建仓允许当日下跌标的），跳过买入"
         elif slot < param("MIN_TRADE_YUAN") or budget_left < param("MIN_TRADE_YUAN"):
             buy_skip = f"可用预算 {budget_left:,.0f} 元低于最小成交额 {param('MIN_TRADE_YUAN'):,.0f} 元"
         else:
-            for _, e in candidates[: param("MAX_BUYS_PER_TICK")]:
+            for _, e in candidates[:max_buys]:
                 if slot < param("MIN_TRADE_YUAN") or budget_left < param("MIN_TRADE_YUAN"):
                     break
                 style = "短线" if e.source == "daily_gain" else "波段"
                 amt = min(slot, budget_left)
-                kind, detail = _buy_reason(e, target_ratio, current_ratio, regime)
+                kind, detail = _buy_reason(e, target_ratio, current_ratio, regime, rebound=rebound_allowed)
                 decisions.append(
                     Decision(
                         "buy",

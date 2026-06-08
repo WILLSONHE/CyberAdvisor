@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "updated": "2026-06-08T14:54:15",
+  "daily": [
+    {
+      "date": "2026-06-05",
+      "indices": {
+        "000001": {
+          "close": 4027.74,
+          "low": 4015.06,
+          "high": 4078.93,
+          "open": 4044.83,
+          "change_pct": -0.74,
+          "turnover_yi": 13638.88
+        },
+        "399001": {
+          "close": 15314.7,
+          "low": 15243.51,
+          "high": 15710.14,
+          "open": 15595.7,
+          "change_pct": -2.21,
+          "turnover_yi": 17053.04
+        },
+        "399006": {
+          "close": 3957.94,
+          "low": 3933.07,
+          "high": 4105.21,
+          "open": 4079.95,
+          "change_pct": -3.2,
+          "turnover_yi": 8160.92
+        }
+      },
+      "northbound": {},
+      "source": "tick_seed"
+    },
+    {
+      "date": "2026-06-08",
+      "indices": {
+        "000001": {
+          "close": 3963.1,
+          "low": 3927.85,
+          "high": 4007.49,
+          "open": 3938.71,
+          "change_pct": -1.6,
+          "turnover_yi": 11952.96
+        },
+        "399001": {
+          "close": 14843.67,
+          "low": 14681.64,
+          "high": 15137.75,
+          "open": 14835.37,
+          "change_pct": -3.08,
+          "turnover_yi": 14352.98
+        },
+        "399006": {
+          "close": 3819.95,
+          "low": 3776.93,
+          "high": 3903.77,
+          "open": 3820.23,
+          "change_pct": -3.49,
+          "turnover_yi": 6787.07
+        }
+      },
+      "northbound": {},
+      "source": "tick_seed"
+    }
+  ]
+}

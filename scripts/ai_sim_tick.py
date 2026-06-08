@@ -50,7 +50,7 @@ def run(*, force: bool = False, tick_label: str = "", agent: bool = True) -> int
     else:
         agent_result = None
 
-    trade_plan = plan_trades(path)
+    trade_plan = plan_trades(path, agent=agent_result)
     trades = execute_decisions(trade_plan.decisions, tick_quotes=trade_plan.quotes)
     new_journal = append_tick_summary(
         path,

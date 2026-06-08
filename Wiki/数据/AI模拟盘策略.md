@@ -44,6 +44,12 @@
 
 - Agent **只调** `AI模拟盘参数.override.json` 中 schema 允许的键；**不直接改** `模拟持仓.xlsx`。
 - 默认 **observe-only 倾向**：无止损/止盈/明显欠配且允许开仓时，可不成交。
+- **修复建仓**：上证 < 4033 时默认禁买；Agent `rebound_buy.signal=true` 时规则引擎可试探建仓。判断须用 **补充数据包**（`tick.supplement` + `Wiki/数据/市场历史摘要.json`）：
+  - **60 分钟 K 线**（L3 底部结构）
+  - **近 N 日成交额**（L5 缩量）
+  - **北向/南向** 当日与历史
+  - **隔夜外盘**（09:15/09:30 tick）
+  - **上证/深成指/创业板** 多日收盘序列
 - 日志写入 `Wiki/数据/AI模拟交易日志.md`（含 Agent 分析与调参记录）。
 
 ---
@@ -70,7 +76,8 @@
 - 参数 override：`Wiki/数据/AI模拟盘参数.override.json`
 - 现金台账：`Wiki/数据/AI模拟盘现金.json`
 - 交易日志：`Wiki/数据/AI模拟交易日志.md`
-- Tick 数据：`Raw/每15分钟市场数据/YYYY-MM-DD/HHMM.json`
+- Tick 数据：`Raw/每15分钟市场数据/YYYY-MM-DD/HHMM.json`（含 `supplement`）
+- 市场历史摘要：`Wiki/数据/市场历史摘要.json`（近 30 日指数/成交额/北向）
 - 指数纪律中枢：`Wiki/投资方法论/指数纪律框架.md`
 
-*最后更新：2026-06-08 · discipline-upgrade*
+*最后更新：2026-06-08 · market-supplement-6pack*
