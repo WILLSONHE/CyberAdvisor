@@ -148,7 +148,14 @@ def _generate_summary(
             disc = f"**已触发**：上证收盘 **{sh.close:.2f}** ≥ {LINE_FULL} 满仓线"
         else:
             disc = f"上证收盘 **{sh.close:.2f}**，处于 {LINE_CLEAR}–{LINE_FULL} 区间（未破线）"
-        lines.append(f"- {disc}（对照 [[风控逻辑]]、[[2026-06-05]] 4033/4130 标准）")
+        lines.append(f"- {disc}（L1 机械层；完整 L1–L5 见 [[指数纪律框架]]）")
+        if sh.close < LINE_CLEAR:
+            lines.append(
+                f"- **L3 纠错回补**：4120 站稳或 60 分钟及以上明确底部前，叙事上不轻易回补硬科技"
+            )
+            lines.append(
+                f"- **L4 结构**：4000 整数关 → 3950；**L5**：量能/缩量为企稳核心前提"
+            )
         lines.append(
             f"- 全日：开 {sh.open:.2f} → 高 {sh.high:.2f} / 低 {sh.low:.2f} → 收 {sh.close:.2f}，"
             f"跌 {sh.change:.2f}（{sh.change_pct:+.2f}%），成交额约 **{fmt_money(sh.turnover_yi)} 亿元**"
@@ -202,8 +209,9 @@ def _generate_summary(
 
     # --- 5.4 方法论 ---
     lines.append("### 5.4 投资方法论要点对照")
-    lines.append("- **仓位管理**：4033 破线 → 机械清仓优先于「不能看空」定性（[[仓位管理]]）")
-    lines.append("- **情绪周期**：缩量调整末期的定性需 **收盘确认**；破 4033 则进入防守窗口（[[情绪周期与操作节奏]]）")
+    lines.append("- **指数纪律**：L1 4033/4130 机械层 + L3 4120/60 分钟回补 + L4 4000→3950 + L5 缩量（[[指数纪律框架]]）")
+    lines.append("- **仓位管理**：4033 破线 → L1 机械防守；**回补须 L3**，非仅站回 4033（[[仓位管理]]）")
+    lines.append("- **情绪周期**：缩量调整末期的定性需 **收盘确认**；破 4033 则进入 L1 防守窗口（[[情绪周期与操作节奏]]）")
     lines.append("- **选股框架**：主线仍在 AI 基建/国产算力产业逻辑，但 **点位纪律 > 板块叙事**（[[选股框架]]）")
     lines.append("")
 
@@ -215,7 +223,9 @@ def _generate_summary(
             avg = sum(p for _, p in perf) / len(perf)
             robot_hint = "机器人偏强" if gain_boards and "机器人" in gain_boards[0].name else "板块分化"
             tail = f"；{robot_hint}，追踪池均值 {avg:+.2f}%"
-        lines.append(f"> 上证收 **{sh.close:.2f}** 破 **{LINE_CLEAR}**，先执行纪律{tail}。")
+        lines.append(
+            f"> 上证收 **{sh.close:.2f}** 破 **{LINE_CLEAR}**（L1）；回补看 **4120/60 分钟底**（L3），结构 **4000→3950**、**缩量** 验证企稳{tail}。"
+        )
     elif sh:
         lines.append(f"> 上证 **{sh.close:.2f}** 守于 {LINE_CLEAR} 之上，结构分化，按博主主线持仓观察。")
     lines.append("")

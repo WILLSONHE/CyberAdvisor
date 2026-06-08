@@ -7,9 +7,10 @@ subtitle_lang: 中文
 pub_time: 2026-05-21
 fetched_at: 2026-06-08 01:14
 refetched_at: 2026-06-08 01:14
-review_status: approved
+review_status: ingested
 rw_at: 2026-06-08 01:20
 approved_at: 2026-06-08 01:21
+ingested_at: 2026-06-08 09:43
 ---
 
 # 谁能想到一周要抄两次底？

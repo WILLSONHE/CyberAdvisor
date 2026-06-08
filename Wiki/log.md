@@ -4,6 +4,25 @@
 
 ---
 
+## [2026-06-08] discipline-upgrade | 指数纪律框架 L1–L5
+
+- 操作类型：discipline-upgrade（ingest 方法论上浮）
+- **新建**：[[指数纪律框架]] — 4033/4130（L1）+ 硬科技清仓（L2）+ 4120/60min（L3）+ 4000→3950（L4）+ 缩量（L5）
+- **更新**：[[大盘研判历史]]、[[风控逻辑]]、[[仓位管理]]、[[AI模拟盘策略]]
+- **代码**：`wiki_context.py`（注入指数纪律 + 最新日更）、`agent_review.py` prompt、`market_daily/report.py` 第五节
+- **规范**：`schema.md` § 十·一、`SKILL.md` ing 步骤 6
+- 触发来源：[[2026-06-08]] 早盘新指标此前仅存在于日更
+
+## [2026-06-08] ingest × 2 + 视频归档 × 4
+
+- 操作类型：ingest
+- **Raw**：
+  - 早盘：26-06-08 → [[2026-06-08]]
+  - 动态：26-06-08：大盘一步到位 → [[2026-06-08#六、动态（09:28）]]
+- **视频**（Wiki 已于早先入库，本次补 `review_status: ingested`）：
+  - BV1ZLLb6UEgy、BV1gkGq6pEuG、BV1oWG26xEmr、BV1auEt61EJj
+- 更新：index.md、[[板块轮动记录]]（06-08 节）
+
 ## [2026-06-08] 投资方法论整理 | 单根K线 + 复盘与看盘 + 归档修复
 
 - **Wiki 新建**：[[单根K线]]（BV1gPVs69E6C + BV1Pj7S64EQ4 全文梳理）、[[复盘与看盘]]（BV17sLY6FEcL）

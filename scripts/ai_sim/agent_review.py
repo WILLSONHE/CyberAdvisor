@@ -162,7 +162,12 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 规则：
 - `param_changes` 为空对象 {{}} 表示本 tick 不调参
 - 数值必须在 schema 边界内
-- 4033 软约束：上证 < 4033 时通常应 `NO_BUY_BELOW_CLEAR: true` 且降低 `EQUITY_TARGET_BELOW_CLEAR`
+- **指数纪律多层框架**（必读 `Wiki/投资方法论/指数纪律框架.md`）：
+  - **L1** 4033/4130：规则引擎硬参数；上证 < 4033 时通常 `NO_BUY_BELOW_CLEAR: true` 且降低 `EQUITY_TARGET_BELOW_CLEAR`
+  - **L2** 硬科技清仓：创业板/深成指趋势破位时叙事须提及
+  - **L3** 回补须 **4120 站稳** 或 **60 分钟及以上明确底部** — **禁止**写「站回 4033 即可回补」
+  - **L4** 4000→3950 结构；**L5** 缩量验证企稳
+- `analysis` 须分层表述 L1 +（破线/调整环境下）L3–L5，不可只写 4033
 - 不要输出除 JSON 以外的内容
 """
 

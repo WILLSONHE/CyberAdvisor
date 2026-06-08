@@ -2,26 +2,54 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 from ai_sim.config import DAILY_REPORT, ROOT
 
 WIKI_ROOT = os.path.join(ROOT, "Wiki")
 STRATEGY_MD = os.path.join(WIKI_ROOT, "数据", "AI模拟盘策略.md")
+INDEX_DISCIPLINE_MD = os.path.join(WIKI_ROOT, "投资方法论", "指数纪律框架.md")
+MARKET_HISTORY_MD = os.path.join(WIKI_ROOT, "市场分析", "大盘研判历史.md")
+DAILY_REVIEW_DIR = os.path.join(WIKI_ROOT, "每日复盘")
 
-# 每 tick 必读（策略与框架）
+_DAILY_REVIEW_NAME = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
+
+# 每 tick 必读（策略与框架）；最新日更 / 指数纪律在 build 时动态插入
 CORE_READ_PATHS: tuple[str, ...] = (
     STRATEGY_MD,
+    INDEX_DISCIPLINE_MD,
     os.path.join(WIKI_ROOT, "投资方法论", "宏观分析框架.md"),
     os.path.join(WIKI_ROOT, "投资方法论", "选股框架.md"),
     os.path.join(WIKI_ROOT, "投资方法论", "仓位管理.md"),
     os.path.join(WIKI_ROOT, "投资方法论", "风控逻辑.md"),
+    MARKET_HISTORY_MD,
     DAILY_REPORT,
     os.path.join(WIKI_ROOT, "其他材料", "_index.md"),
 )
 
 SKIP_PARTS = ("_extracts",)
 SKIP_NAMES = frozenset({"feishu_debug.log"})
+
+
+def latest_daily_review_path() -> str | None:
+    """最近一篇标准日更 `YYYY-MM-DD.md`（不含专题后缀页）。"""
+    if not os.path.isdir(DAILY_REVIEW_DIR):
+        return None
+    names = [n for n in os.listdir(DAILY_REVIEW_DIR) if _DAILY_REVIEW_NAME.match(n)]
+    if not names:
+        return None
+    return os.path.join(DAILY_REVIEW_DIR, sorted(names)[-1])
+
+
+def core_read_paths() -> list[str]:
+    paths = list(CORE_READ_PATHS)
+    latest = latest_daily_review_path()
+    if latest:
+        # 紧接策略与指数纪律之后注入最新日更
+        insert_at = 2 if paths[1] == INDEX_DISCIPLINE_MD else 1
+        paths.insert(insert_at, latest)
+    return paths
 
 
 def _read_slice(path: str, *, max_chars: int) -> str:
@@ -52,6 +80,10 @@ def wiki_manifest() -> str:
         rel = os.path.relpath(path, WIKI_ROOT).replace("\\", "/")
         lines.append(f"- `Wiki/{rel}`")
     lines.append(f"\n共 **{len(lines) - 3}** 个 markdown 页面。")
+    latest = latest_daily_review_path()
+    if latest:
+        rel = os.path.relpath(latest, WIKI_ROOT).replace("\\", "/")
+        lines.append(f"\n**最新日更（必读）**：`Wiki/{rel}`")
     return "\n".join(lines)
 
 
@@ -64,8 +96,9 @@ def build_wiki_context(*, max_chars: int = 16000) -> str:
     parts.append(manifest)
     budget -= len(manifest)
 
-    per_core = max(1200, budget // max(len(CORE_READ_PATHS), 1))
-    for path in CORE_READ_PATHS:
+    paths = core_read_paths()
+    per_core = max(1200, budget // max(len(paths), 1))
+    for path in paths:
         rel = os.path.relpath(path, ROOT)
         block = f"\n---\n### `{rel}`\n\n" + _read_slice(path, max_chars=per_core)
         parts.append(block)
