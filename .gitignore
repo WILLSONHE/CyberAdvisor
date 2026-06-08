@@ -8,3 +8,7 @@ __pycache__/
 Wiki/数据/feishu_debug.log
 .obsidian/
 云/
+
+# Raw/ 本地文稿、视频稿、材料与 tick 行情不进库；目录结构靠 .gitkeep
+Raw/**/*
+!Raw/**/.gitkeep
