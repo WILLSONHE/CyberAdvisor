@@ -121,7 +121,7 @@ def cmd_extract_all(*, out_dir: str) -> int:
         return 0
     for src in files:
         stem = os.path.splitext(os.path.basename(src))[0]
-        dest = os.path.join(out_dir, f"{stem}.extract.md")
+        dest = os.path.join(out_dir, f"{stem}.md")
         cmd_extract(src, out=dest)
     print(f"已提取 {len(files)} 个 → {out_dir}")
     return 0

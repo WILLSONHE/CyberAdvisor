@@ -304,7 +304,7 @@ def run(*, dry_run: bool = False) -> int:
     written: list[tuple[str, str, str]] = []
     for src in sources:
         stem = Path(src).stem
-        extract_path = EXTRACT_DIR / f"{stem}.extract.md"
+        extract_path = EXTRACT_DIR / f"{stem}.md"
         if not extract_path.is_file():
             print(f"[SKIP] 无提取稿: {stem}")
             continue
