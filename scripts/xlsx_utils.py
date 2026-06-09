@@ -1,8 +1,10 @@
 """Excel 写入与数字显示格式（千位分隔）。"""
 from __future__ import annotations
 
-import sys
 import os
+import sys
+import tempfile
+import time
 
 from openpyxl import load_workbook
 
@@ -20,6 +22,41 @@ PORTFOLIO_INT_COLS = ("股数",)
 SIM_MONEY_COLS = ("成本", "现价", "市值", "盈亏")
 SIM_INT_COLS = ("股数", "持仓时间(天)")
 TEXT_COLS = ("代码",)
+
+
+def _save_workbook(wb, path: str) -> None:
+    """Save via temp file + replace — avoids Windows Errno 22 on in-place overwrite."""
+    path = os.path.abspath(path)
+    directory = os.path.dirname(path) or "."
+    last_err: OSError | None = None
+    try:
+        for attempt in range(3):
+            fd, tmp = tempfile.mkstemp(suffix=".xlsx", dir=directory)
+            os.close(fd)
+            try:
+                wb.save(tmp)
+                os.replace(tmp, path)
+                return
+            except OSError as e:
+                last_err = e
+                if os.path.exists(tmp):
+                    try:
+                        os.remove(tmp)
+                    except OSError:
+                        pass
+                if attempt < 2:
+                    time.sleep(0.25 * (attempt + 1))
+            except Exception:
+                if os.path.exists(tmp):
+                    try:
+                        os.remove(tmp)
+                    except OSError:
+                        pass
+                raise
+        if last_err:
+            raise last_err
+    finally:
+        wb.close()
 
 
 def apply_column_formats(
@@ -65,7 +102,7 @@ def apply_column_formats(
             cell.value = format_code_for_excel(parse_code_from_excel_cell(cell.value))
             cell.number_format = "@"
 
-    wb.save(path)
+    _save_workbook(wb, path)
 
 
 def write_dataframe_xlsx(

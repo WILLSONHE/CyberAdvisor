@@ -79,5 +79,7 @@ echo.
 echo [FAIL] Pipeline stopped. See errors above.
 
 :end
-echo.
-pause
+if /i not "%~2"=="_nopause" (
+  echo.
+  pause
+)

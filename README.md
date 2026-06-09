@@ -97,13 +97,13 @@ sim 卖 利通电子            # 模拟卖出并冻结盈亏
 
 ### 4. AI 模拟持仓（500 万自主盘）
 
-根目录 **`模拟持仓.xlsx`**，持有人 **AI**，总资金 **500 万元**。盘中由计划任务每 **15 分钟** 执行 `ai_sim_tick.bat`：**采集 → Cloud Agent 分析/调参 → 规则引擎买卖（有信号才成交）** → 写入 **`Wiki/数据/AI模拟交易日志.md`**。行情快照：`Raw/每15分钟市场数据/`。
+根目录 **`模拟持仓.xlsx`**，持有人 **AI**，总资金 **500 万元**。盘中由计划任务每 **15 分钟** 执行 `ai_sim_tick.bat`（**09:30–11:15、13:00–14:45**；**11:30 / 15:00 休市改跑 `daily.bat`**）：**采集 → Cloud Agent 分析/调参 → 规则引擎买卖（有信号才成交）** → 写入 **`Wiki/数据/AI模拟交易日志.md`**。行情快照：`Raw/每15分钟市场数据/`。
 
 首次启用 Cloud Agent：复制 `.env.example` 为 `.env`，填入 `CURSOR_API_KEY`（[Cursor Integrations](https://cursor.com/dashboard/integrations)）。
 
 | 操作 | 说明 |
 |------|------|
-| 注册计划任务 | 管理员 PowerShell：`.\scripts\ai_sim_register_tasks.ps1` |
+| 注册计划任务 | 管理员 PowerShell：`.\scripts\ai_sim_register_tasks.ps1`（19× sim tick + 11:30/15:00 daily） |
 | 手动跑一次 | `.\ai_sim_tick.bat --force`；加 `--no-agent` 跳过 Cloud Agent |
 | 归零重启 | `python scripts/ai_sim_reset.py` |
 | 手动干预 | `sim 买/卖 …`（飞书 Bot 或 CLI，见 `sim_portfolio.py`） |
@@ -126,7 +126,7 @@ python ai_sim_tick.py --force
 
 ### 每日操作
 
-**一键流水线**（双击根目录 `daily.bat`，在新终端依次执行 **8 步**）：
+**一键流水线**（双击根目录 `daily.bat`，在新终端依次执行 **8 步**；计划任务 **11:30 / 15:00** 自动跑 `daily.bat _run _nopause`）：
 
 | 步 | 脚本 | 说明 |
 |---|------|------|

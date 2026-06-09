@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-08T14:54:15",
+  "updated": "2026-06-09T11:57:27",
   "daily": [
     {
       "date": "2026-06-05",
@@ -37,32 +37,75 @@
       "date": "2026-06-08",
       "indices": {
         "000001": {
-          "close": 3963.1,
-          "low": 3927.85,
-          "high": 4007.49,
+          "name": "上证指数",
+          "close": 3959.34,
           "open": 3938.71,
-          "change_pct": -1.6,
-          "turnover_yi": 11952.96
+          "high": 4007.49,
+          "low": 3927.85,
+          "change_pct": -1.7,
+          "turnover_yi": 12672.77
         },
         "399001": {
-          "close": 14843.67,
-          "low": 14681.64,
-          "high": 15137.75,
+          "name": "深证成指",
+          "close": 14821.19,
           "open": 14835.37,
-          "change_pct": -3.08,
-          "turnover_yi": 14352.98
+          "high": 15137.75,
+          "low": 14681.64,
+          "change_pct": -3.22,
+          "turnover_yi": 15254.61
         },
         "399006": {
-          "close": 3819.95,
-          "low": 3776.93,
-          "high": 3903.77,
+          "name": "创业板指",
+          "close": 3811.79,
           "open": 3820.23,
-          "change_pct": -3.49,
-          "turnover_yi": 6787.07
+          "high": 3903.77,
+          "low": 3776.93,
+          "change_pct": -3.69,
+          "turnover_yi": 7224.02
         }
       },
-      "northbound": {},
-      "source": "tick_seed"
+      "northbound": {
+        "north_net_yi": 0.0,
+        "south_net_yi": 0.0
+      },
+      "source": "daily_report"
+    },
+    {
+      "date": "2026-06-09",
+      "indices": {
+        "000001": {
+          "name": "上证指数",
+          "close": 3979.68,
+          "open": 3977.54,
+          "high": 3980.27,
+          "low": 3955.91,
+          "change_pct": 0.51,
+          "turnover_yi": 7266.21
+        },
+        "399001": {
+          "name": "深证成指",
+          "close": 15007.11,
+          "open": 14992.55,
+          "high": 15011.55,
+          "low": 14846.55,
+          "change_pct": 1.25,
+          "turnover_yi": 8871.53
+        },
+        "399006": {
+          "name": "创业板指",
+          "close": 3884.54,
+          "open": 3865.69,
+          "high": 3896.18,
+          "low": 3823.76,
+          "change_pct": 1.91,
+          "turnover_yi": 4301.46
+        }
+      },
+      "northbound": {
+        "north_net_yi": 0.0,
+        "south_net_yi": 0.0
+      },
+      "source": "daily_report"
     }
   ]
 }
