@@ -1,7 +1,15 @@
 """Excel 写入与数字显示格式（千位分隔）。"""
 from __future__ import annotations
 
+import sys
+import os
+
 from openpyxl import load_workbook
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPT_DIR)
+from portfolio_utils import format_code_for_excel, parse_code_from_excel_cell
 
 MONEY_FMT = "#,##0.00"
 INT_FMT = "#,##0"
@@ -54,10 +62,7 @@ def apply_column_formats(
             cell = ws.cell(row=row, column=ci)
             if cell.value is None or str(cell.value).strip() == "":
                 continue
-            s = str(cell.value).strip().replace(".0", "")
-            if s.isdigit() and len(s) < 6:
-                s = s.zfill(6)
-            cell.value = s
+            cell.value = format_code_for_excel(parse_code_from_excel_cell(cell.value))
             cell.number_format = "@"
 
     wb.save(path)
@@ -73,11 +78,7 @@ def write_dataframe_xlsx(
 ) -> None:
     out = df.copy()
     if "代码" in out.columns:
-        out["代码"] = out["代码"].apply(
-            lambda c: str(c).strip().replace(".0", "").zfill(6)
-            if str(c).strip().replace(".0", "").isdigit() and len(str(c).strip().replace(".0", "")) <= 6
-            else c
-        )
+        out["代码"] = out["代码"].apply(lambda c: format_code_for_excel(c))
     out.to_excel(path, index=False)
     apply_column_formats(path, money_cols=money_cols, int_cols=int_cols, text_cols=text_cols)
 

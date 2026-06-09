@@ -24,6 +24,7 @@
 │   ├── 投资方法论/
 │   ├── 市场分析/
 │   ├── 每日复盘/
+│   ├── 视频专题/            ← 已审阅视频重组（复盘/宏观/产业/方法论）
 │   ├── 博主/
 │   ├── 其他材料/
 │   └── 数据/                ← 脚本输出（市场状态日报、AI 模拟日志等）
@@ -75,7 +76,21 @@
 
 来源：`Raw/已审阅视频文稿/`（`review_status: approved`；用户 `txtcfm` 批量审批后移入此目录）。
 
-流程：`bilibili_fetch` → `Raw/未审阅视频文稿/` → `rw` → **`txtcfm`**（→ `已审阅视频文稿/`）→ `ing`。ing 完成后 **`review_status: ingested`，文件留在 `Raw/已审阅视频文稿/`**（不进 `已分析归档`；`archive_raw.py archive` 自动识别视频稿）。
+流程：`bilibili_fetch` → `Raw/未审阅视频文稿/` → `rw` → **`txtcfm`**（→ `已审阅视频文稿/`）→ **`ing`（双轨）**。
+
+**`ing` 必须遍历 `Raw/已审阅视频文稿/`**（队列：`python scripts/ing_pending.py`）：
+
+| 轨道 | 写入位置 | 内容性质 |
+|------|----------|----------|
+| A · 日更 | `Wiki/每日复盘/YYYY-MM-DD.md` | 操作信号、指数纪律、当日摘要 |
+| B · 视频专题 | `Wiki/视频专题/{复盘\|宏观\|产业\|方法论}/视频YY-MM-DD-标题.md` | 全文理解后结构化重组（非粘贴字幕） |
+
+完成后：
+- Raw：`review_status: ingested`，文件**留在** `Raw/已审阅视频文稿/`（不进 `已分析归档`；`archive_raw.py archive` 自动识别视频稿）
+- Raw frontmatter 追加：`wiki_topic_path`、`wiki_topic_at`（`python scripts/wiki/video_topic.py mark ...`）
+- 更新 [[视频专题索引]]、`index.md`、`log.md`
+
+仅日更已入库、专题缺失：`review_status: ingested` 且无 `wiki_topic_path` 时，`ing` 仍须补做轨道 B。
 
 ---
 

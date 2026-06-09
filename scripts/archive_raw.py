@@ -66,6 +66,18 @@ def archive_file(src: str, *, dry_run: bool = False) -> str:
         dest = mark_video_ingested(src, dry_run=dry_run)
         label = "ingested (已审阅视频文稿)" if not dry_run else "ingested"
         print(f"  [OK] {os.path.basename(dest)} -> {label}")
+        if not dry_run:
+            try:
+                from wiki.video_topic import _read_fm
+
+                fm, _ = _read_fm(dest)
+                if not fm.get("wiki_topic_path"):
+                    print(
+                        "  [WARN] wiki_topic_path 未设置 — ing 须写入 Wiki/视频专题/ 后执行:\n"
+                        "         python scripts/wiki/video_topic.py mark --raw ... --wiki ..."
+                    )
+            except Exception:
+                pass
         return dest
     dest = _unique_path(RAW_ARCHIVED, os.path.basename(src))
     if dry_run:

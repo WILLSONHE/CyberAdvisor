@@ -229,16 +229,76 @@ def holdings_for_holder(holder: str) -> list[dict]:
 
 def pad_a_share_code(code: str) -> str:
     """A 股 6 位代码补零（港股请用 normalize_stock_code）。"""
-    s = str(code).strip().replace(".0", "")
-    if classify_market(s) == "hk":
-        return normalize_stock_code(s)
-    if s.isdigit() and len(s) < 6:
-        return s.zfill(6)
-    return s
+    return parse_code_from_excel_cell(code)
 
 
 def _digits_only(code: str) -> str:
     return re.sub(r"\D", "", str(code).strip())
+
+
+def parse_code_from_excel_cell(cell) -> str:
+    """
+    从 Excel 单元格解析证券代码，按用户填写的 A 股/港股规则归一化。
+
+    pandas 默认把「代码」读成 float 时会吃掉前导零（000010→10.0→误判港股 00010）。
+    本函数在 sync / sim 读 xlsx 时统一调用。
+    """
+    if cell is None:
+        return ""
+    try:
+        import pandas as pd
+
+        if isinstance(cell, float) and pd.isna(cell):
+            return ""
+    except ImportError:
+        pass
+
+    raw = str(cell).strip()
+    if not raw or raw.lower() == "nan":
+        return ""
+
+    upper = raw.upper()
+    if ".HK" in upper or upper.startswith("HK"):
+        return normalize_stock_code(raw)
+
+    if re.fullmatch(r"\d+\.0", raw):
+        raw = raw[:-2]
+    elif isinstance(cell, (int, float)) and not isinstance(cell, bool):
+        n = float(cell)
+        raw = str(int(n)) if n == int(n) else raw
+
+    digits = _digits_only(raw)
+    if not digits:
+        return raw
+
+    if len(digits) == 6:
+        return normalize_stock_code(digits)
+
+    if len(digits) == 5:
+        return normalize_stock_code(digits)
+
+    # 1–4 位：多为 Excel 数值型吃掉前导零的 A 股；少数为港股（700→00700）
+    hk5 = digits.zfill(5)
+    if hk5 in HK_TO_A_SHARE:
+        return normalize_stock_code(hk5)
+    if len(digits) <= 2:
+        return normalize_stock_code(digits.zfill(6))
+    if len(digits) == 4 and digits.zfill(6).startswith(("00", "30", "60", "68", "83", "87")):
+        return normalize_stock_code(digits.zfill(6))
+    return normalize_stock_code(hk5)
+
+
+def format_code_for_excel(code: str) -> str:
+    """写入 xlsx 时保留 A 股 6 位 / 港股 5 位文本格式。"""
+    if not code:
+        return ""
+    norm = parse_code_from_excel_cell(code)
+    market = classify_market(norm)
+    if market == "hk":
+        return normalize_stock_code(norm)
+    if market in ("sh", "sz", "bj"):
+        return normalize_stock_code(norm)
+    return norm
 
 
 def classify_market(code: str) -> str:

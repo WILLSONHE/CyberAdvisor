@@ -26,7 +26,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from portfolio_utils import enrich_holdings_with_prices, fmt_money, normalize_stock_code
+from portfolio_utils import enrich_holdings_with_prices, fmt_money, normalize_stock_code, parse_code_from_excel_cell
 from xlsx_utils import format_portfolio_xlsx, PORTFOLIO_INT_COLS, PORTFOLIO_MONEY_COLS
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -63,13 +63,12 @@ def _digits_only(code: str) -> str:
 
 
 def _norm_code(code) -> str:
-    s = str(code).strip()
-    s = s.replace(".0", "") if s.endswith(".0") else s
-    return normalize_stock_code(s) if _digits_only(s) or ".HK" in s.upper() or s.upper().startswith("HK") else s
+    return parse_code_from_excel_cell(code)
 
 
 def _read_holdings(path: str) -> tuple[list[dict], dict[str, float], list[str]]:
-    df = pd.read_excel(path, sheet_name=0, header=0)
+    # 代码列必须按文本读，否则 000010→10.0 会被误判为港股 00010
+    df = pd.read_excel(path, sheet_name=0, header=0, dtype=str)
     df.columns = [str(c).strip() for c in df.columns]
     c_name = _find_col(list(df.columns), COL_ALIASES["name"])
     c_code = _find_col(list(df.columns), COL_ALIASES["code"])

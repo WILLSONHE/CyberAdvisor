@@ -25,7 +25,7 @@ from datetime import date, datetime
 
 import pandas as pd
 
-from portfolio_utils import fetch_spot_price, fmt_money, normalize_stock_code
+from portfolio_utils import fetch_spot_price, fmt_money, normalize_stock_code, parse_code_from_excel_cell
 from xlsx_utils import write_dataframe_xlsx, SIM_INT_COLS, SIM_MONEY_COLS
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -58,17 +58,7 @@ def _is_sold(val) -> bool:
 def _norm_code(code) -> str:
     if pd.isna(code):
         return ""
-    s = str(code).strip().replace(".0", "")
-    if not s:
-        return ""
-    digits = re.sub(r"\D", "", s)
-    if not digits:
-        return ""
-    # Excel 常将 000887 读成 887；模拟持仓均为 A 股时补全 6 位
-    if len(digits) < 6 and ".HK" not in s.upper() and not s.upper().startswith("HK"):
-        if len(digits) <= 4 or digits.zfill(6).startswith(("00", "30", "60", "68", "83", "87")):
-            digits = digits.zfill(6)
-    return normalize_stock_code(digits)
+    return parse_code_from_excel_cell(code)
 
 
 def _build_name_code_map() -> dict[str, str]:
