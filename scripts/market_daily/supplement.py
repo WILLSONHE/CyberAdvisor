@@ -27,6 +27,12 @@ OVERNIGHT_GTIMG: list[tuple[str, str]] = [
     ("hkHSCEI", "恒生国企指数"),
 ]
 
+# 可选扩展指标（须在 supplement_registry.yaml 注册后由 Agent enable）
+OPTIONAL_GTIMG: dict[str, tuple[str, str]] = {
+    "us_vix": ("usVIX", "VIX恐慌指数"),
+    "us_10y_yield": ("usTNX", "美国10年期国债收益率"),
+}
+
 
 def _session() -> requests.Session:
     session = requests.Session()
@@ -246,6 +252,49 @@ def fetch_overnight_indices() -> list[dict[str, Any]]:
             }
         )
     return out
+
+
+def _fetch_gtimg_single(symbol: str, label: str) -> dict[str, Any] | None:
+    try:
+        lines = fetch_gtimg_batch([symbol])
+    except Exception:
+        return None
+    line = lines.get(symbol)
+    if not line or "pv_none_match" in line:
+        return None
+    q = parse_index_line(line, symbol)
+    if q:
+        return {
+            "symbol": symbol,
+            "name": label,
+            "close": q.close,
+            "prev_close": q.prev_close,
+            "change_pct": q.change_pct,
+            "update_time": q.update_time,
+        }
+    vals = line.split('"')[1].split("~") if '"' in line else []
+    if len(vals) < 33:
+        return None
+    return {
+        "symbol": symbol,
+        "name": label,
+        "close": _float(vals[3]),
+        "prev_close": _float(vals[4]),
+        "change_pct": _float(vals[32]),
+        "update_time": vals[30] if len(vals) > 30 else "",
+    }
+
+
+def fetch_us_vix() -> dict[str, Any]:
+    sym, label = OPTIONAL_GTIMG["us_vix"]
+    row = _fetch_gtimg_single(sym, label)
+    return row or {"symbol": sym, "name": label, "error": "fetch_failed"}
+
+
+def fetch_us_10y_yield() -> dict[str, Any]:
+    sym, label = OPTIONAL_GTIMG["us_10y_yield"]
+    row = _fetch_gtimg_single(sym, label)
+    return row or {"symbol": sym, "name": label, "error": "fetch_failed"}
 
 
 def indices_to_snapshot(indices: list[IndexQuote]) -> dict[str, dict[str, Any]]:

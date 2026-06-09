@@ -55,6 +55,32 @@
 
 ---
 
+## 三·一、数据自我扩展（data_requests）
+
+Agent 可在 JSON 中提交 **`data_requests`**，本地执行器 **禁止 Agent 自定义 HTTP**。
+
+| 机制 | 说明 |
+|------|------|
+| **registry** | `scripts/ai_sim/supplement_registry.yaml` 声明可抓指标 + fetcher |
+| **启用状态** | `Wiki/数据/AI模拟盘补充指标.json`（Agent enable/disable 写入） |
+| **采集** | `collect_tick` 按启用集调用 registry fetcher → `tick.supplement` |
+| **未注册** | 写入 `Wiki/数据/待扩展指标.md`，待维护者加 registry |
+
+**Agent 动作**：
+
+- `enable` / `disable`：仅对已注册 `metric`；**下一 tick 起**生效
+- `request`：未注册指标登记需求（含 `reason`、`priority`）
+
+**日志要求**（强制）：凡 enable/disable/request，须在 **`AI模拟交易日志.md`** 的 **「数据扩展（Agent data_requests）」** 小节写明：
+
+- 调整了哪些 metric
+- **原因**（Agent 给出的 reason）
+- 已启用 / 已禁用 / 待 registry
+
+勿在 `analysis` 中隐含扩展而不写 `data_requests`。
+
+---
+
 ## 四、宏观与选股要点（摘要）
 
 ### 宏观（高盛四篇 → 见 [[宏观分析框架#高盛 GMS 中国/亚洲框架（2025–2026 整合）]]）
@@ -78,7 +104,10 @@
 - 现金台账：`Wiki/数据/AI模拟盘现金.json`
 - 交易日志：`Wiki/数据/AI模拟交易日志.md`
 - Tick 数据：`Raw/每15分钟市场数据/YYYY-MM-DD/HHMM.json`（含 `supplement`）
+- 补充指标 registry：`scripts/ai_sim/supplement_registry.yaml`
+- 补充指标启用：`Wiki/数据/AI模拟盘补充指标.json`
+- 待扩展指标：`Wiki/数据/待扩展指标.md`
 - 市场历史摘要：`Wiki/数据/市场历史摘要.json`（近 30 日指数/成交额/北向）
 - 指数纪律中枢：`Wiki/投资方法论/指数纪律框架.md`
 
-*最后更新：2026-06-08 · market-supplement-6pack*
+*最后更新：2026-06-09 · data_requests 自我扩展层*

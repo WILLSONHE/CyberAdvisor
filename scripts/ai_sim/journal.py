@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 
 from ai_sim.agent_review import _format_agent_block
+from ai_sim.data_requests import format_data_extension_block
 from ai_sim.schedule_util import tick_phase, tick_phase_label
 from ai_sim.config import JOURNAL_PATH, TOTAL_CASH
 from ai_sim.portfolio_ops import active_positions, cash_available, equity_ratio, sync_prices, total_assets
@@ -102,6 +103,10 @@ def append_tick_summary(
     agent_lines = _format_agent_block(agent)
     if agent_lines:
         lines.extend(agent_lines)
+
+    data_ext_lines = format_data_extension_block((agent or {}).get("data_requests"))
+    if data_ext_lines:
+        lines.extend(data_ext_lines)
 
     if trades:
         lines.append("### 成交")

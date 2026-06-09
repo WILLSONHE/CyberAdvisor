@@ -37,6 +37,12 @@ def run(*, force: bool = False, tick_label: str = "", agent: bool = True) -> int
 
     if agent:
         agent_result = review_tick(path, phase=phase)
+        if agent_result.get("data_requests"):
+            ext = agent_result["data_requests"]
+            if ext.get("applied"):
+                print(f"数据扩展启用：{[x['metric'] for x in ext['applied']]}")
+            if ext.get("pending"):
+                print(f"待扩展指标：{[x['metric'] for x in ext['pending']]}")
         if agent_result.get("skipped"):
             print(f"Agent 跳过：{agent_result.get('reason')}")
         elif agent_result.get("ok"):

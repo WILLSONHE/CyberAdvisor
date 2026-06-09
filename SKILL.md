@@ -146,12 +146,14 @@ CLI：`python scripts/sim_portfolio.py buy …` / `sell` / `sync` / `init`
 脚本 `scripts/ai_sim_tick.py`（单次 tick）：
 
 1. 采集指数 + 标的池现价 → `Raw/每15分钟市场数据/`（早盘前/午休/收盘后亦采集最近价）  
-2. **Cloud Agent**（按阶段 `pre_open|intraday|lunch|post_close`）→ 读 **AI模拟盘策略.md + Wiki 全库** → 可选调参  
+2. **Cloud Agent**（按阶段 `pre_open|intraday|lunch|post_close`）→ 读 **AI模拟盘策略.md + Wiki 全库** → 可选调参 + **`data_requests` 补充指标 enable/disable**  
 3. 读 Wiki **市场状态日报**、**宏观分析框架**（含高盛整合）、**选股框架**（含 F10/PB/PEG/PS）  
 4. **买入**（可选）：上证 ≥4033 且仓位显著低于目标 + 候选标的当日涨幅 ≥0；单次 tick 最多 1 笔  
 5. **卖出**（可选）：止损 **-5%**、止盈 **+12%**、或超配降仓  
-6. 成交写入 `模拟持仓.xlsx`；日志含 **阶段标签**（早盘前/午休/收盘复盘）  
+6. 成交写入 `模拟持仓.xlsx`；日志含 **阶段标签** + **数据扩展（data_requests 调整及原因）**  
 7. **飞书推送**（`FEISHU_WEBHOOK_URL`）：本 tick **新增** 日志 + 可选附件  
+
+**数据自我扩展**：Agent JSON 含 `data_requests: [{metric, action, reason, priority}]`；registry 见 `scripts/ai_sim/supplement_registry.yaml`；已注册 metric 可 **enable/disable**（下一 tick 采集）；未注册写入 `Wiki/数据/待扩展指标.md`。**禁止** Agent 自定义 HTTP。
 
 环境变量（项目根 `.env`）：
 

@@ -13,9 +13,10 @@ if SCRIPT_DIR not in sys.path:
 
 from ai_sim.config import TICK_ROOT
 from ai_sim.schedule_util import nearest_tick_label, tick_phase
+from ai_sim.supplement_registry import build_supplement_payload
+from ai_sim.supplement_state import enabled_metrics
 from ai_sim.universe import UniverseEntry, build_universe
 from market_daily.fetch import fetch_indices
-from market_daily.supplement import build_supplement
 from portfolio_utils import fetch_spot_price
 
 
@@ -59,7 +60,11 @@ def collect_tick(*, force_label: str = "") -> str:
     stocks = [_quote_row(e) for e in universe]
 
     try:
-        supplement = build_supplement(include_overnight=include_overnight, kline_limit=20)
+        supplement = build_supplement_payload(
+            enabled_metrics(),
+            include_overnight=include_overnight,
+            kline_limit=20,
+        )
     except Exception as exc:
         supplement = {"error": str(exc)}
 

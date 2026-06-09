@@ -211,6 +211,23 @@ def format_northbound_section(supplement: dict, history: list[dict]) -> list[str
     return lines
 
 
+def format_optional_metrics_section(supplement: dict[str, Any]) -> list[str]:
+    lines = ["### 扩展宏观指标（Agent 启用）", ""]
+    found = False
+    for key in ("us_vix", "us_10y_yield"):
+        row = supplement.get(key)
+        if not row or not isinstance(row, dict) or row.get("error"):
+            continue
+        found = True
+        ch = row.get("change_pct")
+        chs = f" ({ch:+.2f}%)" if isinstance(ch, (int, float)) else ""
+        lines.append(f"- **{row.get('name', key)}**：{row.get('close', '—')}{chs}")
+    if not found:
+        lines.append("（本 tick 未启用；可通过 data_requests enable registry 指标）")
+    lines.append("")
+    return lines
+
+
 def format_overnight_section(overnight: list[dict]) -> list[str]:
     lines = ["### 隔夜外盘（修复/风险外溢）", ""]
     if not overnight:
@@ -234,11 +251,20 @@ def format_full_market_context(tick_path: str, *, days: int = 10) -> str:
     supplement = load_tick_supplement(tick_path)
     if not supplement.get("kline_60m"):
         try:
-            from market_daily.supplement import build_supplement
+            from ai_sim.supplement_registry import build_supplement_payload
+            from ai_sim.supplement_state import enabled_metrics
 
-            phase = supplement.get("phase") or ""
-            include_overnight = phase == "pre_open" or (tick_path and "0915" in tick_path.replace("\\", "/"))
-            supplement = {**supplement, **build_supplement(include_overnight=include_overnight, kline_limit=20)}
+            include_overnight = (tick_path and "0915" in tick_path.replace("\\", "/")) or (
+                tick_path and "0930" in tick_path.replace("\\", "/")
+            )
+            supplement = {
+                **supplement,
+                **build_supplement_payload(
+                    enabled_metrics(),
+                    include_overnight=include_overnight,
+                    kline_limit=20,
+                ),
+            }
         except Exception:
             pass
     session_txt = format_session_for_prompt(session_index_stats(tick_path))
@@ -255,6 +281,7 @@ def format_full_market_context(tick_path: str, *, days: int = 10) -> str:
         parts.extend(["### 60 分钟 K 线", "", "（tick 无 supplement，请读 Wiki 日更）", ""])
     parts.extend(format_northbound_section(supplement, history))
     parts.extend(format_overnight_section(supplement.get("overnight") or []))
+    parts.extend(format_optional_metrics_section(supplement))
     parts.extend(
         [
             "### 今日 tick 序列（辅助，非建仓时点依据）",

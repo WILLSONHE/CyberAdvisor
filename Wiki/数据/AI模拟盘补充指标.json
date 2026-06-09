@@ -1,0 +1,9 @@
+{
+  "enabled": [
+    "kline_60m",
+    "northbound",
+    "northbound_history",
+    "overnight"
+  ],
+  "history": []
+}

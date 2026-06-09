@@ -9,10 +9,13 @@ from typing import Any
 
 from ai_sim.agent_client import AgentClientError, run_analysis_prompt
 from ai_sim.config import DAILY_REPORT, JOURNAL_PATH
+from ai_sim.data_requests import process_data_requests
 from ai_sim.index_context import format_full_market_context
 from ai_sim.portfolio_ops import active_positions, cash_available, total_assets
 from ai_sim.runtime_params import PARAM_SCHEMA, apply_patch, defaults_for_agent, effective_all, snapshot
 from ai_sim.schedule_util import tick_phase, tick_phase_label
+from ai_sim.supplement_registry import registry_summary_for_prompt
+from ai_sim.supplement_state import enabled_metrics, load_state
 from ai_sim.wiki_context import build_wiki_context
 from sim_portfolio import _portfolio_totals
 
@@ -100,6 +103,8 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
     }.get(phase, "【盘中 tick】")
 
     market_ctx_txt = format_full_market_context(tick_path, days=10)
+    registry_txt = registry_summary_for_prompt()
+    enabled_txt = ", ".join(f"`{m}`" for m in load_state()["enabled"])
 
     return f"""你是 CyberAdvisor 项目的 AI 模拟盘风控分析师。
 
@@ -111,7 +116,17 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 1. 阅读下方 **Wiki 策略上下文**（含全库索引 + 核心框架）、行情 tick、持仓、日志与市场日报
 2. 给出简短中文行情分析（3–6 句）
 3. **可选**调整规则引擎参数（充分分析后可 **维持不变**）
-4. 禁止建议直接改 xlsx 持仓；执行仍由本地规则引擎负责
+4. **可选**通过 `data_requests` **启用/禁用**已注册补充指标（不可自定义 HTTP URL）
+5. 禁止建议直接改 xlsx 持仓；执行仍由本地规则引擎负责
+
+## 补充指标 registry（仅 enable/disable/request）
+{registry_txt}
+
+**当前已启用**：{enabled_txt or '（默认）'}
+
+- `enable` / `disable`：metric 须在 registry 中；**下一 tick 起生效**
+- `request`：registry 无此 metric 时写入 `Wiki/数据/待扩展指标.md`
+- **禁止**请求任意 HTTP 端点；未注册指标只能 `request` 登记
 
 ## Wiki 策略上下文
 {wiki_ctx}
@@ -166,9 +181,18 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
     "reason": "是否判断大盘处于中长期调整低点且即将修复/上涨（破4033时由你综合 Wiki+L3–L5 判断）",
     "confidence": "low|medium|high"
   }},
+  "data_requests": [
+    {{"metric": "us_vix", "action": "enable", "reason": "判修复需 VIX 确认", "priority": "high"}}
+  ],
   "notes": "给本地规则引擎的补充说明（可选）"
 }}
 ```
+
+`data_requests` 规则：
+- 无需求时 **空数组 `[]`**
+- `action`：`enable` | `disable` | `request`（未注册）
+- `priority`：`high` | `medium` | `low`（high 且已注册 enable → 下一 tick 采集）
+- 仅当分析 **确实缺少数据** 且 **影响决策** 时才提出；勿每 tick 滥填
 
 规则：
 - `param_changes` 为空对象 {{}} 表示本 tick 不调参
@@ -289,12 +313,13 @@ def _format_agent_block(agent: dict[str, Any] | None) -> list[str]:
 
 
 def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
-    """调用 Cloud Agent；成功时写入 override + 日志。返回摘要 dict。"""
+    """调用 Cloud Agent；成功时写入 override + 数据扩展 + 日志。返回摘要 dict。"""
     _load_env_file()
     if os.environ.get("AI_SIM_AGENT", "1").strip() in ("0", "false", "no"):
         return {"skipped": True, "reason": "AI_SIM_AGENT=0", "ok": False}
 
     phase = phase or tick_phase()
+    tick_label = os.path.basename(tick_path).replace(".json", "")
     prompt = build_prompt(tick_path, phase=phase)
     try:
         meta = run_analysis_prompt(prompt)
@@ -340,6 +365,12 @@ def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
     if changes and not hold_params:
         applied, warnings = apply_patch(changes)
 
+    data_ext = process_data_requests(
+        parsed.get("data_requests"),
+        tick_label=tick_label,
+        phase=phase,
+    )
+
     return {
         "ok": True,
         "analysis": analysis,
@@ -349,6 +380,7 @@ def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
         "hold_params": hold_params,
         "rebound_buy": rebound_buy,
         "dip_buy": rebound_buy,
+        "data_requests": data_ext,
         "phase": phase,
         "agent_meta": meta,
     }
