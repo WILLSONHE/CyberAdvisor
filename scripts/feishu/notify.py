@@ -8,7 +8,7 @@ from datetime import datetime
 
 from bilibili.env import ROOT
 from feishu.client import send_file_to_chat, upload_im_file
-from feishu.commands import _extract_one_liner
+from feishu.text_util import extract_one_liner
 from feishu.env import FeishuConfig
 from feishu.webhook import send_post, send_text
 from portfolio_utils import latest_sug_path, load_holder_names
@@ -36,7 +36,7 @@ def build_pipeline_summary() -> tuple[str, list[tuple[str, str]]]:
         path = latest_sug_path(holders[0])
         if path:
             with open(path, encoding="utf-8") as f:
-                one_liner = _extract_one_liner(f.read())
+                one_liner = extract_one_liner(f.read())
     if not one_liner:
         one_liner = f"（今日尚未生成 sug，请在 Cursor 说 sug {{持有人}}，如 sug {holders[0] if holders else 'Wilson'}）"
 
@@ -58,7 +58,7 @@ def build_pipeline_summary() -> tuple[str, list[tuple[str, str]]]:
         ("text", f"持有人：{holder_line}"),
         ("text", f"今日一句话：{one_liner}"),
         ("text", "标的池见 Wiki/数据/标的池日报.md"),
-        ("text", "下一步：Cursor 说 sug {持有人} 生成完整交易策略"),
+        ("text", "下一步：飞书 `sug 全员 午盘` 读报告，或 `agent sug 全员 午盘` 生成（FEISHU_AUTO_SUG=1 则 daily 已自动）"),
     ]
     return text, post_lines
 
@@ -74,7 +74,7 @@ def build_sug_done_summary(holder: str, session: str | None = None) -> tuple[str
     else:
         with open(path, encoding="utf-8") as f:
             body = f.read()
-        one_liner = _extract_one_liner(body) or "（报告无「今日一句话」摘要）"
+        one_liner = extract_one_liner(body) or "（报告无「今日一句话」摘要）"
         fname = os.path.basename(path)
         title = f"sug 已完成 — {holder}{session_label}"
 

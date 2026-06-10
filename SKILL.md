@@ -497,12 +497,12 @@ python scripts/rw_video.py --refetch --pending-only
 | 命令 | 飞书 Bot | Cursor + skill | 差异要点 |
 |------|:--------:|:--------------:|----------|
 | `ing` / `rw` / `txtcfm` / `sum` | — | ✅ | 写 Wiki / 跑脚本；Bot 无 AI 写入 |
-| `sug {持有人}` [早盘\|午盘] | 📖 读 SugVault | ✅ 生成 | Bot 无报告时提示去 Cursor |
-| `sug 全员` | 📖 分段读 | ✅ 逐人生成 | |
+| `sug {持有人}` [早盘\|午盘] | 📖 读 SugVault | ✅ 生成 | **`agent sug …`** = Cloud Agent 异步生成（.md 附件） |
+| `sug 全员` | 📖 分段读 | ✅ 逐人生成 | **`agent sug 全员 午盘`** |
 | `持仓` / `标的池` / `日报 {持有人}` | ✅ 读 | ✅ 读 | 读 `portfolio.md`、标的池日报 |
 | `trk {标的}` | ✅ 轻量 | ✅ 深度 | AI 版可刷新追踪页、态度分析 |
 | `chk` | ✅ 轻量 | ✅ 深度 | AI 版可修复、降级归档 |
-| `qry {问题}` | ✅ 关键词 | ✅ 综合 | AI 版多页归纳作答 |
+| `qry {问题}` | ✅ 关键词 | ✅ 综合 | **`agent qry {问题}`** 或 **`agent {自由任务}`** = Cloud Agent |
 | `sim 买/卖 {标的…}` | ✅ | ✅ | 模拟持仓；sug 前 Cursor 跑 `sim_portfolio.py sync` |
 | `帮助` / `ping` | ✅ | — | Bot 专用 |
 

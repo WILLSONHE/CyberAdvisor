@@ -72,10 +72,12 @@ FEISHU_PORTFOLIO_URL=https://xxx.feishu.cn/sheets/shtxxxxxxxx
 **多人指令格式**（持有人名不区分大小写，须与 xlsx 精确匹配）：
 
 ```
-sug Wilson              # 交易策略（Cursor 生成 → SugVault；飞书 Bot 读已有报告）
-sug Wilson 早盘          # 归档为 YYYY-MM-DD_Wilson_sug 早盘.md
-sug Wilson 午盘          # 归档为 YYYY-MM-DD_Wilson_sug 午盘.md
-sug 全员                 # Cursor：分别生成；飞书：分别读取已有报告
+sug Wilson              # 读 SugVault 已有报告
+sug Wilson 早盘          # 读归档 YYYY-MM-DD_Wilson_sug 早盘.md
+sug Wilson 午盘          # 读归档 YYYY-MM-DD_Wilson_sug 午盘.md
+sug 全员                 # 分段读取各持有人已有报告
+sug 全员 午盘            # 同上，匹配午盘归档文件名
+agent sug 全员 午盘      # Cloud Agent 异步生成（每人一份 .md 附件）
 持仓 Wilson              # 查看该持有人持仓（Cursor / 飞书均可）
 标的池 Wilson            # 核心标的池 + 该持有人做T（Cursor / 飞书均可）
 sim 买 利通电子，江波龙    # 模拟买入（100 万起/标的）
@@ -139,23 +141,72 @@ python ai_sim_tick.py --force
 | 2   | `sync_portfolio_from_xlsx.py`  | `持仓.xlsx` → `portfolio.md` / `trade_template.md`                     |
 | 3   | `coarse_screen.py`             | 全市场粗筛                                                                |
 | 4   | `fine_screen.py`               | 精筛 + 核心标的池 + 布林线 → `Wiki/数据/标的池日报.md`                                |
-| 5   | `**daily_report.py`**          | **市场状态日报** → `Wiki/数据/市场状态日报.md`（指数、板块 Top3、Δ市值 Top5、追踪标的、Wiki 对照总结） |
-| 6   | `bilibili_fetch.py`            | 抓取新视频字幕（含补标点）                                                        |
-| 7   | `rw_video.py --pending-only`   | 待审阅稿补标点 / ASR 校正 / 空稿重拉                                              |
-| 8   | `bilibili_fetch.py --dry-run`  | 预览                                                                   |
+| 5   | `daily_report.py`          | **市场状态日报** → `Wiki/数据/市场状态日报.md` |
+| 6   | `outlook_tracker.py batch` | 追踪标的批预测 |
+| 7   | `bilibili_fetch.py`            | 抓取新视频字幕 |
+| 8   | `rw_video.py --pending-only`   | 待审阅稿补标点 |
+| 9   | `bilibili_fetch.py --dry-run`  | 预览 |
+| —   | `sim_portfolio.py sync`        | 刷新模拟持仓现价（可选） |
+| —   | `feishu_notify.py --pipeline-done` | Webhook 推送摘要（可选） |
+| —   | `feishu_auto_sug.py --after-daily` | **自动** `agent sug 全员`（须 `FEISHU_AUTO_SUG=1`；按时段选早盘/午盘） |
 
 
 **是的**：`daily.bat` **会自动运行** `daily_report.py`（第 5 步），无需单独双击。跑完后可选 Webhook 推送摘要。
 
-约 15–25 分钟（含 `daily_report`、**标的追踪批预测** `outlook_tracker batch --universe track`，约 1–3 分钟）。完成后对 AI 说 `**sug {持有人}`** 或 `**sug 全员`**；盘次总结用 `sug Wilson 午盘`（须先跑完 daily）。`**sug 全员 午盘**` 会先对 `持仓.xlsx` 全标的批追踪。每次 sug **前先** `review --holder …`，**归档后** `record`（数据目录 `Wiki/数据/股价预测追踪/`，见 `ANALYSIS_REPORT_SPEC.md`）。
+约 15–25 分钟（含 `daily_report`、**标的追踪批预测** `outlook_tracker batch --universe track`，约 1–3 分钟）。完成后：
+
+- **读报告**：飞书 `sug Wilson` / `sug 全员 午盘`（读 SugVault 已有归档）
+- **生成报告**：Cursor `sug {持有人}`，或飞书 `agent sug 全员 午盘`
+- **自动生成**（可选）：`.env` 设 `FEISHU_AUTO_SUG=1` + `CURSOR_API_KEY`，`daily.bat` 在 **11:30–13:00** 自动跑 `sug 全员 早盘`，**15:00 后** 自动跑 `sug 全员 午盘`，写入 `SugVault/` 并 Webhook 通知
+
+每次 sug **前先** `review --holder …`，**归档后** `record`（数据目录 `Wiki/数据/股价预测追踪/`，见 `ANALYSIS_REPORT_SPEC.md`）。
+
+### Cloud Agent 与本机数据（为何不是「直接读文件夹」）
+
+| 组件 | 运行位置 | 能否读本机 vipdoc / 模拟持仓 |
+| --- | --- | --- |
+| **飞书 Bot**（`feishu_bot.bat`） | 你的电脑 | ✅ 本机脚本读 xlsx、vipdoc、Wiki，**嵌入 prompt** 再发给 Cloud Agent |
+| **Cloud Agent**（`agent …` / AI 模拟盘 tick） | Cursor 云端 | ❌ 不能打开 `C:\zd_zsone\vipdoc`；只能看 prompt 内嵌数据 + 可选 GitHub 仓库 |
+| **Cursor IDE**（`sug Wilson`） | 你的电脑 | ✅ 直接读全项目 |
+
+**GitHub（`CURSOR_CLOUD_REPO`）是可选的**：给 Cloud Agent 补 Wiki 全文镜像；**不能**替代 vipdoc（GitHub 上没有 `.day` 文件）。本机 Bot / `ai_sim_tick` 在调用 Agent **之前**会抓取 vipdoc σ、1/3/7 最有可能价、`模拟持仓.xlsx` 摘要并写入 prompt 或 tick JSON。
+
+`.env` 示例：
+
+```env
+TDX_VIPDOC=C:\zd_zsone\vipdoc
+CURSOR_API_KEY=...
+FEISHU_AUTO_SUG=1          # daily.bat 完成后自动 sug 全员
+# CURSOR_CLOUD_REPO=...    # 可选，见下文「私有 GitHub」
+```
+
+### 私有 GitHub + Cloud Agent（能否上传 vipdoc / 持仓？）
+
+**技术上可以，但不建议把整盘本机（含 vipdoc、持仓）推上 GitHub 来解决访问问题。**
+
+| 问题 | 说明 |
+| --- | --- |
+| Cloud Agent 能读私有库吗？ | 可以。`.env` 设 `CURSOR_CLOUD_REPO=owner/repo`，并在 **Cursor 账号里授权 GitHub 应用**访问该私有仓库；Agent 会在云端 clone 该库并读文件。 |
+| Private = 只有我和用户？ | **不等于。** 私有库 = GitHub 上仅授权协作者可见；但 **Cursor 云端**在跑 Agent 时会处理仓库内容与 prompt（受 [Cursor 隐私政策](https://cursor.com/privacy) / 套餐条款约束）。这不是「数据只留在本机」。 |
+| 上传 vipdoc 合适吗？ | **不合适。** 体积大（GB 级 `.day`）、二进制、日更；Git 难维护。现有方案已在本机算好 σ/区间再嵌入 prompt，效果足够。 |
+| 上传 `持仓.xlsx` / SugVault？ | **有隐私风险。** 即使 private repo，也会进入 GitHub + Cursor 处理链路；`.gitignore` 应继续排除 `.env`、真实持仓（若必须上库，用**单独私有库**且仅加可信协作者）。 |
+| 多持有人「用户」隔离？ | GitHub 协作者 = 整库可见，**不能**按持有人行级隔离。更稳妥：**敏感持仓只留本机**，Cloud Agent 靠本机 Bot **嵌入 prompt**；Wiki 方法论可放 `CyberAdvisor` 公开/私有库。 |
+
+**推荐分工：**
+
+1. **`CyberAdvisor` 仓库（现有）**：Wiki、脚本；`CURSOR_CLOUD_REPO` 指向它 → Agent 读方法论与日更。
+2. **敏感数据（持仓、vipdoc、`.env`）**：仅本机；由 `feishu_bot` / `ai_sim_tick` / `FEISHU_AUTO_SUG` 在调用 Agent **前**读取并写入 prompt。
+3. **校验私有库是否被 Cursor 接受**：`python scripts/ai_sim_check_env.py --live`（会消耗少量 Agent 配额）。
+
+若合规要求「持仓不得出本机」，则 **不要** 把持仓/vipdoc 推 GitHub；继续用当前「本机预抓取 + prompt」方案，或仅在 Cursor IDE 本地生成 `sug`。
 
 ### 飞书对接
 
 
 | 能力         | 配置                                   | 说明                        |
 | ---------- | ------------------------------------ | ------------------------- |
-| **群推送**    | `FEISHU_WEBHOOK_URL`                 | `daily.bat` 跑完后自动推送摘要到飞书群 |
-| **本机 Bot** | `FEISHU_APP_`* + 双击 `feishu_bot.bat` | `sug Wilson [早盘           |
+| **群推送**    | `FEISHU_WEBHOOK_URL`                 | `daily.bat` 跑完后自动推送摘要；`FEISHU_AUTO_SUG=1` 时 sug 完成后也推送 |
+| **本机 Bot** | `FEISHU_APP_*` + 双击 `feishu_bot.bat` | `sug` 读 SugVault；`agent sug …` 异步生成 |
 
 
 **推送（推荐先做）**：飞书群 → 自定义机器人 → 复制 Webhook → 写入 `.env` 的 `FEISHU_WEBHOOK_URL` → `python scripts/feishu_notify.py --test`
@@ -181,13 +232,15 @@ python ai_sim_tick.py --force
   - 路径：开放平台 → 你的应用 → **权限管理** → 搜索 **上传文件** 或 **im:resource** → 开通 → **创建版本并发布**
 - 改权限后 **创建版本并发布**
 
-> 电脑关机后 Bot 不可用。`ing`、AI 深度 `qry`/`chk`/`sug` **生成**仍走 Cursor；`trk`/`chk`/`qry`/`sug`/`持仓`/`标的池` **读取**已支持飞书 Bot。详见下表。
+> 电脑关机后 Bot 不可用。`ing` 仍走 Cursor；**`agent …`** 触发 Cloud Agent；`sug`/`qry` 为本地读。
 
 **云持仓（daily 自动下载）**：在 `.env` 配置 `FEISHU_PORTFOLIO_URL`（飞书电子表格链接）或 `FEISHU_PORTFOLIO_NAME=持仓`；`daily.bat` 第一步会先覆盖本地 `持仓.xlsx`。权限：`drive:export:readonly`、发版。
 
 ### 飞书 Bot vs Cursor 命令对照
 
 前提：**飞书 Bot** = 本机运行 `feishu_bot.bat` 且电脑在线；**Cursor** = 安装 `SKILL.md` 后在 IDE 对话。群 **Webhook 推送**不含交互命令，仅 `daily.bat` 完成后发摘要。
+
+**`agent …` 仅飞书 Bot**（须 `.env` 配 `CURSOR_API_KEY`；Cloud Agent 在 Cursor 云端运行，本机 Bot 先抓取 vipdoc/持仓等嵌入 prompt）。Cursor IDE 对话**不需要**也不识别 `agent` 前缀。
 
 
 | 命令                       | 飞书 Bot | Cursor + skill | 说明                                                     |
@@ -196,24 +249,31 @@ python ai_sim_tick.py --force
 | `rw`                     | —      | ✅ / 脚本         | 视频稿 ASR 校正；`python scripts/rw_video.py --pending-only` |
 | `txtcfm`                 | —      | ✅ / 脚本         | 批量审批；视频稿移入 `Raw/已审阅视频文稿/`                              |
 | `sum`                    | —      | ✅ 生成           | 跨文章归纳；仅 Cursor                                         |
-| `**sug {持有人}`**          | 📖 读   | ✅ **生成**       | Bot 读 `SugVault/` **时间最新**一份（含早盘/午盘）；指定盘次则精确匹配         |
-| `**sug {持有人} 早盘/午盘`**    | 📖 读   | ✅ **生成**       | 按盘次文件名匹配归档                                             |
-| `**sug 全员`**             | 📖 读   | ✅ **生成**       | Bot 按持有人分段读已有；Cursor 逐人生成并归档                           |
+| `sug {持有人}`          | 📖 读 SugVault | ✅ **生成**       | Bot 只读已有归档；生成请用 Cursor 或 `agent sug …` |
+| `sug {持有人} 早盘/午盘`    | 📖 读 | ✅ 生成 | 读 `SugVault/` 对应盘次文件名 |
+| `sug 全员`             | 📖 分段读 | ✅ 逐人生成 | 读各持有人已有报告 |
+| `sug 全员 早盘/午盘`       | 📖 分段读 | ✅ 逐人生成 | 读午盘/早盘归档；`FEISHU_AUTO_SUG=1` 时 daily 可自动写入 |
+| **`agent sug {持有人}`** | ✅ 异步生成 | — | Cloud Agent；`.md` 附件 + 本机 Temp；**不写** SugVault |
+| **`agent sug {持有人} 早盘/午盘`** | ✅ 异步生成 | — | 同上，prompt 含本机 vipdoc/模拟持仓快照 |
+| **`agent sug 全员 [早盘/午盘]`** | ✅ 异步生成 × N | — | 每位持有人各一份附件 |
+| **`agent qry {问题}`** | ✅ 异步生成 | — | 深度 Wiki 作答（Markdown 附件） |
+| **`agent {自由任务}`** | ✅ 异步生成 | — | 如 `agent 给我一份新易盛的分析报告` |
+| `agent`（无参数）           | ✅ 帮助 | — | 列出上述 agent 子命令 |
 | `持仓 {持有人}`               | ✅ 读    | ✅ 读            | 读 `portfolio.md` 对应章节                                  |
 | `标的池 {持有人}` / `日报 {持有人}` | ✅ 读    | ✅ 读            | 读标的池日报 + 该持有人做 T 章节                                    |
 | `trk {标的}`               | ✅ 轻量   | ✅ 深度           | Bot：追踪页 + grep；Cursor：可刷新页、态度分析                        |
 | `chk`                    | ✅ 轻量   | ✅ 深度           | Bot：待 ing 计数、断链/时效抽样；Cursor：可修复、归档                     |
-| `qry {问题}`               | ✅ 轻量   | ✅ 深度           | Bot：Wiki 关键词检索；Cursor：多页综合作答                           |
+| `qry {问题}`               | ✅ 轻量   | ✅ 深度           | Bot：本地 Wiki 关键词检索（非 Cloud Agent） |
 | `策略文件`                   | ✅ 读    | —              | Bot：Wiki 目录树（`每日复盘/` 不列文件）                             |
 | `打开 {路径或文件名}`            | ✅ 读    | —              | Bot：发送 Wiki `.md` 原文件（如 `打开 仓位管理`）                     |
 | `sim 买/卖 {标的…}`          | ✅ 写    | ✅ 写            | 模拟持仓 `模拟持仓.xlsx`；Cursor `sug` 前自动 `sim sync`           |
-| `帮助` / `ping`            | ✅      | —              | Bot 连通测试与指令列表                                          |
-| `daily.bat`              | —      | —              | 双击运行；完成后 Webhook **推送**摘要（非 Bot 对话）                    |
+| `帮助` / `ping`            | ✅      | —              | Bot 连通测试与指令列表（含 agent 说明）                          |
+| `daily.bat`              | —      | —              | 双击运行；Webhook 推送；可选 `FEISHU_AUTO_SUG=1` 自动 agent sug 全员 |
 
 
-图例：**✅ 生成** = AI 新建/更新内容；**📖 读** = 读本地已有文件；**✅ 读** = 双方均可查询；**—** = 不支持。
+图例：**✅ 生成** = AI 新建/更新内容；**📖 读** = 读本地已有文件；**✅ 读** = 双方均可查询；**—** = 不支持。**异步生成** = 先回复「已提交」，3–10 分钟后 `.md` 附件。
 
-**典型日流程**：`daily.bat` → Webhook 收摘要 → Cursor 说 `sug Wilson` 生成报告 → 飞书 Bot 发 `sug Wilson` 随时复读。
+**典型日流程**：`daily.bat`（11:30/15:00 计划任务）→ Webhook 收摘要 → 若 `FEISHU_AUTO_SUG=1` 自动写入 `SugVault/` → 飞书 `sug 全员 午盘` 阅读，或 `agent sug 全员 午盘` 手动触发生成。
 
 CLI 自测（与 Bot 同源）：`python scripts/wiki_cli.py trk 寒武纪` / `chk` / `qry 存储`
 
@@ -260,14 +320,23 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 | `ing`             | 消化 `Raw/未分析归档/` 与 `Raw/已审阅视频文稿/` 中未处理稿，更新 Wiki | Cursor 对话                                            |
 | `txtcfm`          | 批量审批未审阅文稿；视频稿移入 `Raw/已审阅视频文稿/`                 | Cursor 或 `python scripts/txtcfm.py`                  |
 | `rw`              | 校对视频文字稿（ASR + 补标点分段）                           | Cursor 或 `python scripts/rw_video.py --pending-only` |
-| `sug {持有人}`       | 持仓分析 + 大盘判断 + 开仓建议 + 仓位分配                      | **仅 Cursor 生成**；飞书 Bot 只读已有                          |
+| `sug {持有人}`       | 持仓分析 + 大盘判断 + 开仓建议 + 仓位分配                      | **Cursor 生成** → SugVault；飞书 Bot 用 `sug` 只读 |
 | `sug {持有人} 早盘/午盘` | 同上，归档文件名带盘次                                    | 同上                                                   |
-| `sug 全员`          | 对每位持有人分别生成 sug 并各自归档                           | **仅 Cursor**                                         |
-| `qry {问题}`        | 基于 Wiki 回答                                     | Cursor 深度；飞书 Bot 关键词检索                               |
+| `sug 全员` / `sug 全员 午盘` | 对每位持有人分别生成/读取 sug                           | Cursor 生成；飞书 `sug` 读 / `agent sug` 生成          |
+| `qry {问题}`        | 基于 Wiki 回答                                     | Cursor 深度；飞书 `qry` 轻量检索 / `agent qry` Cloud Agent |
 | `trk {标的}`        | Wiki 对该标的的全痕迹                                  | Cursor 可刷新；飞书 Bot 读追踪页                               |
 | `chk`             | Wiki 体检                                        | Cursor 可修复；飞书 Bot 只读抽样                               |
 | `sum`             | 跨文章归纳                                          | 仅 Cursor                                             |
 | `sim 买/卖 {标的…}`   | 模拟持仓（100 万起/标的）                                | Cursor / 飞书 Bot；CLI 见上文 **模拟持仓**                     |
+
+**飞书 Bot 专用（须 `agent` 前缀 + `CURSOR_API_KEY`）**：
+
+| 命令 | 作用 |
+| --- | --- |
+| `agent sug {持有人} [早盘/午盘]` | Cloud Agent 异步生成 sug（附件；不写 SugVault） |
+| `agent sug 全员 午盘` | 全员各一份 |
+| `agent qry {问题}` | 深度 Wiki 问答 |
+| `agent 给我一份{标的}的分析报告` | 单标的深度报告（本机嵌入 vipdoc） |
 
 
 飞书 Bot 可读命令见上表 **[飞书 Bot vs Cursor](#飞书-bot-vs-cursor-命令对照)**。
@@ -344,6 +413,7 @@ CyberAdvisor/
     ├── ai_sim/              ← AI 自主模拟（采集/策略/日志）
     ├── ai_sim_tick.py       ← 单次 tick 入口
     ├── sim_portfolio.py     ← sim 买/卖/sync（手动干预）
+    ├── feishu_auto_sug.py     ← daily 完成后自动 agent sug 全员
     ├── feishu_notify.py     ← 飞书 Webhook 推送
     ├── feishu_bot.py        ← 飞书 Bot 事件服务
     ├── feishu/              ← 飞书 SDK 模块（commands / wiki_local / drive）

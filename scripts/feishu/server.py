@@ -18,7 +18,9 @@ from feishu.client import (
     send_text_to_chat,
     upload_im_file,
 )
-from feishu.commands import handle_command, split_reply
+from feishu.commands import handle_command
+from feishu.text_util import split_reply
+from feishu.agent_jobs import run_agent_tasks
 from feishu.decrypt import decrypt_event
 from feishu.env import FeishuConfig
 
@@ -197,6 +199,34 @@ def _process_message(cfg: FeishuConfig, message_id: str, chat_id: str, text: str
     log.info("处理指令: %r message_id=%s chat_id=%s", text, message_id, chat_id)
     try:
         result = handle_command(text)
+
+        if result.text:
+            for i, chunk in enumerate(split_reply(result.text)):
+                try:
+                    if i == 0:
+                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
+                    elif chat_id:
+                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
+                    else:
+                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
+                except Exception as e:
+                    log.warning("reply 失败，改 send_to_chat: %s", e)
+                    if chat_id:
+                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
+                    else:
+                        raise
+
+        if result.agent_tasks:
+            threading.Thread(
+                target=run_agent_tasks,
+                args=(cfg, message_id, chat_id, result.agent_tasks),
+                daemon=True,
+            ).start()
+            log.info("已提交 %d 个 Cloud Agent 任务", len(result.agent_tasks))
+            if not result.text:
+                reply_text(cfg.app_id, cfg.app_secret, message_id, "⏳ 已提交 Cloud Agent…")
+            return
+
         file_key = ""
         file_path = result.file_path if result.file_path and os.path.isfile(result.file_path) else ""
         if file_path:
@@ -217,22 +247,7 @@ def _process_message(cfg: FeishuConfig, message_id: str, chat_id: str, text: str
                     reply_text(cfg.app_id, cfg.app_secret, message_id, err)
                 file_key = ""
 
-        if result.text:
-            for i, chunk in enumerate(split_reply(result.text)):
-                try:
-                    if i == 0:
-                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
-                    elif chat_id:
-                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
-                    else:
-                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
-                except Exception as e:
-                    log.warning("reply 失败，改 send_to_chat: %s", e)
-                    if chat_id:
-                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
-                    else:
-                        raise
-        elif not file_key:
+        if not result.text and not file_path:
             reply_text(cfg.app_id, cfg.app_secret, message_id, "（无回复内容）")
 
         if file_key:

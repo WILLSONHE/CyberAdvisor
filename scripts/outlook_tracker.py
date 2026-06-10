@@ -53,6 +53,156 @@ def has_any_prediction(code: str) -> bool:
     return bool(_records_for_code(code))
 
 
+def _latest_record_for_code(code: str) -> dict[str, Any] | None:
+    recs = _records_for_code(code)
+    return recs[-1] if recs else None
+
+
+def has_horizon_prediction(code: str, horizon_key: str) -> bool:
+    rec = _latest_record_for_code(code)
+    if not rec:
+        return False
+    return bool((rec.get("horizons") or {}).get(horizon_key))
+
+
+def _infer_track_from(record: dict[str, Any]) -> date:
+    hz = record.get("horizons") or {}
+    for key in HORIZON_KEYS:
+        ref = hz.get(key)
+        if not ref:
+            continue
+        if ref.get("track_from"):
+            return _parse_date(str(ref["track_from"]))
+        due = ref.get("due_date")
+        days = ref.get("days")
+        if due and days:
+            return _parse_date(str(due)) - timedelta(days=int(days))
+    return _parse_date(str(record.get("date") or _today()))
+
+
+def _missing_horizon_keys(
+    record: dict[str, Any],
+    *,
+    keys: tuple[str, ...] | None = None,
+) -> list[str]:
+    keys = keys or HORIZON_KEYS
+    hz = record.get("horizons") or {}
+    return [k for k in keys if not hz.get(k)]
+
+
+def _append_horizon_to_record(
+    record: dict[str, Any],
+    days: int,
+    b: dict[str, Any],
+    params: dict[str, Any],
+) -> bool:
+    from bollinger_utils import export_outlook_horizon
+
+    hk = f"{days}d"
+    hz = record.setdefault("horizons", {})
+    if hz.get(hk):
+        return False
+    ke = b.get("kline_extra") or {}
+    track_from = _infer_track_from(record)
+    h = export_outlook_horizon(b, days=days, kline_extra=ke, params=params)
+    h["track_from"] = str(track_from)
+    h["due_date"] = str(track_from + timedelta(days=days))
+    h["review"] = None
+    hz[hk] = h
+    return True
+
+
+def backfill_horizons(
+    *,
+    universe: str = "all",
+    codes: list[str] | None = None,
+    horizon_days: tuple[int, ...] = (1,),
+) -> dict[str, Any]:
+    """为追踪池内标的补全缺失 horizon（默认 1d）；无登记则新建完整预测。"""
+    from bollinger_utils import bollinger_for_code
+    from outlook_params import load_params
+    from outlook_universe import SymbolEntry, iter_universe, names_map
+
+    if codes is not None:
+        code_list = [str(c).zfill(6) for c in codes]
+        pool = iter_universe(universe or "all")
+        by_pool = {e.code: e for e in pool}
+        entries = [
+            by_pool[c]
+            if c in by_pool
+            else SymbolEntry(code=c, name=c, pool="manual")
+            for c in code_list
+        ]
+    else:
+        entries = iter_universe(universe)
+
+    params = load_params()
+    data = _load_log()
+    by_code: dict[str, list[dict[str, Any]]] = {}
+    for rec in data.get("records", []):
+        c = str(rec.get("code", "")).zfill(6)
+        by_code.setdefault(c, []).append(rec)
+
+    target_keys = tuple(f"{d}d" for d in horizon_days)
+    patched: list[str] = []
+    recorded: list[str] = []
+    skipped: list[str] = []
+    already_ok: list[str] = []
+
+    for e in entries:
+        code = e.code
+        recs = by_code.get(code, [])
+        if not recs:
+            added = record_outlooks(
+                [code],
+                names={code: e.name},
+                holder=getattr(e, "holder", "") or "",
+                source="backfill",
+            )
+            if added:
+                recorded.extend(added)
+                by_code[code] = _records_for_code(code)
+            else:
+                skipped.append(f"{e.name}({code})")
+            continue
+
+        latest = recs[-1]
+        missing = _missing_horizon_keys(latest, keys=target_keys)
+        if not missing:
+            already_ok.append(code)
+            continue
+
+        b = bollinger_for_code(code)
+        if not b or b.get("error"):
+            skipped.append(f"{e.name}({code})")
+            continue
+
+        changed = False
+        for d in horizon_days:
+            if f"{d}d" not in missing:
+                continue
+            if _append_horizon_to_record(latest, d, b, params):
+                changed = True
+        if changed:
+            patched.append(code)
+        else:
+            skipped.append(f"{e.name}({code})")
+
+    if patched or recorded:
+        _save_log(data)
+
+    nm = names_map(entries)
+    return {
+        "universe": universe,
+        "entries": len(entries),
+        "patched": patched,
+        "recorded": recorded,
+        "already_ok": already_ok,
+        "skipped": skipped,
+        "names": nm,
+    }
+
+
 def _klines_in_window(code: str, start: date, end: date) -> list[dict[str, Any]]:
     from bollinger_utils import get_kline
 
@@ -561,6 +711,21 @@ def main() -> int:
     p_reg.add_argument("--name", default="")
     p_reg.add_argument("--source", default="chat", choices=("chat", "qry", "analysis_report"))
 
+    p_bf = sub.add_parser("backfill", help="补全缺失 horizon（默认 1d）")
+    p_bf.add_argument(
+        "--universe",
+        default="all",
+        choices=("track", "portfolio", "queried", "all"),
+    )
+    p_bf.add_argument("--code", action="append", default=[])
+    p_bf.add_argument(
+        "--horizon",
+        type=int,
+        action="append",
+        default=[],
+        help="缺省仅补 1d；可重复指定如 --horizon 1 --horizon 3",
+    )
+
     args = parser.parse_args()
 
     if args.cmd == "record":
@@ -632,6 +797,26 @@ def main() -> int:
 
         register_queried(args.code, args.name, source=args.source)
         print(f"已登记询问标的 {args.code} → Wiki/数据/股价预测追踪/询问标的.json")
+        return 0
+
+    if args.cmd == "backfill":
+        days = tuple(args.horizon) if args.horizon else (1,)
+        codes = [str(c).zfill(6) for c in args.code] if args.code else None
+        result = backfill_horizons(universe=args.universe, codes=codes, horizon_days=days)
+        nm = result.get("names") or {}
+        print(
+            f"补全完成 [{result['universe']}]：{result['entries']} 只 | "
+            f"已补 {len(result['patched'])} | 新登记 {len(result['recorded'])} | "
+            f"已有 {len(result['already_ok'])} | 跳过 {len(result['skipped'])}"
+        )
+        for c in result["patched"]:
+            print(f"  + {nm.get(c, c)}（{c}）")
+        for c in result["recorded"]:
+            print(f"  新 {nm.get(c, c)}（{c}）")
+        if result["skipped"]:
+            print("跳过：" + "；".join(result["skipped"][:12]))
+            if len(result["skipped"]) > 12:
+                print(f"  …共 {len(result['skipped'])} 只")
         return 0
 
     return 1

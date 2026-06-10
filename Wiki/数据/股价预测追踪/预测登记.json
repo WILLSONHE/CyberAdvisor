@@ -175,6 +175,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 200.72,
+          "hi": 223.82,
+          "lo_pct": -5.44,
+          "hi_pct": 5.44,
+          "anchor": 216.58,
+          "anchor_pct": 2.03,
+          "prob_center": 213.78,
+          "prob_center_pct": 0.71,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 200.72,
+              "pct_vs_now": -5.44,
+              "prob_pct": 14.3
+            },
+            {
+              "label": "四轨",
+              "price": 207.32,
+              "pct_vs_now": -2.33,
+              "prob_pct": 31.0
+            },
+            {
+              "label": "中轨",
+              "price": 217.03,
+              "pct_vs_now": 2.24,
+              "prob_pct": 35.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 223.82,
+              "pct_vs_now": 5.44,
+              "prob_pct": 19.3
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 217.03,
+            "pct_vs_now": 2.24,
+            "prob_pct": 35.5,
+            "drift_hint": 0.34489999999999993,
+            "pick_method": "mode",
+            "pick_target": 213.78
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -273,6 +324,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 31.75,
+          "hi": 34.85,
+          "lo_pct": -4.65,
+          "hi_pct": 4.65,
+          "anchor": 34.77,
+          "anchor_pct": 4.41,
+          "prob_center": 33.96,
+          "prob_center_pct": 1.98,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 31.75,
+              "pct_vs_now": -4.65,
+              "prob_pct": 10.8
+            },
+            {
+              "label": "五轨",
+              "price": 32.07,
+              "pct_vs_now": -3.69,
+              "prob_pct": 18.2
+            },
+            {
+              "label": "四轨",
+              "price": 34.14,
+              "pct_vs_now": 2.52,
+              "prob_pct": 42.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 34.85,
+              "pct_vs_now": 4.65,
+              "prob_pct": 28.5
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 34.14,
+            "pct_vs_now": 2.52,
+            "prob_pct": 42.6,
+            "drift_hint": 1.22499,
+            "pick_method": "mode",
+            "pick_target": 33.96
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -385,6 +487,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 15.13,
+          "hi": 17.15,
+          "lo_pct": -6.26,
+          "hi_pct": 6.26,
+          "anchor": 17.15,
+          "anchor_pct": 6.26,
+          "prob_center": 16.59,
+          "prob_center_pct": 2.79,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 15.13,
+              "pct_vs_now": -6.26,
+              "prob_pct": 9.7
+            },
+            {
+              "label": "近10日低",
+              "price": 15.85,
+              "pct_vs_now": -1.8,
+              "prob_pct": 23.5
+            },
+            {
+              "label": "四轨",
+              "price": 16.68,
+              "pct_vs_now": 3.35,
+              "prob_pct": 39.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 17.15,
+              "pct_vs_now": 6.26,
+              "prob_pct": 26.9
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 16.68,
+            "pct_vs_now": 3.35,
+            "prob_pct": 39.9,
+            "drift_hint": 1.9903699999999998,
+            "pick_method": "mode",
+            "pick_target": 16.59
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -490,6 +643,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 250.99,
+          "hi": 327.23,
+          "lo_pct": -13.19,
+          "hi_pct": 13.19,
+          "anchor": 327.23,
+          "anchor_pct": 13.19,
+          "prob_center": 306.26,
+          "prob_center_pct": 5.93,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 250.99,
+              "pct_vs_now": -13.19,
+              "prob_pct": 10.6
+            },
+            {
+              "label": "近10日低",
+              "price": 265.47,
+              "pct_vs_now": -8.18,
+              "prob_pct": 18.3
+            },
+            {
+              "label": "四轨",
+              "price": 293.54,
+              "pct_vs_now": 1.53,
+              "prob_pct": 41.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 327.23,
+              "pct_vs_now": 13.19,
+              "prob_pct": 29.7
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 293.54,
+            "pct_vs_now": 1.53,
+            "prob_pct": 41.4,
+            "drift_hint": 1.65577,
+            "pick_method": "mode",
+            "pick_target": 306.26
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -594,6 +798,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 1101.61,
+          "hi": 1192.39,
+          "lo_pct": -3.96,
+          "hi_pct": 3.96,
+          "anchor": 1146.22,
+          "anchor_pct": -0.07,
+          "prob_center": 1146.73,
+          "prob_center_pct": -0.02,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 1101.61,
+              "pct_vs_now": -3.96,
+              "prob_pct": 18.1
+            },
+            {
+              "label": "中轨",
+              "price": 1123.83,
+              "pct_vs_now": -2.02,
+              "prob_pct": 34.4
+            },
+            {
+              "label": "近10日低",
+              "price": 1130.0,
+              "pct_vs_now": -1.48,
+              "prob_pct": 29.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 1192.39,
+              "pct_vs_now": 3.96,
+              "prob_pct": 17.9
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 1123.83,
+            "pct_vs_now": -2.02,
+            "prob_pct": 34.4,
+            "drift_hint": -1.14088,
+            "pick_method": "mode",
+            "pick_target": 1146.73
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -706,6 +961,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 455.35,
+          "hi": 506.33,
+          "lo_pct": -5.3,
+          "hi_pct": 5.3,
+          "anchor": 479.75,
+          "anchor_pct": -0.23,
+          "prob_center": 480.46,
+          "prob_center_pct": -0.08,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 455.35,
+              "pct_vs_now": -5.3,
+              "prob_pct": 19.2
+            },
+            {
+              "label": "中轨",
+              "price": 464.77,
+              "pct_vs_now": -3.34,
+              "prob_pct": 33.6
+            },
+            {
+              "label": "近10日低",
+              "price": 467.01,
+              "pct_vs_now": -2.88,
+              "prob_pct": 28.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 506.33,
+              "pct_vs_now": 5.3,
+              "prob_pct": 18.6
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 464.77,
+            "pct_vs_now": -3.34,
+            "prob_pct": 33.6,
+            "drift_hint": -1.97772,
+            "pick_method": "mode",
+            "pick_target": 480.46
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -810,6 +1116,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 192.14,
+          "hi": 213.06,
+          "lo_pct": -5.16,
+          "hi_pct": 5.16,
+          "anchor": 211.02,
+          "anchor_pct": 4.16,
+          "prob_center": 205.55,
+          "prob_center_pct": 1.46,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 192.14,
+              "pct_vs_now": -5.16,
+              "prob_pct": 11.9
+            },
+            {
+              "label": "四轨",
+              "price": 202.04,
+              "pct_vs_now": -0.28,
+              "prob_pct": 35.9
+            },
+            {
+              "label": "近10日低",
+              "price": 202.6,
+              "pct_vs_now": 0.0,
+              "prob_pct": 29.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 213.06,
+              "pct_vs_now": 5.16,
+              "prob_pct": 22.8
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 202.04,
+            "pct_vs_now": -0.28,
+            "prob_pct": 35.9,
+            "drift_hint": 0.46192000000000005,
+            "pick_method": "mode",
+            "pick_target": 205.55
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -916,6 +1273,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 134.45,
+          "hi": 154.83,
+          "lo_pct": -7.05,
+          "hi_pct": 7.05,
+          "anchor": 154.83,
+          "anchor_pct": 7.05,
+          "prob_center": 149.23,
+          "prob_center_pct": 3.17,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 134.45,
+              "pct_vs_now": -7.05,
+              "prob_pct": 9.6
+            },
+            {
+              "label": "五轨",
+              "price": 144.58,
+              "pct_vs_now": -0.04,
+              "prob_pct": 35.2
+            },
+            {
+              "label": "近10日低",
+              "price": 144.64,
+              "pct_vs_now": 0.0,
+              "prob_pct": 28.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 154.83,
+              "pct_vs_now": 7.05,
+              "prob_pct": 26.8
+            }
+          ],
+          "most_likely": {
+            "label": "五轨",
+            "price": 144.58,
+            "pct_vs_now": -0.04,
+            "prob_pct": 35.2,
+            "drift_hint": 1.19852,
+            "pick_method": "mode",
+            "pick_target": 149.23
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -1020,6 +1428,51 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 597.55,
+          "hi": 640.85,
+          "lo_pct": -3.5,
+          "hi_pct": 3.5,
+          "anchor": 629.39,
+          "anchor_pct": 1.65,
+          "prob_center": 622.77,
+          "prob_center_pct": 0.58,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 597.55,
+              "pct_vs_now": -3.5,
+              "prob_pct": 19.6
+            },
+            {
+              "label": "中轨",
+              "price": 626.7,
+              "pct_vs_now": 1.21,
+              "prob_pct": 52.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 640.85,
+              "pct_vs_now": 3.5,
+              "prob_pct": 28.5
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 626.7,
+            "pct_vs_now": 1.21,
+            "prob_pct": 52.0,
+            "drift_hint": 0.9407,
+            "pick_method": "mode",
+            "pick_target": 622.77
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -1126,6 +1579,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 388.23,
+          "hi": 433.93,
+          "lo_pct": -5.56,
+          "hi_pct": 5.56,
+          "anchor": 421.68,
+          "anchor_pct": 2.58,
+          "prob_center": 414.79,
+          "prob_center_pct": 0.9,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 388.23,
+              "pct_vs_now": -5.56,
+              "prob_pct": 13.7
+            },
+            {
+              "label": "近10日低",
+              "price": 411.08,
+              "pct_vs_now": 0.0,
+              "prob_pct": 29.4
+            },
+            {
+              "label": "中轨",
+              "price": 417.22,
+              "pct_vs_now": 1.49,
+              "prob_pct": 37.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 433.93,
+              "pct_vs_now": 5.56,
+              "prob_pct": 19.9
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 417.22,
+            "pct_vs_now": 1.49,
+            "prob_pct": 37.0,
+            "drift_hint": 0.89602,
+            "pick_method": "mode",
+            "pick_target": 414.79
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -1230,6 +1734,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 145.09,
+          "hi": 204.91,
+          "lo_pct": -17.09,
+          "hi_pct": 17.09,
+          "anchor": 204.91,
+          "anchor_pct": 17.09,
+          "prob_center": 185.47,
+          "prob_center_pct": 5.98,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 145.09,
+              "pct_vs_now": -17.09,
+              "prob_pct": 12.1
+            },
+            {
+              "label": "近10日低",
+              "price": 159.03,
+              "pct_vs_now": -9.13,
+              "prob_pct": 22.0
+            },
+            {
+              "label": "四轨",
+              "price": 172.68,
+              "pct_vs_now": -1.33,
+              "prob_pct": 38.8
+            },
+            {
+              "label": "区间上沿",
+              "price": 204.91,
+              "pct_vs_now": 17.09,
+              "prob_pct": 27.1
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 172.68,
+            "pct_vs_now": -1.33,
+            "prob_pct": 38.8,
+            "drift_hint": 0.038860000000000096,
+            "pick_method": "mode",
+            "pick_target": 185.47
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -1336,6 +1891,63 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 1172.98,
+          "hi": 1289.02,
+          "lo_pct": -4.71,
+          "hi_pct": 4.71,
+          "anchor": 1267.35,
+          "anchor_pct": 2.95,
+          "prob_center": 1247.36,
+          "prob_center_pct": 1.33,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 1172.98,
+              "pct_vs_now": -4.71,
+              "prob_pct": 10.0
+            },
+            {
+              "label": "五轨",
+              "price": 1179.33,
+              "pct_vs_now": -4.2,
+              "prob_pct": 14.4
+            },
+            {
+              "label": "近10日低",
+              "price": 1231.0,
+              "pct_vs_now": 0.0,
+              "prob_pct": 24.6
+            },
+            {
+              "label": "四轨",
+              "price": 1242.91,
+              "pct_vs_now": 0.97,
+              "prob_pct": 32.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 1289.02,
+              "pct_vs_now": 4.71,
+              "prob_pct": 19.1
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 1242.91,
+            "pct_vs_now": 0.97,
+            "prob_pct": 32.0,
+            "drift_hint": 0.13421000000000005,
+            "pick_method": "mode",
+            "pick_target": 1247.36
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -1434,6 +2046,51 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 598.16,
+          "hi": 657.74,
+          "lo_pct": -4.74,
+          "hi_pct": 4.74,
+          "anchor": 652.95,
+          "anchor_pct": 3.98,
+          "prob_center": 636.7,
+          "prob_center_pct": 1.39,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 598.16,
+              "pct_vs_now": -4.74,
+              "prob_pct": 18.1
+            },
+            {
+              "label": "四轨",
+              "price": 617.96,
+              "pct_vs_now": -1.59,
+              "prob_pct": 46.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 657.74,
+              "pct_vs_now": 4.74,
+              "prob_pct": 35.3
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 617.96,
+            "pct_vs_now": -1.59,
+            "prob_pct": 46.6,
+            "drift_hint": 0.07433999999999984,
+            "pick_method": "mode",
+            "pick_target": 636.7
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -1546,6 +2203,51 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 575.79,
+          "hi": 660.21,
+          "lo_pct": -6.83,
+          "hi_pct": 6.83,
+          "anchor": 623.15,
+          "anchor_pct": 0.83,
+          "prob_center": 619.8,
+          "prob_center_pct": 0.29,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 575.79,
+              "pct_vs_now": -6.83,
+              "prob_pct": 23.0
+            },
+            {
+              "label": "中轨",
+              "price": 609.17,
+              "pct_vs_now": -1.43,
+              "prob_pct": 51.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 660.21,
+              "pct_vs_now": 6.83,
+              "prob_pct": 25.4
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 609.17,
+            "pct_vs_now": -1.43,
+            "prob_pct": 51.6,
+            "drift_hint": -0.57396,
+            "pick_method": "mode",
+            "pick_target": 619.8
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -1638,6 +2340,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 736.55,
+          "hi": 808.45,
+          "lo_pct": -4.65,
+          "hi_pct": 4.65,
+          "anchor": 743.28,
+          "anchor_pct": -3.78,
+          "prob_center": 759.35,
+          "prob_center_pct": -1.7,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 736.55,
+              "pct_vs_now": -4.65,
+              "prob_pct": 25.5
+            },
+            {
+              "label": "二轨",
+              "price": 755.51,
+              "pct_vs_now": -2.2,
+              "prob_pct": 39.9
+            },
+            {
+              "label": "近10日高",
+              "price": 785.73,
+              "pct_vs_now": 1.71,
+              "prob_pct": 23.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 808.45,
+              "pct_vs_now": 4.65,
+              "prob_pct": 11.0
+            }
+          ],
+          "most_likely": {
+            "label": "二轨",
+            "price": 755.51,
+            "pct_vs_now": -2.2,
+            "prob_pct": 39.9,
+            "drift_hint": -1.1484899999999998,
+            "pick_method": "mode",
+            "pick_target": 759.35
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -1744,6 +2497,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 47.71,
+          "hi": 53.49,
+          "lo_pct": -5.71,
+          "hi_pct": 5.71,
+          "anchor": 53.49,
+          "anchor_pct": 5.71,
+          "prob_center": 51.9,
+          "prob_center_pct": 2.57,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 47.71,
+              "pct_vs_now": -5.71,
+              "prob_pct": 12.6
+            },
+            {
+              "label": "五轨",
+              "price": 48.92,
+              "pct_vs_now": -3.32,
+              "prob_pct": 28.3
+            },
+            {
+              "label": "近10日低",
+              "price": 49.04,
+              "pct_vs_now": -3.08,
+              "prob_pct": 23.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 53.49,
+              "pct_vs_now": 5.71,
+              "prob_pct": 35.3
+            }
+          ],
+          "most_likely": {
+            "label": "区间上沿",
+            "price": 53.49,
+            "pct_vs_now": 5.71,
+            "prob_pct": 35.3,
+            "drift_hint": -0.37951000000000007,
+            "pick_method": "mode",
+            "pick_target": 51.9
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -1849,6 +2653,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 484.96,
+          "hi": 529.04,
+          "lo_pct": -4.35,
+          "hi_pct": 4.35,
+          "anchor": 525.91,
+          "anchor_pct": 3.73,
+          "prob_center": 515.51,
+          "prob_center_pct": 1.68,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 484.96,
+              "pct_vs_now": -4.35,
+              "prob_pct": 12.2
+            },
+            {
+              "label": "近10日低",
+              "price": 485.06,
+              "pct_vs_now": -4.33,
+              "prob_pct": 12.3
+            },
+            {
+              "label": "四轨",
+              "price": 514.62,
+              "pct_vs_now": 1.5,
+              "prob_pct": 45.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 529.04,
+              "pct_vs_now": 4.35,
+              "prob_pct": 29.6
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 514.62,
+            "pct_vs_now": 1.5,
+            "prob_pct": 45.9,
+            "drift_hint": 0.9128099999999998,
+            "pick_method": "mode",
+            "pick_target": 515.51
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -1947,6 +2802,51 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 272.46,
+          "hi": 297.14,
+          "lo_pct": -4.33,
+          "hi_pct": 4.33,
+          "anchor": 297.14,
+          "anchor_pct": 4.33,
+          "prob_center": 289.12,
+          "prob_center_pct": 1.52,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 272.46,
+              "pct_vs_now": -4.33,
+              "prob_pct": 19.7
+            },
+            {
+              "label": "四轨",
+              "price": 276.16,
+              "pct_vs_now": -3.03,
+              "prob_pct": 36.7
+            },
+            {
+              "label": "区间上沿",
+              "price": 297.14,
+              "pct_vs_now": 4.33,
+              "prob_pct": 43.6
+            }
+          ],
+          "most_likely": {
+            "label": "区间上沿",
+            "price": 297.14,
+            "pct_vs_now": 4.33,
+            "prob_pct": 43.6,
+            "drift_hint": -0.07713999999999999,
+            "pick_method": "mode",
+            "pick_target": 289.12
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -2059,6 +2959,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 73.16,
+          "hi": 80.64,
+          "lo_pct": -4.86,
+          "hi_pct": 4.86,
+          "anchor": 80.64,
+          "anchor_pct": 4.86,
+          "prob_center": 78.58,
+          "prob_center_pct": 2.18,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 73.16,
+              "pct_vs_now": -4.86,
+              "prob_pct": 10.7
+            },
+            {
+              "label": "近10日低",
+              "price": 74.11,
+              "pct_vs_now": -3.63,
+              "prob_pct": 15.6
+            },
+            {
+              "label": "四轨",
+              "price": 79.14,
+              "pct_vs_now": 2.91,
+              "prob_pct": 43.8
+            },
+            {
+              "label": "区间上沿",
+              "price": 80.64,
+              "pct_vs_now": 4.86,
+              "prob_pct": 29.9
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 79.14,
+            "pct_vs_now": 2.91,
+            "prob_pct": 43.8,
+            "drift_hint": 1.6414199999999999,
+            "pick_method": "mode",
+            "pick_target": 78.58
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -2163,6 +3114,63 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 220.73,
+          "hi": 241.27,
+          "lo_pct": -4.45,
+          "hi_pct": 4.45,
+          "anchor": 241.27,
+          "anchor_pct": 4.45,
+          "prob_center": 235.62,
+          "prob_center_pct": 2.0,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 220.73,
+              "pct_vs_now": -4.45,
+              "prob_pct": 8.9
+            },
+            {
+              "label": "五轨",
+              "price": 222.52,
+              "pct_vs_now": -3.67,
+              "prob_pct": 14.5
+            },
+            {
+              "label": "近10日低",
+              "price": 224.31,
+              "pct_vs_now": -2.9,
+              "prob_pct": 14.8
+            },
+            {
+              "label": "四轨",
+              "price": 237.49,
+              "pct_vs_now": 2.81,
+              "prob_pct": 36.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 241.27,
+              "pct_vs_now": 4.45,
+              "prob_pct": 25.1
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 237.49,
+            "pct_vs_now": 2.81,
+            "prob_pct": 36.6,
+            "drift_hint": 0.7880100000000002,
+            "pick_method": "mode",
+            "pick_target": 235.62
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -2275,6 +3283,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 13.29,
+          "hi": 14.73,
+          "lo_pct": -5.14,
+          "hi_pct": 5.14,
+          "anchor": 14.73,
+          "anchor_pct": 5.14,
+          "prob_center": 14.33,
+          "prob_center_pct": 2.28,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 13.29,
+              "pct_vs_now": -5.14,
+              "prob_pct": 9.7
+            },
+            {
+              "label": "近10日低",
+              "price": 14.01,
+              "pct_vs_now": 0.0,
+              "prob_pct": 28.7
+            },
+            {
+              "label": "四轨",
+              "price": 14.69,
+              "pct_vs_now": 4.85,
+              "prob_pct": 34.7
+            },
+            {
+              "label": "区间上沿",
+              "price": 14.73,
+              "pct_vs_now": 5.14,
+              "prob_pct": 26.9
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 14.69,
+            "pct_vs_now": 4.85,
+            "prob_pct": 34.7,
+            "drift_hint": 2.56703,
+            "pick_method": "mode",
+            "pick_target": 14.33
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -2380,6 +3439,63 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 58.12,
+          "hi": 64.76,
+          "lo_pct": -5.4,
+          "hi_pct": 5.4,
+          "anchor": 64.15,
+          "anchor_pct": 4.41,
+          "prob_center": 62.39,
+          "prob_center_pct": 1.55,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 58.12,
+              "pct_vs_now": -5.4,
+              "prob_pct": 10.2
+            },
+            {
+              "label": "四轨",
+              "price": 59.25,
+              "pct_vs_now": -3.56,
+              "prob_pct": 19.6
+            },
+            {
+              "label": "近10日低",
+              "price": 61.39,
+              "pct_vs_now": -0.08,
+              "prob_pct": 25.1
+            },
+            {
+              "label": "中轨",
+              "price": 64.62,
+              "pct_vs_now": 5.18,
+              "prob_pct": 25.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 64.76,
+              "pct_vs_now": 5.4,
+              "prob_pct": 19.7
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 64.62,
+            "pct_vs_now": 5.18,
+            "prob_pct": 25.4,
+            "drift_hint": 1.1108799999999999,
+            "pick_method": "mode",
+            "pick_target": 62.39
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -2478,6 +3594,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 320.9,
+          "hi": 363.1,
+          "lo_pct": -6.17,
+          "hi_pct": 6.17,
+          "anchor": 359.14,
+          "anchor_pct": 5.01,
+          "prob_center": 349.71,
+          "prob_center_pct": 2.25,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 320.9,
+              "pct_vs_now": -6.17,
+              "prob_pct": 11.1
+            },
+            {
+              "label": "近10日低",
+              "price": 334.0,
+              "pct_vs_now": -2.34,
+              "prob_pct": 23.4
+            },
+            {
+              "label": "四轨",
+              "price": 347.01,
+              "pct_vs_now": 1.46,
+              "prob_pct": 39.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 363.1,
+              "pct_vs_now": 6.17,
+              "prob_pct": 25.6
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 347.01,
+            "pct_vs_now": 1.46,
+            "prob_pct": 39.9,
+            "drift_hint": 0.9296300000000001,
+            "pick_method": "mode",
+            "pick_target": 349.71
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -2590,6 +3757,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 69.1,
+          "hi": 79.0,
+          "lo_pct": -6.68,
+          "hi_pct": 6.68,
+          "anchor": 75.23,
+          "anchor_pct": 1.59,
+          "prob_center": 74.46,
+          "prob_center_pct": 0.55,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 69.1,
+              "pct_vs_now": -6.68,
+              "prob_pct": 17.0
+            },
+            {
+              "label": "近10日低",
+              "price": 70.3,
+              "pct_vs_now": -5.06,
+              "prob_pct": 22.2
+            },
+            {
+              "label": "中轨",
+              "price": 73.26,
+              "pct_vs_now": -1.07,
+              "prob_pct": 40.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 79.0,
+              "pct_vs_now": 6.68,
+              "prob_pct": 20.5
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 73.26,
+            "pct_vs_now": -1.07,
+            "prob_pct": 40.3,
+            "drift_hint": -1.3207300000000002,
+            "pick_method": "mode",
+            "pick_target": 74.46
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -2694,6 +3912,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 128.95,
+          "hi": 140.15,
+          "lo_pct": -4.16,
+          "hi_pct": 4.16,
+          "anchor": 140.15,
+          "anchor_pct": 4.16,
+          "prob_center": 137.07,
+          "prob_center_pct": 1.87,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 128.95,
+              "pct_vs_now": -4.16,
+              "prob_pct": 10.9
+            },
+            {
+              "label": "近10日低",
+              "price": 129.88,
+              "pct_vs_now": -3.47,
+              "prob_pct": 14.1
+            },
+            {
+              "label": "四轨",
+              "price": 137.97,
+              "pct_vs_now": 2.54,
+              "prob_pct": 44.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 140.15,
+              "pct_vs_now": 4.16,
+              "prob_pct": 30.5
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 137.97,
+            "pct_vs_now": 2.54,
+            "prob_pct": 44.6,
+            "drift_hint": 1.4589300000000003,
+            "pick_method": "mode",
+            "pick_target": 137.07
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -2800,6 +4069,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 16.37,
+          "hi": 18.17,
+          "lo_pct": -5.21,
+          "hi_pct": 5.21,
+          "anchor": 18.1,
+          "anchor_pct": 4.81,
+          "prob_center": 17.64,
+          "prob_center_pct": 2.14,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 16.37,
+              "pct_vs_now": -5.21,
+              "prob_pct": 9.8
+            },
+            {
+              "label": "近10日低",
+              "price": 17.27,
+              "pct_vs_now": 0.0,
+              "prob_pct": 27.8
+            },
+            {
+              "label": "四轨",
+              "price": 17.47,
+              "pct_vs_now": 1.16,
+              "prob_pct": 37.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 18.17,
+              "pct_vs_now": 5.21,
+              "prob_pct": 25.1
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 17.47,
+            "pct_vs_now": 1.16,
+            "prob_pct": 37.4,
+            "drift_hint": 1.2309700000000001,
+            "pick_method": "mode",
+            "pick_target": 17.64
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -2904,6 +4224,51 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 2.2,
+          "hi": 2.42,
+          "lo_pct": -4.76,
+          "hi_pct": 4.76,
+          "anchor": 2.34,
+          "anchor_pct": 1.3,
+          "prob_center": 2.32,
+          "prob_center_pct": 0.43,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 2.2,
+              "pct_vs_now": -4.76,
+              "prob_pct": 21.5
+            },
+            {
+              "label": "中轨",
+              "price": 2.3,
+              "pct_vs_now": -0.43,
+              "prob_pct": 52.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 2.42,
+              "pct_vs_now": 4.76,
+              "prob_pct": 26.5
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 2.3,
+            "pct_vs_now": -0.43,
+            "prob_pct": 52.0,
+            "drift_hint": 0.01440000000000012,
+            "pick_method": "mode",
+            "pick_target": 2.32
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -3115,6 +4480,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 7.51,
+          "hi": 8.35,
+          "lo_pct": -5.3,
+          "hi_pct": 5.3,
+          "anchor": 8.35,
+          "anchor_pct": 5.3,
+          "prob_center": 8.12,
+          "prob_center_pct": 2.4,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 7.51,
+              "pct_vs_now": -5.3,
+              "prob_pct": 9.5
+            },
+            {
+              "label": "近10日低",
+              "price": 7.93,
+              "pct_vs_now": 0.0,
+              "prob_pct": 28.2
+            },
+            {
+              "label": "五轨",
+              "price": 7.94,
+              "pct_vs_now": 0.13,
+              "prob_pct": 35.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 8.35,
+              "pct_vs_now": 5.3,
+              "prob_pct": 26.7
+            }
+          ],
+          "most_likely": {
+            "label": "五轨",
+            "price": 7.94,
+            "pct_vs_now": 0.13,
+            "prob_pct": 35.6,
+            "drift_hint": 0.9578799999999998,
+            "pick_method": "mode",
+            "pick_target": 8.12
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -3213,6 +4629,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 20.69,
+          "hi": 22.73,
+          "lo_pct": -4.7,
+          "hi_pct": 4.7,
+          "anchor": 22.73,
+          "anchor_pct": 4.7,
+          "prob_center": 22.17,
+          "prob_center_pct": 2.12,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 20.69,
+              "pct_vs_now": -4.7,
+              "prob_pct": 10.9
+            },
+            {
+              "label": "五轨",
+              "price": 21.31,
+              "pct_vs_now": -1.84,
+              "prob_pct": 30.1
+            },
+            {
+              "label": "近10日低",
+              "price": 21.49,
+              "pct_vs_now": -1.01,
+              "prob_pct": 28.2
+            },
+            {
+              "label": "区间上沿",
+              "price": 22.73,
+              "pct_vs_now": 4.7,
+              "prob_pct": 30.7
+            }
+          ],
+          "most_likely": {
+            "label": "区间上沿",
+            "price": 22.73,
+            "pct_vs_now": 4.7,
+            "prob_pct": 30.7,
+            "drift_hint": 0.09193999999999981,
+            "pick_method": "mode",
+            "pick_target": 22.17
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -3319,6 +4786,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 11.46,
+          "hi": 12.78,
+          "lo_pct": -5.45,
+          "hi_pct": 5.45,
+          "anchor": 12.78,
+          "anchor_pct": 5.45,
+          "prob_center": 12.42,
+          "prob_center_pct": 2.48,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 11.46,
+              "pct_vs_now": -5.45,
+              "prob_pct": 10.9
+            },
+            {
+              "label": "五轨",
+              "price": 11.77,
+              "pct_vs_now": -2.89,
+              "prob_pct": 25.9
+            },
+            {
+              "label": "近10日低",
+              "price": 12.12,
+              "pct_vs_now": 0.0,
+              "prob_pct": 32.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 12.78,
+              "pct_vs_now": 5.45,
+              "prob_pct": 30.8
+            }
+          ],
+          "most_likely": {
+            "label": "近10日低",
+            "price": 12.12,
+            "pct_vs_now": 0.0,
+            "prob_pct": 32.4,
+            "drift_hint": 0.3360400000000001,
+            "pick_method": "mode",
+            "pick_target": 12.42
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -3423,6 +4941,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 29.64,
+          "hi": 31.5,
+          "lo_pct": -3.04,
+          "hi_pct": 3.04,
+          "anchor": 30.15,
+          "anchor_pct": -1.37,
+          "prob_center": 30.42,
+          "prob_center_pct": -0.49,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 29.64,
+              "pct_vs_now": -3.04,
+              "prob_pct": 23.2
+            },
+            {
+              "label": "近10日高",
+              "price": 31.03,
+              "pct_vs_now": 1.5,
+              "prob_pct": 27.2
+            },
+            {
+              "label": "二轨",
+              "price": 31.04,
+              "pct_vs_now": 1.54,
+              "prob_pct": 33.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 31.5,
+              "pct_vs_now": 3.04,
+              "prob_pct": 16.0
+            }
+          ],
+          "most_likely": {
+            "label": "二轨",
+            "price": 31.04,
+            "pct_vs_now": 1.54,
+            "prob_pct": 33.6,
+            "drift_hint": 0.7065600000000001,
+            "pick_method": "mode",
+            "pick_target": 30.42
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -3529,6 +5098,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 28.54,
+          "hi": 30.28,
+          "lo_pct": -2.96,
+          "hi_pct": 2.96,
+          "anchor": 30.28,
+          "anchor_pct": 2.96,
+          "prob_center": 29.8,
+          "prob_center_pct": 1.33,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 28.54,
+              "pct_vs_now": -2.96,
+              "prob_pct": 12.2
+            },
+            {
+              "label": "五轨",
+              "price": 28.79,
+              "pct_vs_now": -2.11,
+              "prob_pct": 23.2
+            },
+            {
+              "label": "近10日低",
+              "price": 29.19,
+              "pct_vs_now": -0.75,
+              "prob_pct": 30.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 30.28,
+              "pct_vs_now": 2.96,
+              "prob_pct": 34.0
+            }
+          ],
+          "most_likely": {
+            "label": "区间上沿",
+            "price": 30.28,
+            "pct_vs_now": 2.96,
+            "prob_pct": 34.0,
+            "drift_hint": -0.07298999999999993,
+            "pick_method": "mode",
+            "pick_target": 29.8
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -3633,6 +5253,51 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 256.38,
+          "hi": 292.6,
+          "lo_pct": -6.6,
+          "hi_pct": 6.6,
+          "anchor": 291.79,
+          "anchor_pct": 6.3,
+          "prob_center": 280.55,
+          "prob_center_pct": 2.21,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 256.38,
+              "pct_vs_now": -6.6,
+              "prob_pct": 17.5
+            },
+            {
+              "label": "近10日低",
+              "price": 274.49,
+              "pct_vs_now": 0.0,
+              "prob_pct": 45.2
+            },
+            {
+              "label": "区间上沿",
+              "price": 292.6,
+              "pct_vs_now": 6.6,
+              "prob_pct": 37.3
+            }
+          ],
+          "most_likely": {
+            "label": "近10日低",
+            "price": 274.49,
+            "pct_vs_now": 0.0,
+            "prob_pct": 45.2,
+            "drift_hint": 1.3067999999999997,
+            "pick_method": "mode",
+            "pick_target": 280.55
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -3739,6 +5404,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 21.15,
+          "hi": 22.43,
+          "lo_pct": -2.94,
+          "hi_pct": 2.94,
+          "anchor": 22.43,
+          "anchor_pct": 2.94,
+          "prob_center": 22.08,
+          "prob_center_pct": 1.33,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 21.15,
+              "pct_vs_now": -2.94,
+              "prob_pct": 9.1
+            },
+            {
+              "label": "近10日低",
+              "price": 21.79,
+              "pct_vs_now": 0.0,
+              "prob_pct": 27.2
+            },
+            {
+              "label": "五轨",
+              "price": 22.01,
+              "pct_vs_now": 1.01,
+              "prob_pct": 37.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 22.43,
+              "pct_vs_now": 2.94,
+              "prob_pct": 25.8
+            }
+          ],
+          "most_likely": {
+            "label": "五轨",
+            "price": 22.01,
+            "pct_vs_now": 1.01,
+            "prob_pct": 37.9,
+            "drift_hint": 0.87377,
+            "pick_method": "mode",
+            "pick_target": 22.08
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -3844,6 +5560,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 49.28,
+          "hi": 54.94,
+          "lo_pct": -5.43,
+          "hi_pct": 5.43,
+          "anchor": 54.94,
+          "anchor_pct": 5.43,
+          "prob_center": 53.38,
+          "prob_center_pct": 2.44,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 49.28,
+              "pct_vs_now": -5.43,
+              "prob_pct": 9.2
+            },
+            {
+              "label": "近10日低",
+              "price": 52.11,
+              "pct_vs_now": 0.0,
+              "prob_pct": 27.2
+            },
+            {
+              "label": "四轨",
+              "price": 53.37,
+              "pct_vs_now": 2.42,
+              "prob_pct": 38.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 54.94,
+              "pct_vs_now": 5.43,
+              "prob_pct": 25.6
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 53.37,
+            "pct_vs_now": 2.42,
+            "prob_pct": 38.1,
+            "drift_hint": 1.8125400000000003,
+            "pick_method": "mode",
+            "pick_target": 53.38
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -3948,6 +5715,57 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 312.73,
+          "hi": 347.79,
+          "lo_pct": -5.31,
+          "hi_pct": 5.31,
+          "anchor": 340.81,
+          "anchor_pct": 3.19,
+          "prob_center": 335.01,
+          "prob_center_pct": 1.44,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 312.73,
+              "pct_vs_now": -5.31,
+              "prob_pct": 14.0
+            },
+            {
+              "label": "近10日低",
+              "price": 314.8,
+              "pct_vs_now": -4.68,
+              "prob_pct": 16.5
+            },
+            {
+              "label": "四轨",
+              "price": 332.18,
+              "pct_vs_now": 0.58,
+              "prob_pct": 43.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 347.79,
+              "pct_vs_now": 5.31,
+              "prob_pct": 26.0
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 332.18,
+            "pct_vs_now": 0.58,
+            "prob_pct": 43.5,
+            "drift_hint": 0.11730000000000011,
+            "pick_method": "mode",
+            "pick_target": 335.01
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }
@@ -4060,6 +5878,51 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 6.33,
+          "hi": 6.75,
+          "lo_pct": -3.21,
+          "hi_pct": 3.21,
+          "anchor": 6.75,
+          "anchor_pct": 3.21,
+          "prob_center": 6.61,
+          "prob_center_pct": 1.07,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 6.33,
+              "pct_vs_now": -3.21,
+              "prob_pct": 18.3
+            },
+            {
+              "label": "四轨",
+              "price": 6.44,
+              "pct_vs_now": -1.53,
+              "prob_pct": 42.8
+            },
+            {
+              "label": "区间上沿",
+              "price": 6.75,
+              "pct_vs_now": 3.21,
+              "prob_pct": 38.9
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 6.44,
+            "pct_vs_now": -1.53,
+            "prob_pct": 42.8,
+            "drift_hint": 0.00642000000000003,
+            "pick_method": "mode",
+            "pick_target": 6.61
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -4159,6 +6022,57 @@
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
           "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 5.0,
+          "hi": 5.32,
+          "lo_pct": -3.1,
+          "hi_pct": 3.1,
+          "anchor": 5.15,
+          "anchor_pct": -0.19,
+          "prob_center": 5.16,
+          "prob_center_pct": 0.0,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 5.0,
+              "pct_vs_now": -3.1,
+              "prob_pct": 18.5
+            },
+            {
+              "label": "中轨",
+              "price": 5.08,
+              "pct_vs_now": -1.55,
+              "prob_pct": 35.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 5.32,
+              "pct_vs_now": 3.1,
+              "prob_pct": 23.0
+            },
+            {
+              "label": "二轨",
+              "price": 5.32,
+              "pct_vs_now": 3.1,
+              "prob_pct": 23.0
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 5.08,
+            "pct_vs_now": -1.55,
+            "prob_pct": 35.5,
+            "drift_hint": 0.30224999999999996,
+            "pick_method": "mode",
+            "pick_target": 5.16
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
+          "review": null
         }
       }
     },
@@ -4257,6 +6171,51 @@
           "params_version": "2026-06-10",
           "track_from": "2026-06-11",
           "due_date": "2026-06-18",
+          "review": null
+        },
+        "1d": {
+          "days": 1,
+          "lo": 6.97,
+          "hi": 7.37,
+          "lo_pct": -2.79,
+          "hi_pct": 2.79,
+          "anchor": 7.12,
+          "anchor_pct": -0.7,
+          "prob_center": 7.15,
+          "prob_center_pct": -0.28,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 6.97,
+              "pct_vs_now": -2.79,
+              "prob_pct": 37.9
+            },
+            {
+              "label": "中轨",
+              "price": 6.97,
+              "pct_vs_now": -2.79,
+              "prob_pct": 37.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 7.37,
+              "pct_vs_now": 2.79,
+              "prob_pct": 24.3
+            }
+          ],
+          "most_likely": {
+            "label": "区间下沿",
+            "price": 6.97,
+            "pct_vs_now": -2.79,
+            "prob_pct": 37.9,
+            "drift_hint": -1.43685,
+            "pick_method": "mode",
+            "pick_target": 7.15
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-12",
           "review": null
         }
       }

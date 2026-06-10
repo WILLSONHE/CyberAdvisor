@@ -1,4 +1,4 @@
-"""飞书 Bot 指令路由（本机轻量查询，完整 AI 仍走 Cursor）。"""
+"""飞书 Bot 指令路由（本地读 + `agent` 前缀触发 Cloud Agent）。"""
 from __future__ import annotations
 
 import os
@@ -15,6 +15,7 @@ from portfolio_utils import (
     parse_sug_command,
     sug_archive_basename,
 )
+from feishu.agent_jobs import agent_enabled, build_freeform_task, build_qry_task, build_sug_tasks
 from feishu.command_result import CommandResult
 from feishu.wiki_local import WIKI_ROOT, build_wiki_tree, find_wiki_md
 from sim_portfolio import handle_sim_command
@@ -22,7 +23,7 @@ from wiki import run_chk, search_wiki, track_stock
 from wiki.common import format_hint as wiki_format_hint
 from wiki.common import parse_tail_arg
 
-MAX_CHUNK = 3500
+from feishu.text_util import MAX_CHUNK
 
 SUG_VERBS = ("sug", "交易策略", "开仓")
 SIM_PREFIX = "sim"
@@ -32,12 +33,29 @@ TRK_VERBS = ("trk", "追踪", "track")
 CHK_VERBS = ("chk", "体检", "check")
 QRY_VERBS = ("qry", "问", "query")
 
+AGENT_PREFIX_RE = re.compile(r"^agent\s+(.+)$", re.IGNORECASE)
+AGENT_QRY_RE = re.compile(r"^(?:qry|问|query)\s+(.+)$", re.IGNORECASE)
 
 OPEN_RE = re.compile(r"^打开\s+(.+)$", re.IGNORECASE)
 
 
 def _text_result(text: str) -> CommandResult:
     return CommandResult(text=text)
+
+
+def _agent_disabled_message() -> str:
+    return (
+        "Cloud Agent 未启用。请在项目根 `.env` 配置 `CURSOR_API_KEY`（Cursor Dashboard → Integrations），"
+        "并确认 `FEISHU_AGENT` 不为 0，然后重启 feishu_bot.bat。"
+    )
+
+
+def _agent_ack(label: str, *, extra: str = "") -> str:
+    base = (
+        f"⏳ 已提交 **{label}**（Cloud Agent），预计 3–10 分钟。\n"
+        f"完成后以 **.md 附件** 发到本会话（发送后本机临时文件自动删除），**不写入** SugVault/Wiki。"
+    )
+    return f"{base}\n{extra}".strip()
 
 
 def _handle_wiki_tree() -> CommandResult:
@@ -86,11 +104,6 @@ def _truncate(text: str, max_chars: int) -> str:
     return "…（内容过长，仅显示末尾）\n\n" + text[-max_chars:]
 
 
-def _extract_one_liner(md: str) -> str:
-    m = re.search(r"## 今日一句话\s*\n+>\s*(.+)", md)
-    return m.group(1).strip() if m else ""
-
-
 def _handle_holder_command(text: str, verbs: tuple[str, ...], handler) -> str | None:
     parsed = parse_holder_arg(text, verbs)
     if parsed is None:
@@ -103,15 +116,18 @@ def _handle_holder_command(text: str, verbs: tuple[str, ...], handler) -> str | 
 
 
 def _sug_missing_message(holder: str, session: str | None) -> str:
-    example = f"sug {holder}"
+    example = f"agent sug {holder}"
     if session:
         example += f" {session}"
+    read_example = f"sug {holder}"
+    if session:
+        read_example += f" {session}"
     fname = sug_archive_basename(holder, session)
     return (
         f"尚无 {holder} 的 sug 报告"
         f"{f'（{session}）' if session else ''}。"
-        f"请在 Cursor 说「{example}」（会写入 SugVault/{fname}）。"
-        f"未指定盘次时 Bot 会返回时间最新的一份（含早盘/午盘）。"
+        f"发送「{example}」由 Cloud Agent 生成，或在 Cursor 生成后写入 SugVault/{fname}。"
+        f"若已有归档，发送「{read_example}」读取。"
     )
 
 
@@ -132,17 +148,76 @@ def _read_sug_all(session: str | None) -> str:
     return _truncate("\n\n".join(blocks), MAX_CHUNK * 2)
 
 
-def _handle_sug_command(text: str) -> str | None:
+def _handle_sug_command(text: str) -> CommandResult | None:
     parsed = parse_sug_command(text)
     if parsed is None:
         return None
     holder, session, err = parsed
     if err:
-        return err
+        return _text_result(err)
     assert holder is not None
     if holder == "__ALL__":
-        return _read_sug_all(session)
-    return _read_sug(holder, session)
+        return _text_result(_read_sug_all(session))
+    return _text_result(_read_sug(holder, session))
+
+
+def _handle_agent_sug(rest: str) -> CommandResult:
+    parsed = parse_sug_command(rest)
+    if parsed is None:
+        return _text_result("用法：agent sug {持有人} [早盘|午盘] | agent sug 全员 [早盘|午盘]")
+    holder, session, err = parsed
+    if err:
+        return _text_result(err)
+    assert holder is not None
+
+    tasks = build_sug_tasks(holder, session=session)
+    if holder == "__ALL__":
+        ack = _agent_ack(
+            f"sug 全员{f' {session}' if session else ''} × {len(tasks)}",
+            extra="完成后每位持有人各一份 .md 附件。",
+        )
+    else:
+        label = f"sug {holder}" + (f" {session}" if session else "")
+        ack = _agent_ack(label)
+    return CommandResult.async_agent(ack, tasks)
+
+
+def _handle_agent_command(text: str) -> CommandResult | None:
+    stripped = text.strip()
+    if stripped.lower() == "agent":
+        return _text_result(
+            "Cloud Agent 用法（须前缀 agent）：\n"
+            "• agent sug {持有人} [早盘|午盘]\n"
+            "• agent sug 全员 [早盘|午盘]\n"
+            "• agent qry {问题}\n"
+            "• agent 给我一份新易盛的分析报告\n\n"
+            "普通 sug / qry 仍为本地读 SugVault / Wiki 检索。"
+        )
+
+    m = AGENT_PREFIX_RE.match(stripped)
+    if not m:
+        return None
+
+    if not agent_enabled():
+        return _text_result(_agent_disabled_message())
+
+    rest = m.group(1).strip()
+    if not rest:
+        return _text_result("请在 agent 后输入任务，例如：agent sug Wilson 午盘")
+
+    if parse_sug_command(rest) is not None:
+        return _handle_agent_sug(rest)
+
+    qm = AGENT_QRY_RE.match(rest)
+    if qm:
+        question = qm.group(1).strip()
+        if not question:
+            return _text_result("用法：agent qry {你的问题}")
+        task = build_qry_task(question)
+        return CommandResult.async_agent(_agent_ack(task.label), [task])
+
+    task = build_freeform_task(rest)
+    return CommandResult.async_agent(_agent_ack(task.label), [task])
 
 
 def _handle_tail_command(text: str, verbs: tuple[str, ...], handler, *, arg_label: str) -> str | None:
@@ -163,8 +238,6 @@ def handle_command(text: str) -> CommandResult:
     if lower in ("help", "帮助", "?", "？"):
         names_hint = ""
         try:
-            from portfolio_utils import load_holder_names
-
             names = load_holder_names()
             if names:
                 names_hint = f"\n当前持有人：{', '.join(names)}"
@@ -172,25 +245,30 @@ def handle_command(text: str) -> CommandResult:
             pass
         return _text_result(
             "CyberAdvisor 飞书 Bot（本机）\n\n"
-            "【持仓 / 交易】（需持有人）\n"
-            "• sug {持有人} [早盘|午盘]\n"
+            "【Cloud Agent · 须前缀 agent】\n"
+            "• agent sug {持有人} [早盘|午盘] — 异步生成 sug（.md 附件）\n"
+            "• agent sug 全员 [早盘|午盘]\n"
+            "• agent qry {问题} — 深度 Wiki 作答\n"
+            "• agent {自由任务} — 如：agent 给我一份新易盛的分析报告\n\n"
+            "【持仓 / 交易 · 本地读】\n"
+            "• sug {持有人} [早盘|午盘] — 读 SugVault 已有报告\n"
             "• sug 全员 [早盘|午盘]\n"
-            "• 持仓 {持有人}\n"
-            "• 标的池 {持有人}\n"
-            "• sim 买 {标的…} / sim 卖 {标的} — 模拟持仓\n\n"
+            "• 持仓 {持有人} | 标的池 {持有人}\n"
+            "• sim 买/卖 …\n\n"
             "【Wiki 查询】\n"
-            "• 策略文件 — Wiki 目录树\n"
-            "• 打开 {路径或文件名} — 发送 Wiki .md 原文件\n"
-            "• trk {标的} — 标的全痕迹追踪\n"
-            "• chk — Wiki 体检\n"
-            "• qry {问题} — Wiki 关键词检索\n\n"
+            "• 策略文件 | 打开 {路径}\n"
+            "• trk {标的} | chk | qry {关键词}\n\n"
             "• ping — 连通测试\n\n"
-            f"示例：策略文件 / 打开 仓位管理 / sug Wilson 早盘 / trk 寒武纪 / qry 存储{names_hint}\n\n"
-            "深度 ing / AI 版 qry·chk·sug 生成 → Cursor + 项目 SKILL.md。"
+            f"示例：agent sug 全员 午盘 / sug Wilson 读 / qry 存储{names_hint}\n\n"
+            "ing / rw / txtcfm → Cursor + SKILL.md。"
         )
 
     if lower in ("ping", "测试", "test"):
         return _text_result("pong — CyberAdvisor Bot 在线")
+
+    agent_reply = _handle_agent_command(cmd)
+    if agent_reply is not None:
+        return agent_reply
 
     if lower in ("策略文件", "wiki目录", "wiki 目录", "wiki tree"):
         return _handle_wiki_tree()
@@ -222,7 +300,7 @@ def handle_command(text: str) -> CommandResult:
 
     reply = _handle_sug_command(cmd)
     if reply is not None:
-        return _text_result(reply)
+        return reply
 
     reply = _handle_holder_command(
         cmd,
@@ -253,16 +331,5 @@ def handle_command(text: str) -> CommandResult:
 
     return _text_result(
         f"未识别指令：{cmd}\n"
-        "发送「帮助」查看可用指令。"
+        "发送「帮助」查看可用指令；Cloud Agent 任务请以 agent 开头。"
     )
-
-
-def split_reply(text: str, chunk_size: int = MAX_CHUNK) -> list[str]:
-    if len(text) <= chunk_size:
-        return [text]
-    parts: list[str] = []
-    start = 0
-    while start < len(text):
-        parts.append(text[start : start + chunk_size])
-        start += chunk_size
-    return parts

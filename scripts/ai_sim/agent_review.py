@@ -127,6 +127,17 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
     registry_txt = registry_summary_for_prompt()
     enabled_txt = ", ".join(f"`{m}`" for m in load_state()["enabled"])
 
+    from ai_sim.config import SIM_XLSX
+    from tdx_vipdoc import vipdoc_root
+
+    vip_root = vipdoc_root()
+    local_paths = (
+        f"- 模拟持仓 xlsx：`{SIM_XLSX}`（{'存在' if os.path.isfile(SIM_XLSX) else '缺失'}）\n"
+        f"- vipdoc 日 K：`{vip_root}`（{'本机可读' if os.path.isdir(vip_root) else '未找到，设 TDX_VIPDOC'}）\n"
+        f"- 最新 tick：`{tick_path}`\n"
+        "- Cloud Agent **不能**直连本机文件夹；vipdoc/outlook/布林由 **本机 collector** 写入 tick JSON。"
+    )
+
     return f"""你是 CyberAdvisor 项目的 AI 模拟盘风控分析师。
 
 ## 当前阶段
@@ -173,6 +184,9 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 ## 账户
 - 现金：{cash_available():,.2f} 元
 - 总资产：{total_assets():,.2f} 元
+
+## 本机数据来源
+{local_paths}
 
 ## 持仓
 {_positions_summary(tick_path)}

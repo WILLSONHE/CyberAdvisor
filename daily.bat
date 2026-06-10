@@ -69,12 +69,18 @@ if errorlevel 1 goto :fail
 
 cd /d "%~dp0"
 echo.
+echo [optional] sim_portfolio.py sync ...
+python "%~dp0scripts\sim_portfolio.py" sync
+echo.
 echo [optional] feishu_notify.py --pipeline-done ...
 python "%~dp0scripts\feishu_notify.py" --pipeline-done
 echo.
+echo [optional] feishu_auto_sug.py --after-daily ...
+python "%~dp0scripts\feishu_auto_sug.py" --after-daily
+echo.
 echo ============================================================
 echo  Done: %DATE% %TIME%
-echo  Next: say "sug Wilson" in Cursor - report in SugVault\
+echo  Next: sug Wilson / agent sug 全员 午盘（或 FEISHU_AUTO_SUG=1 自动）
 echo ============================================================
 goto :end
 
