@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-脚本2：精筛 + 博主标的池跟踪 + 布林线扫描 + 网宿科技每日做T建议
+脚本2：精筛 + 核心标的池跟踪 + 布林线扫描 + 网宿科技每日做T建议
 """
 import os, csv, time, urllib.request
 from datetime import datetime
@@ -9,18 +9,16 @@ try:
     from mootdx.quotes import Quotes
 except ImportError:
     print("请先安装: pip install mootdx"); exit(1)
-try:
-    from stockstats import StockDataFrame
-except ImportError:
-    print("请先安装: pip install stockstats"); exit(1)
+
+from bollinger_utils import compute_bollinger_position, get_kline, get_quotes_client
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "..", "Wiki", "数据")
 COARSE_CSV = os.path.join(DATA_DIR, "粗筛结果.csv")
 FINE_CSV = os.path.join(DATA_DIR, "精筛候选.csv")
-TRACKING_MD = os.path.join(DATA_DIR, "博主标的池日报.md")
+TRACKING_MD = os.path.join(DATA_DIR, "标的池日报.md")
 
-BLOGGER_STOCKS = {
+TRACK_STOCKS = {
     "寒武纪": "688256", "中国长城": "000066", "海光信息": "688041",
     "澜起科技": "688008", "龙芯中科": "688047", "兆易创新": "603986",
     "江波龙": "301308", "中际旭创": "300308", "利通电子": "603629",
@@ -29,56 +27,8 @@ BLOGGER_STOCKS = {
     "通富微电": "002156",
 }
 
-client = Quotes.factory(market='std')
+client = get_quotes_client()
 
-def get_kline(code, days=60):
-    market = 1 if code.startswith(("6","9")) else 0
-    try:
-        k = client.bars(symbol=code, market=market, category=4, offset=days)
-        return k if k is not None and len(k) >= 25 else None
-    except:
-        return None
-
-def compute_bollinger_position(klines):
-    if klines is None or len(klines) < 25: return {}
-    try:
-        import pandas as pd
-        df = klines.rename(columns={'vol': 'volume'})
-        sdf = StockDataFrame.retype(df)
-        close = sdf["close"]
-        std20 = close.rolling(20).std()
-        dev = std20.rolling(5).mean().iloc[-1]
-        mid_20 = close.rolling(20).mean().iloc[-1]
-        price = close.iloc[-1]
-        top_track = mid_20 + 3 * dev
-        track2 = mid_20 + 1 * dev
-        track5 = mid_20 - 2 * dev
-        bot_track = mid_20 - 3 * dev
-        bandwidth = (top_track - bot_track) / mid_20
-        bw_series = ((close.rolling(20).mean() + 3 * std20.rolling(5).mean()) - 
-                     (close.rolling(20).mean() - 3 * std20.rolling(5).mean())) / close.rolling(20).mean()
-        bw_min_20 = bw_series.rolling(20).min().iloc[-1]
-        is_converging = bandwidth <= bw_min_20 * 1.05
-        if price >= top_track: zone = "顶轨以上"
-        elif price >= track2: zone = "二轨~顶轨"
-        elif price >= mid_20: zone = "中轨~二轨"
-        elif price >= mid_20 - 1 * dev: zone = "四轨~中轨"
-        elif price >= track5: zone = "五轨~四轨"
-        else: zone = "底轨~五轨"
-        recent_high = close.iloc[-10:].max(); recent_low = close.iloc[-10:].min()
-        had_surge = (recent_high / recent_low - 1) > 0.15
-        at_track2 = abs(price - track2) / track2 < 0.03
-        n_pattern = had_surge and at_track2
-        return {"price": round(price, 2), "mid": round(mid_20, 2), "track2": round(track2, 2),
-                "track5": round(track5, 2), "top": round(top_track, 2), "bot": round(bot_track, 2),
-                "zone": zone, "bandwidth_pct": round(bandwidth * 100, 1),
-                "converging": is_converging, "n_pattern": n_pattern,
-                "signal": ("🔴 破顶轨-离场" if price >= top_track else
-                          "🟡 N字二轨候选" if n_pattern else
-                          "🟢 收敛形态" if is_converging else
-                          "🔵 底轨附近-关注" if price <= track5 else "⚪ 正常")}
-    except Exception as e:
-        return {"error": str(e)}
 
 def get_finance_data(code):
     market = 1 if code.startswith(("6","9")) else 0
@@ -114,11 +64,11 @@ def fine_screen(stocks):
         time.sleep(0.2)
     return passed
 
-def track_blogger_stocks():
-    lines = ["# 博主标的池日报", f"\n> 更新时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}\n"]
+def track_core_stocks():
+    lines = ["# 标的池日报", f"\n> 更新时间：{datetime.now().strftime('%Y-%m-%d %H:%M')}\n"]
     lines.append("| 标的 | 代码 | 价格 | PE | PB | 布林线位置 | 信号 |")
     lines.append("|------|------|------|-----|-----|-----------|------|")
-    for name, code in BLOGGER_STOCKS.items():
+    for name, code in TRACK_STOCKS.items():
         try:
             from portfolio_utils import gtimg_symbol
 
@@ -131,7 +81,18 @@ def track_blogger_stocks():
             if len(vals) < 53: lines.append(f"| {name} | {code} | — | — | — | — | 无数据 |"); continue
             price = float(vals[3] or 0); pe = float(vals[39] or 0); pb = float(vals[46] or 0)
             kl = get_kline(code); boll = compute_bollinger_position(kl) if kl is not None else {}
-            lines.append(f"| {name} | {code} | {price:.2f} | {pe:.1f} | {pb:.2f} | {boll.get('zone','—')} | {boll.get('signal','—')} |")
+            sig = boll.get("signal", "—")
+            if sig == "破顶轨-离场":
+                sig = "🔴 破顶轨-离场"
+            elif sig == "N字二轨候选":
+                sig = "🟡 N字二轨候选"
+            elif sig == "收敛形态":
+                sig = "🟢 收敛形态"
+            elif sig == "底轨附近-关注":
+                sig = "🔵 底轨附近-关注"
+            elif sig == "正常":
+                sig = "⚪ 正常"
+            lines.append(f"| {name} | {code} | {price:.2f} | {pe:.1f} | {pb:.2f} | {boll.get('zone','—')} | {sig} |")
         except Exception as e: lines.append(f"| {name} | {code} | — | — | — | — | {e} |")
         time.sleep(0.2)
     return "\n".join(lines)
@@ -197,7 +158,7 @@ def generate_zuot_tips():
 
         mid = b["mid"]
         t2 = b["track2"]
-        t4 = 2 * mid - t2 if mid > 0 and t2 > 0 else mid * 0.95
+        t4 = b.get("track4") or (2 * mid - t2 if mid > 0 and t2 > 0 else mid * 0.95)
         bw = b["bandwidth_pct"]
         zone = b["zone"]
         conv = b["converging"]
@@ -297,8 +258,8 @@ def main():
         w.writeheader()
         for s in passed: w.writerow({k:s.get(k,"") for k in ["code","name","price","pe_ttm","pb","roe","gross_margin","net_margin","revenue_yi","net_profit_yi","peg","mcap_yi"]})
     print(f"  Written to {FINE_CSV}")
-    print("[2/3] Tracking blogger stock pool...")
-    md = track_blogger_stocks()
+    print("[2/3] Tracking core stock pool...")
+    md = track_core_stocks()
     os.makedirs(os.path.dirname(TRACKING_MD), exist_ok=True)
     with open(TRACKING_MD, "w", encoding="utf-8") as f: f.write(md)
     print(f"  Written to {TRACKING_MD}")

@@ -1,0 +1,44 @@
+---
+description: sug / 单标的分析报告 / qry 深度诊断的统一输出标准（含预测追踪）
+alwaysApply: true
+---
+
+# 分析报告统一标准（sug · 单标的 · qry 共用）
+
+> 完整清单见 `ANALYSIS_REPORT_SPEC.md`；sug 章节结构见 `trade_template.md`。
+
+## 必守（所有对外报告）
+
+1. **表述**：正文用 Wiki/研报/日更等可核查出处；见 `wiki-output-terminology.mdc`。
+2. **补充数据**：生成前 `report_data.enrich_stock(code)` → 写入财务/**vipdoc**/5分钟K/RS/北向；**仅 `gaps` 非空** 才写数据缺口。
+3. **研判总结（§七）**：七轨 + 相对20MA + 宜忌 + 建仓/持仓 + **1日/3日/7日**：
+   - **最有可能价位**（倾向概率最高挡位）
+   - 区间上下沿 **较现价 ±%**
+   - **技术锚点价**
+   - **区间内各挡位倾向概率表**（合计100%，非真实概率）
+4. **专业名词解释**（单标的深度报告）：`report_glossary.format_glossary_markdown`；定义 + **对本标的的含义**。
+5. **同业对比**（单标的深度报告 §基本面）：直接竞对 + industry benchmark。
+
+## sug 额外必守（自 2026-06-10）
+
+**生成 sug 前**：
+```bash
+python scripts/outlook_tracker.py review --holder {持有人}
+```
+→ 粘贴为 **§八、预测复盘**（无到期则写「暂无到期预测待复盘」）。
+
+**生成 sug 后**：
+```bash
+python scripts/outlook_tracker.py record --holder {持有人} --source sug --session {早盘|午盘|}
+```
+
+单标的根目录 `*_分析.md` 同样在文末登记：
+```bash
+python scripts/outlook_tracker.py record --code {code} --name {名称} --source analysis_report
+```
+
+参数校准：`python scripts/outlook_tracker.py calibrate`（review 有样本时自动触发）。
+
+**批处理 / 存储**：`Wiki/数据/股价预测追踪/`（`预测登记.json`、`参数.json`、`复盘/`）；daily → `batch --universe track`；`sug 全员 午盘` → `batch --universe portfolio --session 午盘`。
+
+**询问过的标的**：`register-queried --code …` 或 `record --source analysis_report`。

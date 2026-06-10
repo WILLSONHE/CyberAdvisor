@@ -71,9 +71,9 @@ def _build_name_code_map() -> dict[str, str]:
             mapping[name] = code
 
     try:
-        from fine_screen import BLOGGER_STOCKS
+        from fine_screen import TRACK_STOCKS
 
-        for name, code in BLOGGER_STOCKS.items():
+        for name, code in TRACK_STOCKS.items():
             add(name, code)
     except Exception:
         pass
@@ -125,7 +125,7 @@ def resolve_stock_name(query: str, mapping: dict[str, str] | None = None) -> tup
     if len(partial) > 1:
         raise ValueError(f"「{q}」匹配多个标的：{', '.join(partial[:8])}…请写全名")
 
-    raise ValueError(f"未找到标的「{q}」的代码，请先在 持仓.xlsx / 博主标的池 中确认名称")
+    raise ValueError(f"未找到标的「{q}」的代码，请先在 持仓.xlsx / 核心标的池 中确认名称")
 
 
 def _shares_for_budget(price: float, budget: float) -> int | None:

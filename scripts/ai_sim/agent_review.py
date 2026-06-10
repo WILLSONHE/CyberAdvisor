@@ -50,15 +50,36 @@ def _read_json(path: str, max_chars: int = 12000) -> str:
     return text
 
 
-def _positions_summary() -> str:
+def _positions_summary(tick_path: str = "") -> str:
     pos = active_positions()
     if pos.empty:
         return "当前无 AI 持仓"
+    quotes: dict[str, dict] = {}
+    if tick_path and os.path.isfile(tick_path):
+        try:
+            data = json.loads(open(tick_path, encoding="utf-8").read())
+            from sim_portfolio import _norm_code
+
+            for s in data.get("stocks", []):
+                quotes[_norm_code(s.get("code", ""))] = s
+        except Exception:
+            pass
     lines = []
     for _, r in pos.iterrows():
+        code = str(r.get("代码", "")).zfill(6)
+        q = quotes.get(code, {})
+        extra = ""
+        vip = q.get("vipdoc") or {}
+        if vip.get("stdev_pct") is not None:
+            extra += f" | vipdoc σ {vip['stdev_pct']}%"
+        ol = q.get("outlook_1d") or {}
+        if ol.get("price"):
+            extra += f" | 1日最有可能价 {ol['price']}（{ol.get('label', '')}）"
+        if q.get("boll_zone"):
+            extra += f" | 布林 {q['boll_zone']}"
         lines.append(
-            f"- {r['标的']}({r['代码']}) 成本{r['成本']} 现价{r.get('现价')} "
-            f"股数{r['股数']} 盈亏比{r.get('盈亏比')}"
+            f"- {r['标的']}({code}) 成本{r['成本']} 现价{r.get('现价')} "
+            f"股数{r['股数']} 盈亏比{r.get('盈亏比')}{extra}"
         )
     totals = _portfolio_totals(pos)
     lines.append(f"组合市值 {totals['total_mkt']:.2f} 元")
@@ -90,7 +111,7 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
             "给出今日风险与仓位意图；**可选**调参；若无需改变请 hold_params=true。"
         ),
         "lunch": (
-            "【午休复盘 tick】复盘 9:30–11:30 上午盘面与持仓；对照 Wiki/博主判断。"
+            "【午休复盘 tick】复盘 9:30–11:30 上午盘面与持仓；对照 Wiki 判断。"
             "为下午 session 定调；**可选**调参；允许维持不变。"
         ),
         "post_close": (
@@ -154,9 +175,12 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 - 总资产：{total_assets():,.2f} 元
 
 ## 持仓
-{_positions_summary()}
+{_positions_summary(tick_path)}
 
 ## 最新 tick JSON（`{tick_path}`）
+
+每只股票含 **vipdoc**（本地日 K 波动 σ）、**outlook_1d/3d/7d**（最有可能价位）、**布林七轨**（`boll_zone` 等）。规则引擎买入排序须参考 vipdoc 波动与 outlook；分析时写入 `buy_permission.reason`。
+
 ```json
 {tick_json}
 ```
@@ -176,9 +200,14 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
   "analysis": "行情分析…",
   "param_changes": {{}},
   "hold_params": true,
+  "buy_permission": {{
+    "allowed": false,
+    "reason": "是否允许规则引擎本 tick 开新仓（须综合 Wiki 指数纪律 L1–L5、仓位管理、最新日更）",
+    "confidence": "low|medium|high"
+  }},
   "rebound_buy": {{
     "signal": false,
-    "reason": "是否判断大盘处于中长期调整低点且即将修复/上涨（破4033时由你综合 Wiki+L3–L5 判断）",
+    "reason": "（兼容字段）同 buy_permission；修复/回补场景",
     "confidence": "low|medium|high"
   }},
   "data_requests": [
@@ -196,21 +225,14 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 
 规则：
 - `param_changes` 为空对象 {{}} 表示本 tick 不调参
-- 数值必须在 schema 边界内
-- **`rebound_buy.signal`**（兼容 `dip_buy`）：判断 **中长期调整低点 + 大盘即将修复/上涨**（非日内 tick 最低）。须综合：
-  - **60 分钟 K 线**是否出现底部结构（L3）
-  - **近 N 日成交额**是否缩量企稳（L5）
-  - **北向/南向**与 **隔夜外盘**
-  - **上证/深成指/创业板** 多日走势 + Wiki 博主 L3–L5
-  - 仅在修复概率足够高时 `true`；不确定则 `false`
-- `rebound_buy.confidence`：`low` / `medium` / `high`（供日志参考，规则引擎只看 `signal`）
-- 若 `rebound_buy.signal=true`，建议同时将 `MAX_BUYS_PER_TICK` 设为 **≥1**（若当前为 0）
-- **指数纪律多层框架**（必读 `Wiki/投资方法论/指数纪律框架.md`）：
-  - **L1** 4033/4130：规则引擎硬参数；上证 < 4033 时通常 `NO_BUY_BELOW_CLEAR: true` 且降低 `EQUITY_TARGET_BELOW_CLEAR`
-  - **L2** 硬科技清仓：创业板/深成指趋势破位时叙事须提及
-  - **L3** 回补须 **4120 站稳** 或 **60 分钟及以上明确底部** — **禁止**写「站回 4033 即可回补」
-  - **L4** 4000→3950 结构；**L5** 缩量验证企稳
-- `analysis` 须分层表述 L1 +（破线/调整环境下）L3–L5，不可只写 4033
+- 数值必须在 schema 边界内；**勿再使用** `NO_BUY_BELOW_CLEAR` / `EQUITY_TARGET_BELOW_CLEAR`（已废弃）
+- **开新仓唯一门禁**：`buy_permission.allowed`（须读 Wiki 后显式 true/false）
+- **若你认为 Wiki 指数纪律（含 L1 4033/4130）支持或禁止建仓**，在 `buy_permission.reason` 写清依据，并配合 `EQUITY_TARGET_NORMAL`、`MAX_BUYS_PER_TICK` 等参数
+- **允许**在 Wiki 仍有效时因破 4033 而 `allowed=false` 或降 `EQUITY_TARGET_NORMAL`——这是你的判断，不是脚本硬编码
+- **`rebound_buy.signal`**：与 `buy_permission.allowed` 等价（兼容）
+- 综合 L1–L5、北向、60 分钟 K、缩量、最新日更；勿无依据滥开/滥关
+- **L3** 4120/60 分钟底：回补硬科技叙事须引用
+- `analysis` 须分层表述 L1 +（调整环境下）L3–L5
 - 不要输出除 JSON 以外的内容
 """
 
@@ -230,6 +252,35 @@ def _extract_json(text: str) -> dict[str, Any]:
     raise ValueError("Agent 回复中未找到 JSON")
 
 
+def _format_token_usage_line(agent: dict[str, Any] | None) -> str:
+    if not agent:
+        return ""
+    if agent.get("skipped"):
+        return "- **Token 消耗**：—（Agent 跳过）"
+    if not agent.get("ok", True):
+        return "- **Token 消耗**：—（Agent 未成功）"
+    meta = agent.get("agent_meta") or {}
+    usage = meta.get("usage") or agent.get("usage")
+    total = meta.get("token_total") if meta.get("token_total") is not None else agent.get("token_total")
+    if total is None and isinstance(usage, dict):
+        keys = ("inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens")
+        if any(usage.get(k) is not None for k in keys):
+            total = sum(int(usage.get(k) or 0) for k in keys)
+    if total is None:
+        return "- **Token 消耗**：—（API 未返回）"
+    est = meta.get("usage_estimated") or (isinstance(usage, dict) and usage.get("estimated"))
+    suffix = "（估算）" if est else ""
+    parts = [f"**{int(total):,}**{suffix}"]
+    if isinstance(usage, dict):
+        inp, out = usage.get("inputTokens"), usage.get("outputTokens")
+        if inp is not None or out is not None:
+            parts.append(f"输入 {int(inp or 0):,} · 输出 {int(out or 0):,}")
+        cr, cw = int(usage.get("cacheReadTokens") or 0), int(usage.get("cacheWriteTokens") or 0)
+        if cr or cw:
+            parts.append(f"缓存读 {cr:,} · 写 {cw:,}")
+    return "- **Token 消耗**：" + " | ".join(parts)
+
+
 def _format_agent_block(agent: dict[str, Any] | None) -> list[str]:
     if not agent:
         return []
@@ -243,6 +294,9 @@ def _format_agent_block(agent: dict[str, Any] | None) -> list[str]:
         lines.append(f"- **耗时**：{meta['duration_ms']} ms")
     if meta.get("status"):
         lines.append(f"- **状态**：{meta['status']}")
+    token_line = _format_token_usage_line(agent)
+    if token_line:
+        lines.append(token_line)
     lines.append("")
 
     if agent.get("skipped"):
@@ -279,15 +333,15 @@ def _format_agent_block(agent: dict[str, Any] | None) -> list[str]:
         lines.append("*本 tick Agent 未调整参数（维持当前规则引擎配置）*")
         lines.append("")
 
-    rebound = agent.get("rebound_buy") or agent.get("dip_buy") or {}
+    rebound = agent.get("buy_permission") or agent.get("rebound_buy") or agent.get("dip_buy") or {}
     if rebound:
-        sig = rebound.get("signal")
+        sig = rebound.get("allowed") if "allowed" in rebound else rebound.get("signal")
         reason = (rebound.get("reason") or "").strip()
         conf = (rebound.get("confidence") or "").strip()
         if sig is not None:
-            lines.append("#### 修复建仓信号")
+            lines.append("#### 开新仓许可（Wiki→Agent）")
             lines.append("")
-            lines.append(f"- **rebound_buy.signal**：{'是' if sig else '否'}")
+            lines.append(f"- **buy_permission**：{'允许' if sig else '禁止'}")
             if conf:
                 lines.append(f"- **置信度**：{conf}")
             if reason:
@@ -355,10 +409,23 @@ def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
     if not isinstance(changes, dict):
         changes = {}
     rebound_raw = parsed.get("rebound_buy") or parsed.get("dip_buy") or {}
+    buy_perm_raw = parsed.get("buy_permission") if isinstance(parsed.get("buy_permission"), dict) else {}
+    if buy_perm_raw:
+        buy_permission = {
+            "allowed": bool(buy_perm_raw.get("allowed")),
+            "reason": str(buy_perm_raw.get("reason") or "").strip(),
+            "confidence": str(buy_perm_raw.get("confidence") or "").strip(),
+        }
+    else:
+        buy_permission = {
+            "allowed": bool(rebound_raw.get("signal")) if isinstance(rebound_raw, dict) else False,
+            "reason": str(rebound_raw.get("reason") or "").strip() if isinstance(rebound_raw, dict) else "",
+            "confidence": str(rebound_raw.get("confidence") or "").strip() if isinstance(rebound_raw, dict) else "",
+        }
     rebound_buy = {
-        "signal": bool(rebound_raw.get("signal")) if isinstance(rebound_raw, dict) else False,
-        "reason": str(rebound_raw.get("reason") or "").strip() if isinstance(rebound_raw, dict) else "",
-        "confidence": str(rebound_raw.get("confidence") or "").strip() if isinstance(rebound_raw, dict) else "",
+        "signal": buy_permission["allowed"],
+        "reason": buy_permission["reason"],
+        "confidence": buy_permission["confidence"],
     }
 
     applied, warnings = ({}, [])
@@ -380,7 +447,11 @@ def review_tick(tick_path: str, *, phase: str | None = None) -> dict[str, Any]:
         "hold_params": hold_params,
         "rebound_buy": rebound_buy,
         "dip_buy": rebound_buy,
+        "buy_permission": buy_permission,
         "data_requests": data_ext,
         "phase": phase,
         "agent_meta": meta,
+        "usage": meta.get("usage"),
+        "token_total": meta.get("token_total"),
+        "usage_estimated": meta.get("usage_estimated"),
     }

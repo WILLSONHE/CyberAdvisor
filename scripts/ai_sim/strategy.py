@@ -1,4 +1,4 @@
-"""AI 模拟盘交易决策（规则引擎，4033 软约束）。"""
+"""AI 自主模拟盘交易决策（执行层：Agent 读 Wiki 后的 param + buy_permission；无指数/布林硬编码门禁）。"""
 from __future__ import annotations
 
 import json
@@ -7,8 +7,6 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 
 from ai_sim.config import (
-    LINE_CLEAR,
-    LINE_FULL,
     MAX_POSITIONS,
     MAX_WEIGHT,
     TOTAL_CASH,
@@ -16,6 +14,7 @@ from ai_sim.config import (
 from ai_sim.portfolio_ops import active_positions, buy_by_amount, cash_available, equity_ratio, sell_all
 from ai_sim.runtime_params import get as param
 from ai_sim.universe import UniverseEntry, build_universe
+from bollinger_utils import _sim_buy_score, bollinger_for_code
 from sim_portfolio import _norm_code
 
 
@@ -32,7 +31,7 @@ class Decision:
 
 _SOURCE_LABEL = {
     "daily_gain": "市场状态日报·涨幅板块成分",
-    "track": "博主标的追踪（活跃）",
+    "track": "标的追踪（活跃）",
 }
 
 
@@ -52,12 +51,12 @@ def _sell_reason_kind(pnl_pct: float) -> tuple[str, str]:
     return ("风控降仓", "")
 
 
-def _buy_reason(e: UniverseEntry, target_ratio: float, current_ratio: float, regime: str, *, rebound: bool = False) -> tuple[str, str]:
+def _buy_reason(e: UniverseEntry, target_ratio: float, current_ratio: float, regime: str) -> tuple[str, str]:
     src = _SOURCE_LABEL.get(e.source, e.source)
-    kind = "修复建仓" if rebound else ("涨幅榜买入" if e.source == "daily_gain" else "追踪买入")
+    kind = "涨幅榜买入" if e.source == "daily_gain" else "追踪买入"
     detail = (
         f"{regime}；当前仓位 {current_ratio:.0%} 低于目标 {target_ratio:.0%}，"
-        f"从{src}选股{'（Agent 判定大盘即将修复/上涨）' if rebound else '建仓'}"
+        f"Agent 已允许开新仓，从{src}按综合得分选股"
     )
     return kind, detail
 
@@ -83,16 +82,20 @@ def _stock_map(tick_path: str) -> dict[str, dict]:
 
 
 def _target_equity_ratio(sh_close: float | None) -> tuple[float, str]:
+    target = param("EQUITY_TARGET_NORMAL")
     if sh_close is None:
-        return param("EQUITY_TARGET_NORMAL"), "指数缺失，按默认仓位"
-    if sh_close < LINE_CLEAR:
-        return (
-            param("EQUITY_TARGET_BELOW_CLEAR"),
-            f"上证 {sh_close:.2f} < {LINE_CLEAR}（4033 软约束降仓）",
-        )
-    if sh_close >= LINE_FULL:
-        return min(0.85, param("EQUITY_TARGET_NORMAL") + 0.1), f"上证 {sh_close:.2f} ≥ {LINE_FULL}（可偏高仓位）"
-    return param("EQUITY_TARGET_NORMAL"), f"上证 {sh_close:.2f} 在 {LINE_CLEAR}–{LINE_FULL} 区间"
+        return target, "指数缺失；目标仓位取自 Agent/默认参数"
+    return target, f"上证 {sh_close:.2f}；目标股票仓位 {target:.0%}（Agent 据 Wiki 调参）"
+
+
+def _agent_buy_allowed(agent: dict | None) -> bool:
+    if not agent or not agent.get("ok"):
+        return False
+    perm = agent.get("buy_permission")
+    if isinstance(perm, dict) and "allowed" in perm:
+        return bool(perm.get("allowed"))
+    rebound = agent.get("rebound_buy") or agent.get("dip_buy") or {}
+    return bool(rebound.get("signal"))
 
 
 def _hold_days(row) -> int:
@@ -115,6 +118,24 @@ class TradePlan:
     quotes: dict[str, dict] = field(default_factory=dict)
 
 
+def _boll_from_quote(code: str, q: dict) -> dict:
+    if q.get("boll_zone"):
+        return {
+            "zone": q.get("boll_zone"),
+            "signal": q.get("boll_signal"),
+            "mid": q.get("boll_mid"),
+            "track2": q.get("boll_track2"),
+            "track4": q.get("boll_track4"),
+            "track5": q.get("boll_track5"),
+            "top": q.get("boll_top"),
+            "bot": q.get("boll_bot"),
+        }
+    b = bollinger_for_code(code)
+    if b and "error" not in b:
+        return b
+    return {}
+
+
 def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
     from ai_sim.runtime_params import reload
 
@@ -128,12 +149,21 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
     held = {str(r["标的"]).strip(): _norm_code(r["代码"]) for _, r in pos.iterrows()}
     decisions: list[Decision] = []
     buy_skip = ""
-    tick_note = "每 15 分钟采集行情；仅在有明确信号时成交，默认观望"
-    rebound = (agent or {}).get("rebound_buy") or (agent or {}).get("dip_buy") or {}
-    rebound_signal = bool(agent and agent.get("ok") and rebound.get("signal"))
-    rebound_allowed = rebound_signal
+    tick_note = "每 15 分钟采集行情（含 vipdoc 波动与 1/3/7 最有可能价）；开新仓须 Agent buy_permission；布林作排序参考"
 
-    # 卖出：止损 / 止盈 / 超配降仓（建仓当日不降仓）
+    agent_ok = bool(agent and agent.get("ok"))
+    agent_buy = _agent_buy_allowed(agent)
+
+    if not agent_ok:
+        buy_skip = "Agent 未成功分析，默认不开新仓（须读 Wiki 后 buy_permission.allowed=true）"
+    elif not agent_buy:
+        buy_skip = (
+            "Agent 未允许开新仓（buy_permission.allowed=false）；"
+            "若 Wiki 指数纪律（如 L1 4033）支持建仓，请在 JSON 中显式允许并说明理由"
+        )
+
+    blocked = not agent_ok or not agent_buy
+
     rebalance_slots = 0
     for _, row in pos.iterrows():
         name = str(row["标的"]).strip()
@@ -144,39 +174,32 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
         if cost <= 0:
             continue
         pnl_pct = (price - cost) / cost * 100
+        vip = q.get("vipdoc") or {}
+        vip_note = f"；vipdoc σ {vip['stdev_pct']}%" if vip.get("stdev_pct") is not None else ""
+        ol = q.get("outlook_1d") or {}
+        if ol.get("price"):
+            vip_note += f"；1日最有可能价 {ol['price']}"
         if pnl_pct <= param("STOP_LOSS_PCT"):
             kind, detail = _sell_reason_kind(pnl_pct)
-            decisions.append(Decision("sell", name, code, kind, detail, "短线"))
+            decisions.append(Decision("sell", name, code, kind, detail + vip_note, "短线"))
         elif pnl_pct >= param("TAKE_PROFIT_PCT"):
             kind, detail = _sell_reason_kind(pnl_pct)
-            decisions.append(Decision("sell", name, code, kind, detail, "短线"))
+            decisions.append(Decision("sell", name, code, kind, detail + vip_note, "短线"))
         elif current_ratio > target_ratio + 0.05:
             if _hold_days(row) < param("REBALANCE_MIN_HOLD_DAYS"):
                 continue
             if rebalance_slots >= 1:
                 continue
-            kind = "风控降仓"
             detail = (
                 f"{regime}；目标仓位 {target_ratio:.0%}，"
                 f"当前 {current_ratio:.0%} 超配 {current_ratio - target_ratio:.0%}，"
                 f"减持 1 只至接近目标（非清仓）"
             )
-            decisions.append(Decision("sell", name, code, kind, detail, "风控"))
+            decisions.append(Decision("sell", name, code, "风控降仓", detail, "风控"))
             rebalance_slots += 1
 
-    # 买入：4033 下默认禁买；Agent 判定「中长期低点/即将修复」时可例外
-    blocked_below_clear = param("NO_BUY_BELOW_CLEAR") and sh is not None and sh < LINE_CLEAR
-    if blocked_below_clear and not rebound_allowed:
-        parts = [f"上证 {sh:.2f} < {LINE_CLEAR}，4033 软约束下不开新仓"]
-        if not rebound_signal:
-            parts.append(
-                "需 Agent `rebound_buy.signal=true`（判断大盘处于中长期低点且即将修复/上涨）方可试探建仓"
-            )
-        elif not agent or not agent.get("ok"):
-            parts.append("Agent 未成功分析，无法发出修复建仓信号")
-        else:
-            parts.append("Agent 未给出修复建仓信号")
-        buy_skip = "；".join(parts) + "（本 tick 仅观察）"
+    if blocked:
+        pass
     elif len(held) >= MAX_POSITIONS:
         buy_skip = f"已达最大持仓 {MAX_POSITIONS} 只，不再新开仓"
     elif current_ratio >= target_ratio - param("BUY_MIN_GAP"):
@@ -191,7 +214,7 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
         slots_left = max(1, MAX_POSITIONS - len(held))
         slot = min(MAX_WEIGHT * TOTAL_CASH, cash, budget_left / slots_left)
 
-        candidates: list[tuple[float, UniverseEntry]] = []
+        candidates: list[tuple[float, UniverseEntry, str]] = []
         for e in universe:
             if e.name in held or e.code in held.values():
                 continue
@@ -205,29 +228,42 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
             if e.source == "track":
                 score += 0.3
             chg = q.get("change_pct")
-            if chg is not None and float(chg) < 0 and not rebound_allowed:
-                continue
-            if rebound_allowed and chg is not None and float(chg) < 0:
-                score += 0.2
-            candidates.append((score, e))
+            if chg is not None:
+                score += max(-0.3, min(0.3, float(chg) / 20.0))
+            boll_note = ""
+            boll = _boll_from_quote(_norm_code(e.code), q)
+            if boll:
+                score += _sim_buy_score(boll) * 0.35
+                boll_note = f"；布林 {boll.get('zone')}（{boll.get('signal')}）"
+            vip = q.get("vipdoc") or {}
+            if vip.get("stdev_pct") is not None:
+                boll_note += f"；vipdoc σ {vip['stdev_pct']}%"
+                if float(vip["stdev_pct"]) > 5:
+                    score -= 0.08
+            ol1 = q.get("outlook_1d")
+            if ol1 and ol1.get("price"):
+                boll_note += f"；1日最有可能价 {ol1['price']}"
+            candidates.append((score, e, boll_note))
 
-        if rebound_allowed:
-            tick_note += "；Agent 判定大盘即将修复/上涨，允许破线环境下试探建仓"
+        if agent_buy:
+            tick_note += "；Agent 已允许开新仓"
         max_buys = param("MAX_BUYS_PER_TICK")
-        if rebound_allowed and max_buys < 1:
-            max_buys = 1
         candidates.sort(key=lambda x: -x[0])
         if not candidates:
-            buy_skip = "标的池无满足条件的候选（需 tick 有报价；修复建仓允许当日下跌标的），跳过买入"
+            buy_skip = "标的池无可用候选（需 tick 有报价），跳过买入"
         elif slot < param("MIN_TRADE_YUAN") or budget_left < param("MIN_TRADE_YUAN"):
             buy_skip = f"可用预算 {budget_left:,.0f} 元低于最小成交额 {param('MIN_TRADE_YUAN'):,.0f} 元"
+        elif max_buys < 1:
+            buy_skip = f"Agent 参数 MAX_BUYS_PER_TICK={max_buys}，本 tick 不新开仓"
         else:
-            for _, e in candidates[:max_buys]:
+            for _, e, boll_note in candidates[:max_buys]:
                 if slot < param("MIN_TRADE_YUAN") or budget_left < param("MIN_TRADE_YUAN"):
                     break
                 style = "短线" if e.source == "daily_gain" else "波段"
                 amt = min(slot, budget_left)
-                kind, detail = _buy_reason(e, target_ratio, current_ratio, regime, rebound=rebound_allowed)
+                kind, detail = _buy_reason(e, target_ratio, current_ratio, regime)
+                if boll_note:
+                    detail += boll_note
                 decisions.append(
                     Decision(
                         "buy",

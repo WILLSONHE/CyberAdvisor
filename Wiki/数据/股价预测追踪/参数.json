@@ -1,0 +1,35 @@
+{
+  "version": "2026-06-10-vipdoc-prob",
+  "sigma_divisor_1d": 3.0,
+  "sigma_divisor_3d": 2.8,
+  "sigma_divisor_7d": 2.4,
+  "sigma_dev_floor_1d": 0.28,
+  "sigma_dev_floor_3d": 0.35,
+  "sigma_dev_floor_7d": 0.45,
+  "track_level_boost": 1.25,
+  "band_days_scale": 5,
+  "use_realized_vol_floor": true,
+  "realized_vol_lookback": 20,
+  "band_vol_scale": 1.0,
+  "prob_center_price_weight": 0.55,
+  "prob_center_price_weight_mid": 0.65,
+  "prob_horizon_reversion_pull": 0.07,
+  "prob_mid_weight_per_day": 0.055,
+  "prob_track_boost_decay_per_day": 0.04,
+  "prob_sigma_halfband_scale": 0.92,
+  "prob_uniform_weight": 0.06,
+  "calibration_notes": [
+    "2026-06-10-vipdoc-prob：概率层 vipdoc 1σ + Wiki 锚点/中轨回归",
+    "最有可能价：1日 mode；3日 anchor_snap；7日 mid_revert（通道上下段→中轨）",
+    "随 outlook_tracker calibrate 微调 band_vol_scale / prob_sigma_halfband_scale"
+  ],
+  "stats": {
+    "reviews_total": 0,
+    "band_hit_rate_1d": null,
+    "band_hit_rate_3d": null,
+    "band_hit_rate_7d": null,
+    "top_level_hit_rate_1d": null,
+    "top_level_hit_rate_3d": null,
+    "top_level_hit_rate_7d": null
+  }
+}

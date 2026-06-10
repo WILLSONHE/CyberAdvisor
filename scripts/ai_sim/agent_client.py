@@ -187,19 +187,99 @@ def poll_run(agent_id: str, run_id: str, *, timeout_s: float = 600, interval_s: 
     raise AgentClientError(f"Agent 超时（>{timeout_s:.0f}s）: {run_id}", retryable=True)
 
 
+def _usage_total(usage: dict[str, Any] | None) -> int | None:
+    if not usage or not isinstance(usage, dict):
+        return None
+    keys = ("inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens")
+    if not any(usage.get(k) is not None for k in keys):
+        return None
+    return sum(int(usage.get(k) or 0) for k in keys)
+
+
+def _estimate_usage(prompt: str, result: str) -> dict[str, Any]:
+    """API 未返回 usage 时按字符粗算（约 4 字符 / token）。"""
+    return {
+        "inputTokens": max(1, len(prompt) // 4),
+        "outputTokens": max(1, len(str(result or "")) // 4),
+        "cacheReadTokens": 0,
+        "cacheWriteTokens": 0,
+        "estimated": True,
+    }
+
+
+def _consume_run_stream(agent_id: str, run_id: str, *, timeout_s: float) -> dict[str, Any]:
+    """订阅 SSE，捕获 turn-ended usage 与 result 事件。"""
+    url = f"{API_BASE}/agents/{agent_id}/runs/{run_id}/stream"
+    headers = _auth_headers()
+    headers["Accept"] = "text/event-stream"
+    deadline = time.time() + timeout_s
+    event_name = ""
+    usage: dict[str, Any] | None = None
+    result_text = ""
+    duration_ms: int | None = None
+    status = ""
+
+    resp = _session().get(url, headers=headers, stream=True, timeout=max(60, int(timeout_s)))
+    if resp.status_code >= 400:
+        return {}
+    try:
+        for raw in resp.iter_lines(decode_unicode=True):
+            if time.time() > deadline:
+                break
+            if raw is None:
+                continue
+            line = raw.strip()
+            if not line:
+                continue
+            if line.startswith("event:"):
+                event_name = line[6:].strip()
+                continue
+            if not line.startswith("data:"):
+                continue
+            payload = line[5:].strip()
+            try:
+                data = json.loads(payload) if payload and payload != "{}" else {}
+            except json.JSONDecodeError:
+                data = {}
+            if event_name == "interaction_update" and isinstance(data, dict):
+                if data.get("type") == "turn-ended" and isinstance(data.get("usage"), dict):
+                    usage = data["usage"]
+            elif event_name == "result" and isinstance(data, dict):
+                status = str(data.get("status") or status)
+                result_text = str(data.get("text") or result_text)
+                if data.get("durationMs") is not None:
+                    duration_ms = int(data["durationMs"])
+            elif event_name == "done":
+                break
+    finally:
+        resp.close()
+
+    return {
+        "usage": usage,
+        "result": result_text,
+        "duration_ms": duration_ms,
+        "status": status,
+    }
+
+
 def run_analysis_prompt(prompt_text: str) -> dict[str, Any]:
-    """一次性 Cloud Agent 分析，返回 {agent_id, run_id, status, result, duration_ms}。"""
+    """一次性 Cloud Agent 分析，返回 usage / token_total 等。"""
     agent_id, run_id = create_cloud_run(prompt_text)
-    run = poll_run(
-        agent_id,
-        run_id,
-        timeout_s=float(os.environ.get("AI_SIM_AGENT_TIMEOUT", "600")),
-    )
+    timeout_s = float(os.environ.get("AI_SIM_AGENT_TIMEOUT", "600"))
+    streamed = _consume_run_stream(agent_id, run_id, timeout_s=timeout_s)
+    run = poll_run(agent_id, run_id, timeout_s=min(timeout_s, 120.0))
+    result = streamed.get("result") or run.get("result") or ""
+    usage = streamed.get("usage")
+    if not usage:
+        usage = _estimate_usage(prompt_text, result)
     return {
         "agent_id": agent_id,
         "run_id": run_id,
-        "status": run.get("status"),
-        "result": run.get("result") or "",
-        "duration_ms": run.get("durationMs"),
+        "status": run.get("status") or streamed.get("status"),
+        "result": result,
+        "duration_ms": run.get("durationMs") or streamed.get("duration_ms"),
         "url": f"https://cursor.com/agents/{agent_id}",
+        "usage": usage,
+        "token_total": _usage_total(usage),
+        "usage_estimated": bool(usage.get("estimated")),
     }

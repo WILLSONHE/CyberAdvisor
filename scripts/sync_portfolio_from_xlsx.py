@@ -311,7 +311,7 @@ def _write_trade_template(holdings: list[dict]) -> None:
     block = "\n".join(rows)
     new_text, n = re.subn(
         r"\| 标的   \| 股数.*?\n(\| [^\n]+\|\n)+",
-        "| 标的   | 股数   | 成本      | 成交额      | 现价   | 浮盈    | PE   | 布林线  | 博主态度 | 操作   |\n"
+        "| 标的   | 股数   | 成本      | 成交额      | 现价   | 浮盈    | PE   | 布林线  | Wiki 追踪口径 | 操作   |\n"
         f"| ---- | ---- | ------- | -------- | ---- | ----- | ---- | ---- | ---- | ---- |\n"
         f"{block}\n",
         text,

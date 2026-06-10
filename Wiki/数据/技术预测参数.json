@@ -1,0 +1,19 @@
+{
+  "version": "2026-06-10",
+  "sigma_divisor_3d": 2.8,
+  "sigma_divisor_7d": 2.4,
+  "sigma_dev_floor_3d": 0.35,
+  "sigma_dev_floor_7d": 0.45,
+  "track_level_boost": 1.25,
+  "band_days_scale": 5,
+  "calibration_notes": [
+    "初始参数；随 outlook_tracker calibrate 自动微调"
+  ],
+  "stats": {
+    "reviews_total": 0,
+    "band_hit_rate_3d": null,
+    "band_hit_rate_7d": null,
+    "top_level_hit_rate_3d": null,
+    "top_level_hit_rate_7d": null
+  }
+}

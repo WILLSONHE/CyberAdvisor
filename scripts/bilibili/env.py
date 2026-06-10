@@ -72,7 +72,7 @@ class BiliConfig:
         sess = cfg.get("BILIBILI_SESSDATA", "")
         jct = cfg.get("BILIBILI_BILI_JCT") or cfg.get("bili_jct", "")
         uid_user = cfg.get("BILIBILI_DEDEUSERID") or cfg.get("DedeUserID", "")
-        uid = cfg.get("BLOGGER_UID", "")
+        uid = cfg.get("UP_UID") or cfg.get("BLOGGER_UID", "")
 
         missing = []
         if not sess:
@@ -82,7 +82,7 @@ class BiliConfig:
         if not uid_user:
             missing.append("DedeUserID")
         if not uid:
-            missing.append("BLOGGER_UID")
+            missing.append("UP_UID")
         if missing:
             raise SystemExit(
                 f"缺少配置: {', '.join(missing)}\n"

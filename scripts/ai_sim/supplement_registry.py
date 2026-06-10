@@ -83,6 +83,8 @@ def build_supplement_payload(
         "overnight": sup.fetch_overnight_indices,
         "us_vix": sup.fetch_us_vix,
         "us_10y_yield": sup.fetch_us_10y_yield,
+        "minute_kline": lambda: {"error": "minute_kline 需指定 code；报告用 report_data.enrich_stock"},
+        "rs_vs_hs300": lambda: {"error": "rs_vs_hs300 需指定 code；报告用 report_data.enrich_stock"},
     }
 
     for mid in sorted(active):

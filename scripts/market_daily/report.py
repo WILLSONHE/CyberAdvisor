@@ -21,7 +21,7 @@ from market_daily.supplement import build_supplement, indices_to_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 WIKI = ROOT.parent / "Wiki"
-TRACK_DIR = WIKI / "博主" / "标的追踪"
+TRACK_DIR = WIKI / "内容源" / "标的追踪"
 WIKI_MARKET = WIKI / "市场分析"
 WIKI_METHOD = WIKI / "投资方法论"
 
@@ -29,7 +29,7 @@ WIKI_METHOD = WIKI / "投资方法论"
 CONCEPT_BOARD_TOP = 3
 BOARD_MCAP_STOCK_TOP = 5
 
-# 博主机械化纪律线（与 Wiki 一致）
+# 指数机械化纪律线（与 Wiki 一致）
 LINE_CLEAR = 4033
 LINE_FULL = 4130
 
@@ -52,9 +52,9 @@ def _code_map() -> dict[str, str]:
         scripts = str(ROOT)
         if scripts not in sys.path:
             sys.path.insert(0, scripts)
-        from fine_screen import BLOGGER_STOCKS
+        from fine_screen import TRACK_STOCKS
 
-        return dict(BLOGGER_STOCKS)
+        return dict(TRACK_STOCKS)
     except Exception:
         return {}
 
@@ -169,7 +169,7 @@ def _generate_summary(
         )
     lines.append("")
 
-    # --- 5.2 板块 vs 博主 ---
+    # --- 5.2 板块 vs Wiki ---
     lines.append("### 5.2 板块轮动对照")
     if gain_boards:
         top3 = "、".join(b.name for b in gain_boards[:3])
@@ -179,11 +179,11 @@ def _generate_summary(
         lines.append(f"- **概念跌幅前三**：{bot3}")
     rot = _read_wiki_snippet(WIKI_MARKET / "板块轮动记录.md", 25)
     if rot:
-        lines.append("- **博主当日主线（Wiki）**：上游材料 + 机器人日内胜出（见 [[板块轮动记录]] 2026-06-05 节）")
+        lines.append("- **Wiki 当日主线**：上游材料 + 机器人日内胜出（见 [[板块轮动记录]] 2026-06-05 节）")
         if gain_boards:
             robot_hit = any("机器人" in b.name for b in gain_boards[:CONCEPT_BOARD_TOP])
             lines.append(
-                f"- 盘面概念榜{'**含**机器人相关板块走强' if robot_hit else '与博主「机器人胜出」需人工核对概念名称'}，"
+                f"- 盘面概念榜{'**含**机器人相关板块走强' if robot_hit else '与 Wiki「机器人胜出」需人工核对概念名称'}，"
                 f"与 [[2026-06-05]] 11:51 动态对照"
             )
     lines.append("")
@@ -206,7 +206,7 @@ def _generate_summary(
         lines.append(f"- 活跃追踪 **{len(perf)}** 只，平均涨跌 **{avg:+.2f}%**")
         lines.append(f"- 最强：**{best[0]}** {best[1]:+.2f}% | 最弱：**{worst[0]}** {worst[1]:+.2f}%")
         up = sum(1 for _, p in perf if p > 0)
-        lines.append(f"- 上涨 {up} / 下跌 {len(perf) - up}（对照 [[标的总览]]、[[博主标的池日报]]）")
+        lines.append(f"- 上涨 {up} / 下跌 {len(perf) - up}（对照 [[标的总览]]、[[标的池日报]]）")
     lines.append("")
 
     # --- 5.4 方法论 ---
@@ -229,7 +229,7 @@ def _generate_summary(
             f"> 上证收 **{sh.close:.2f}** 破 **{LINE_CLEAR}**（L1）；回补看 **4120/60 分钟底**（L3），结构 **4000→3950**、**缩量** 验证企稳{tail}。"
         )
     elif sh:
-        lines.append(f"> 上证 **{sh.close:.2f}** 守于 {LINE_CLEAR} 之上，结构分化，按博主主线持仓观察。")
+        lines.append(f"> 上证 **{sh.close:.2f}** 守于 {LINE_CLEAR} 之上，结构分化，按 Wiki 主线持仓观察。")
     lines.append("")
 
     # Wiki 摘录
@@ -318,7 +318,7 @@ def build_report() -> str:
         _board_mcap_section(loss_boards, f"3.2 跌幅 Top{CONCEPT_BOARD_TOP} 板块内")
 
     # 4. 活跃追踪标的
-    lines.append("## 四、活跃标的追踪（Wiki/博主/标的追踪/）")
+    lines.append("## 四、活跃标的追踪（Wiki/内容源/标的追踪/）")
     lines.append("")
     track_names = _list_active_track_names()
     code_map = _code_map()

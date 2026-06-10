@@ -25,16 +25,16 @@ def _active_track_names() -> list[str]:
     )
 
 
-def _blogger_code_map() -> dict[str, str]:
+def _track_code_map() -> dict[str, str]:
     import sys
 
     scripts = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     if scripts not in sys.path:
         sys.path.insert(0, scripts)
     try:
-        from fine_screen import BLOGGER_STOCKS
+        from fine_screen import TRACK_STOCKS
 
-        return dict(BLOGGER_STOCKS)
+        return dict(TRACK_STOCKS)
     except Exception:
         return {}
 
@@ -65,7 +65,7 @@ def _parse_daily_board_stocks(path: str, *, gain_only: bool = True) -> list[tupl
 
 
 def build_universe() -> list[UniverseEntry]:
-    code_map = _blogger_code_map()
+    code_map = _track_code_map()
     seen: set[str] = set()
     out: list[UniverseEntry] = []
 

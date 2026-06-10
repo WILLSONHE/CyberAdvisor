@@ -1,0 +1,4807 @@
+{
+  "records": [
+    {
+      "id": "2026-06-10_300482_na_analysis_report",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "analysis_report",
+      "session": "",
+      "code": "300482",
+      "name": "万孚生物",
+      "price_at": 19.05,
+      "zone_at": "二轨~顶轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 18.35,
+          "hi": 19.75,
+          "lo_pct": -3.67,
+          "hi_pct": 3.67,
+          "anchor": 18.79,
+          "anchor_pct": -1.36,
+          "bias": "偏高回落风险",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 18.35,
+              "pct_vs_now": -3.67,
+              "prob_pct": 34.1
+            },
+            {
+              "label": "二轨",
+              "price": 18.99,
+              "pct_vs_now": -0.31,
+              "prob_pct": 58.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 19.75,
+              "pct_vs_now": 3.67,
+              "prob_pct": 8.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "due_date": "2026-06-13",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 17.99,
+          "hi": 20.11,
+          "lo_pct": -5.56,
+          "hi_pct": 5.56,
+          "anchor": 18.52,
+          "anchor_pct": -2.78,
+          "bias": "偏高回落风险",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 17.99,
+              "pct_vs_now": -5.56,
+              "prob_pct": 25.9
+            },
+            {
+              "label": "中轨",
+              "price": 18.09,
+              "pct_vs_now": -5.04,
+              "prob_pct": 34.4
+            },
+            {
+              "label": "二轨",
+              "price": 18.99,
+              "pct_vs_now": -0.31,
+              "prob_pct": 33.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 20.11,
+              "pct_vs_now": 5.56,
+              "prob_pct": 6.1
+            }
+          ],
+          "params_version": "2026-06-10",
+          "due_date": "2026-06-17",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002384_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "002384",
+      "name": "东山精密",
+      "price_at": 212.59,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 205.08,
+          "hi": 220.1,
+          "lo_pct": -3.53,
+          "hi_pct": 3.53,
+          "anchor": 216.72,
+          "anchor_pct": 1.94,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 205.08,
+              "pct_vs_now": -3.53,
+              "prob_pct": 3.9
+            },
+            {
+              "label": "四轨",
+              "price": 207.34,
+              "pct_vs_now": -2.47,
+              "prob_pct": 11.1
+            },
+            {
+              "label": "中轨",
+              "price": 217.04,
+              "pct_vs_now": 2.09,
+              "prob_pct": 51.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 220.1,
+              "pct_vs_now": 3.53,
+              "prob_pct": 33.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 201.11,
+          "hi": 224.07,
+          "lo_pct": -5.4,
+          "hi_pct": 5.4,
+          "anchor": 215.04,
+          "anchor_pct": 1.15,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 201.11,
+              "pct_vs_now": -5.4,
+              "prob_pct": 11.1
+            },
+            {
+              "label": "四轨",
+              "price": 207.34,
+              "pct_vs_now": -2.47,
+              "prob_pct": 29.0
+            },
+            {
+              "label": "中轨",
+              "price": 217.04,
+              "pct_vs_now": 2.09,
+              "prob_pct": 39.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 224.07,
+              "pct_vs_now": 5.4,
+              "prob_pct": 20.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_600673_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "600673",
+      "name": "东阳光",
+      "price_at": 33.31,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 31.71,
+          "hi": 34.91,
+          "lo_pct": -4.8,
+          "hi_pct": 4.8,
+          "anchor": 34.78,
+          "anchor_pct": 4.41,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 31.71,
+              "pct_vs_now": -4.8,
+              "prob_pct": 1.3
+            },
+            {
+              "label": "五轨",
+              "price": 32.07,
+              "pct_vs_now": -3.72,
+              "prob_pct": 3.5
+            },
+            {
+              "label": "四轨",
+              "price": 34.14,
+              "pct_vs_now": 2.49,
+              "prob_pct": 49.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 34.91,
+              "pct_vs_now": 4.8,
+              "prob_pct": 45.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 30.86,
+          "hi": 35.76,
+          "lo_pct": -7.36,
+          "hi_pct": 7.36,
+          "anchor": 34.78,
+          "anchor_pct": 4.41,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 30.86,
+              "pct_vs_now": -7.36,
+              "prob_pct": 5.2
+            },
+            {
+              "label": "近10日低",
+              "price": 31.55,
+              "pct_vs_now": -5.28,
+              "prob_pct": 9.4
+            },
+            {
+              "label": "五轨",
+              "price": 32.07,
+              "pct_vs_now": -3.72,
+              "prob_pct": 17.0
+            },
+            {
+              "label": "四轨",
+              "price": 34.14,
+              "pct_vs_now": 2.49,
+              "prob_pct": 39.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 35.76,
+              "pct_vs_now": 7.36,
+              "prob_pct": 29.3
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_000066_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "000066",
+      "name": "中国长城",
+      "price_at": 16.07,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 14.33,
+          "hi": 17.81,
+          "lo_pct": -10.83,
+          "hi_pct": 10.83,
+          "anchor": 17.48,
+          "anchor_pct": 8.77,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 14.33,
+              "pct_vs_now": -10.83,
+              "prob_pct": 1.6
+            },
+            {
+              "label": "五轨",
+              "price": 14.42,
+              "pct_vs_now": -10.27,
+              "prob_pct": 2.4
+            },
+            {
+              "label": "近10日低",
+              "price": 15.85,
+              "pct_vs_now": -1.37,
+              "prob_pct": 16.9
+            },
+            {
+              "label": "四轨",
+              "price": 16.67,
+              "pct_vs_now": 3.73,
+              "prob_pct": 40.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 17.81,
+              "pct_vs_now": 10.83,
+              "prob_pct": 38.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 13.41,
+          "hi": 18.73,
+          "lo_pct": -16.55,
+          "hi_pct": 16.55,
+          "anchor": 17.48,
+          "anchor_pct": 8.77,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 13.41,
+              "pct_vs_now": -16.55,
+              "prob_pct": 4.3
+            },
+            {
+              "label": "五轨",
+              "price": 14.42,
+              "pct_vs_now": -10.27,
+              "prob_pct": 11.2
+            },
+            {
+              "label": "近10日低",
+              "price": 15.85,
+              "pct_vs_now": -1.37,
+              "prob_pct": 17.7
+            },
+            {
+              "label": "四轨",
+              "price": 16.67,
+              "pct_vs_now": 3.73,
+              "prob_pct": 27.1
+            },
+            {
+              "label": "近10日高",
+              "price": 18.71,
+              "pct_vs_now": 16.43,
+              "prob_pct": 19.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 18.73,
+              "pct_vs_now": 16.55,
+              "prob_pct": 19.8
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_688012_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "688012",
+      "name": "中微公司",
+      "price_at": 288.82,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 222.79,
+          "hi": 354.85,
+          "lo_pct": -22.86,
+          "hi_pct": 22.86,
+          "anchor": 330.23,
+          "anchor_pct": 14.34,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 222.79,
+              "pct_vs_now": -22.86,
+              "prob_pct": 3.3
+            },
+            {
+              "label": "近10日低",
+              "price": 265.47,
+              "pct_vs_now": -8.08,
+              "prob_pct": 17.2
+            },
+            {
+              "label": "四轨",
+              "price": 293.52,
+              "pct_vs_now": 1.63,
+              "prob_pct": 40.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 354.85,
+              "pct_vs_now": 22.86,
+              "prob_pct": 38.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 187.96,
+          "hi": 389.68,
+          "lo_pct": -34.92,
+          "hi_pct": 34.92,
+          "anchor": 330.23,
+          "anchor_pct": 14.34,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 187.96,
+              "pct_vs_now": -34.92,
+              "prob_pct": 5.4
+            },
+            {
+              "label": "五轨",
+              "price": 208.28,
+              "pct_vs_now": -27.89,
+              "prob_pct": 9.9
+            },
+            {
+              "label": "近10日低",
+              "price": 265.47,
+              "pct_vs_now": -8.08,
+              "prob_pct": 16.9
+            },
+            {
+              "label": "四轨",
+              "price": 293.52,
+              "pct_vs_now": 1.63,
+              "prob_pct": 25.9
+            },
+            {
+              "label": "中轨",
+              "price": 378.76,
+              "pct_vs_now": 31.14,
+              "prob_pct": 24.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 389.68,
+              "pct_vs_now": 34.92,
+              "prob_pct": 17.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300308_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "300308",
+      "name": "中际旭创",
+      "price_at": 1147.79,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 1080.04,
+          "hi": 1215.54,
+          "lo_pct": -5.9,
+          "hi_pct": 5.9,
+          "anchor": 1146.55,
+          "anchor_pct": -0.11,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 1080.04,
+              "pct_vs_now": -5.9,
+              "prob_pct": 11.7
+            },
+            {
+              "label": "中轨",
+              "price": 1123.86,
+              "pct_vs_now": -2.08,
+              "prob_pct": 33.7
+            },
+            {
+              "label": "近10日低",
+              "price": 1130.0,
+              "pct_vs_now": -1.55,
+              "prob_pct": 28.4
+            },
+            {
+              "label": "二轨",
+              "price": 1211.32,
+              "pct_vs_now": 5.53,
+              "prob_pct": 15.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 1215.54,
+              "pct_vs_now": 5.9,
+              "prob_pct": 10.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 1044.31,
+          "hi": 1251.27,
+          "lo_pct": -9.02,
+          "hi_pct": 9.02,
+          "anchor": 1157.28,
+          "anchor_pct": 0.83,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 1044.31,
+              "pct_vs_now": -9.02,
+              "prob_pct": 10.3
+            },
+            {
+              "label": "中轨",
+              "price": 1123.86,
+              "pct_vs_now": -2.08,
+              "prob_pct": 28.2
+            },
+            {
+              "label": "近10日低",
+              "price": 1130.0,
+              "pct_vs_now": -1.55,
+              "prob_pct": 23.1
+            },
+            {
+              "label": "二轨",
+              "price": 1211.32,
+              "pct_vs_now": 5.53,
+              "prob_pct": 25.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 1251.27,
+              "pct_vs_now": 9.02,
+              "prob_pct": 13.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_603986_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "603986",
+      "name": "兆易创新",
+      "price_at": 480.66,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 436.51,
+          "hi": 524.81,
+          "lo_pct": -9.19,
+          "hi_pct": 9.19,
+          "anchor": 479.67,
+          "anchor_pct": -0.21,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 436.51,
+              "pct_vs_now": -9.19,
+              "prob_pct": 11.9
+            },
+            {
+              "label": "中轨",
+              "price": 464.76,
+              "pct_vs_now": -3.31,
+              "prob_pct": 33.8
+            },
+            {
+              "label": "近10日低",
+              "price": 467.01,
+              "pct_vs_now": -2.84,
+              "prob_pct": 27.9
+            },
+            {
+              "label": "二轨",
+              "price": 521.76,
+              "pct_vs_now": 8.55,
+              "prob_pct": 15.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 524.81,
+              "pct_vs_now": 9.19,
+              "prob_pct": 10.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 413.22,
+          "hi": 548.1,
+          "lo_pct": -14.03,
+          "hi_pct": 14.03,
+          "anchor": 486.63,
+          "anchor_pct": 1.24,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 413.22,
+              "pct_vs_now": -14.03,
+              "prob_pct": 8.8
+            },
+            {
+              "label": "中轨",
+              "price": 464.76,
+              "pct_vs_now": -3.31,
+              "prob_pct": 23.9
+            },
+            {
+              "label": "近10日低",
+              "price": 467.01,
+              "pct_vs_now": -2.84,
+              "prob_pct": 19.4
+            },
+            {
+              "label": "二轨",
+              "price": 521.76,
+              "pct_vs_now": 8.55,
+              "prob_pct": 21.2
+            },
+            {
+              "label": "近10日高",
+              "price": 529.31,
+              "pct_vs_now": 10.12,
+              "prob_pct": 15.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 548.1,
+              "pct_vs_now": 14.03,
+              "prob_pct": 11.3
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002281_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "002281",
+      "name": "光迅科技",
+      "price_at": 201.6,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 192.54,
+          "hi": 210.66,
+          "lo_pct": -4.49,
+          "hi_pct": 4.49,
+          "anchor": 207.1,
+          "anchor_pct": 2.73,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 192.54,
+              "pct_vs_now": -4.49,
+              "prob_pct": 3.1
+            },
+            {
+              "label": "近10日低",
+              "price": 201.6,
+              "pct_vs_now": 0.0,
+              "prob_pct": 27.3
+            },
+            {
+              "label": "四轨",
+              "price": 201.98,
+              "pct_vs_now": 0.19,
+              "prob_pct": 35.8
+            },
+            {
+              "label": "区间上沿",
+              "price": 210.66,
+              "pct_vs_now": 4.49,
+              "prob_pct": 33.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 187.77,
+          "hi": 215.43,
+          "lo_pct": -6.86,
+          "hi_pct": 6.86,
+          "anchor": 213.55,
+          "anchor_pct": 5.93,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 187.77,
+              "pct_vs_now": -6.86,
+              "prob_pct": 2.1
+            },
+            {
+              "label": "五轨",
+              "price": 190.29,
+              "pct_vs_now": -5.61,
+              "prob_pct": 4.3
+            },
+            {
+              "label": "近10日低",
+              "price": 201.6,
+              "pct_vs_now": 0.0,
+              "prob_pct": 15.3
+            },
+            {
+              "label": "四轨",
+              "price": 201.98,
+              "pct_vs_now": 0.19,
+              "prob_pct": 19.8
+            },
+            {
+              "label": "中轨",
+              "price": 213.66,
+              "pct_vs_now": 5.98,
+              "prob_pct": 32.7
+            },
+            {
+              "label": "区间上沿",
+              "price": 215.43,
+              "pct_vs_now": 6.86,
+              "prob_pct": 25.8
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_603629_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "603629",
+      "name": "利通电子",
+      "price_at": 144.64,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 126.99,
+          "hi": 162.29,
+          "lo_pct": -12.2,
+          "hi_pct": 12.2,
+          "anchor": 162.29,
+          "anchor_pct": 12.2,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 126.99,
+              "pct_vs_now": -12.2,
+              "prob_pct": 1.1
+            },
+            {
+              "label": "五轨",
+              "price": 144.58,
+              "pct_vs_now": -0.04,
+              "prob_pct": 25.0
+            },
+            {
+              "label": "近10日低",
+              "price": 144.64,
+              "pct_vs_now": 0.0,
+              "prob_pct": 20.2
+            },
+            {
+              "label": "区间上沿",
+              "price": 162.29,
+              "pct_vs_now": 12.2,
+              "prob_pct": 53.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 117.67,
+          "hi": 171.61,
+          "lo_pct": -18.65,
+          "hi_pct": 18.65,
+          "anchor": 169.68,
+          "anchor_pct": 17.31,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 117.67,
+              "pct_vs_now": -18.65,
+              "prob_pct": 1.9
+            },
+            {
+              "label": "底轨",
+              "price": 121.79,
+              "pct_vs_now": -15.8,
+              "prob_pct": 3.5
+            },
+            {
+              "label": "五轨",
+              "price": 144.58,
+              "pct_vs_now": -0.04,
+              "prob_pct": 18.4
+            },
+            {
+              "label": "近10日低",
+              "price": 144.64,
+              "pct_vs_now": 0.0,
+              "prob_pct": 14.7
+            },
+            {
+              "label": "四轨",
+              "price": 167.37,
+              "pct_vs_now": 15.71,
+              "prob_pct": 34.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 171.61,
+              "pct_vs_now": 18.65,
+              "prob_pct": 27.3
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002371_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "002371",
+      "name": "北方华创",
+      "price_at": 622.15,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 592.75,
+          "hi": 651.55,
+          "lo_pct": -4.73,
+          "hi_pct": 4.73,
+          "anchor": 630.66,
+          "anchor_pct": 1.37,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 592.75,
+              "pct_vs_now": -4.73,
+              "prob_pct": 9.6
+            },
+            {
+              "label": "中轨",
+              "price": 626.85,
+              "pct_vs_now": 0.76,
+              "prob_pct": 60.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 651.55,
+              "pct_vs_now": 4.73,
+              "prob_pct": 30.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 577.25,
+          "hi": 667.05,
+          "lo_pct": -7.22,
+          "hi_pct": 7.22,
+          "anchor": 636.82,
+          "anchor_pct": 2.36,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 577.25,
+              "pct_vs_now": -7.22,
+              "prob_pct": 5.7
+            },
+            {
+              "label": "近10日低",
+              "price": 585.74,
+              "pct_vs_now": -5.85,
+              "prob_pct": 8.0
+            },
+            {
+              "label": "四轨",
+              "price": 588.9,
+              "pct_vs_now": -5.34,
+              "prob_pct": 11.1
+            },
+            {
+              "label": "中轨",
+              "price": 626.85,
+              "pct_vs_now": 0.76,
+              "prob_pct": 24.4
+            },
+            {
+              "label": "近10日高",
+              "price": 659.0,
+              "pct_vs_now": 5.92,
+              "prob_pct": 17.0
+            },
+            {
+              "label": "二轨",
+              "price": 664.8,
+              "pct_vs_now": 6.86,
+              "prob_pct": 19.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 667.05,
+              "pct_vs_now": 7.22,
+              "prob_pct": 14.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300394_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "300394",
+      "name": "天孚通信",
+      "price_at": 409.12,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 373.39,
+          "hi": 444.85,
+          "lo_pct": -8.73,
+          "hi_pct": 8.73,
+          "anchor": 420.84,
+          "anchor_pct": 2.86,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 373.39,
+              "pct_vs_now": -8.73,
+              "prob_pct": 6.0
+            },
+            {
+              "label": "近10日低",
+              "price": 409.12,
+              "pct_vs_now": 0.0,
+              "prob_pct": 30.4
+            },
+            {
+              "label": "中轨",
+              "price": 417.12,
+              "pct_vs_now": 1.96,
+              "prob_pct": 41.8
+            },
+            {
+              "label": "区间上沿",
+              "price": 444.85,
+              "pct_vs_now": 8.73,
+              "prob_pct": 21.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 354.54,
+          "hi": 463.7,
+          "lo_pct": -13.34,
+          "hi_pct": 13.34,
+          "anchor": 428.56,
+          "anchor_pct": 4.75,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 354.54,
+              "pct_vs_now": -13.34,
+              "prob_pct": 5.7
+            },
+            {
+              "label": "四轨",
+              "price": 370.98,
+              "pct_vs_now": -9.32,
+              "prob_pct": 12.1
+            },
+            {
+              "label": "近10日低",
+              "price": 409.12,
+              "pct_vs_now": 0.0,
+              "prob_pct": 19.7
+            },
+            {
+              "label": "中轨",
+              "price": 417.12,
+              "pct_vs_now": 1.96,
+              "prob_pct": 26.2
+            },
+            {
+              "label": "二轨",
+              "price": 463.25,
+              "pct_vs_now": 13.23,
+              "prob_pct": 20.2
+            },
+            {
+              "label": "区间上沿",
+              "price": 463.7,
+              "pct_vs_now": 13.34,
+              "prob_pct": 16.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_301396_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "301396",
+      "name": "宏景科技",
+      "price_at": 174.0,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 122.19,
+          "hi": 225.81,
+          "lo_pct": -29.78,
+          "hi_pct": 29.78,
+          "anchor": 223.33,
+          "anchor_pct": 28.35,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 122.19,
+              "pct_vs_now": -29.78,
+              "prob_pct": 1.4
+            },
+            {
+              "label": "近10日低",
+              "price": 159.03,
+              "pct_vs_now": -8.6,
+              "prob_pct": 12.8
+            },
+            {
+              "label": "四轨",
+              "price": 172.61,
+              "pct_vs_now": -0.8,
+              "prob_pct": 28.2
+            },
+            {
+              "label": "区间上沿",
+              "price": 225.81,
+              "pct_vs_now": 29.78,
+              "prob_pct": 57.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 94.87,
+          "hi": 253.13,
+          "lo_pct": -45.48,
+          "hi_pct": 45.48,
+          "anchor": 203.19,
+          "anchor_pct": 16.78,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 94.87,
+              "pct_vs_now": -45.48,
+              "prob_pct": 5.9
+            },
+            {
+              "label": "五轨",
+              "price": 105.74,
+              "pct_vs_now": -39.23,
+              "prob_pct": 9.5
+            },
+            {
+              "label": "近10日低",
+              "price": 159.03,
+              "pct_vs_now": -8.6,
+              "prob_pct": 18.1
+            },
+            {
+              "label": "四轨",
+              "price": 172.61,
+              "pct_vs_now": -0.8,
+              "prob_pct": 25.4
+            },
+            {
+              "label": "中轨",
+              "price": 239.49,
+              "pct_vs_now": 37.64,
+              "prob_pct": 24.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 253.13,
+              "pct_vs_now": 45.48,
+              "prob_pct": 17.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_688256_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "688256",
+      "name": "寒武纪",
+      "price_at": 1228.0,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 1178.73,
+          "hi": 1277.27,
+          "lo_pct": -4.01,
+          "hi_pct": 4.01,
+          "anchor": 1266.19,
+          "anchor_pct": 3.11,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 1178.73,
+              "pct_vs_now": -4.01,
+              "prob_pct": 1.7
+            },
+            {
+              "label": "五轨",
+              "price": 1179.11,
+              "pct_vs_now": -3.98,
+              "prob_pct": 2.2
+            },
+            {
+              "label": "近10日低",
+              "price": 1228.0,
+              "pct_vs_now": 0.0,
+              "prob_pct": 21.3
+            },
+            {
+              "label": "四轨",
+              "price": 1242.72,
+              "pct_vs_now": 1.2,
+              "prob_pct": 38.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 1277.27,
+              "pct_vs_now": 4.01,
+              "prob_pct": 36.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 1152.74,
+          "hi": 1303.26,
+          "lo_pct": -6.13,
+          "hi_pct": 6.13,
+          "anchor": 1271.08,
+          "anchor_pct": 3.51,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 1152.74,
+              "pct_vs_now": -6.13,
+              "prob_pct": 5.0
+            },
+            {
+              "label": "五轨",
+              "price": 1179.11,
+              "pct_vs_now": -3.98,
+              "prob_pct": 12.6
+            },
+            {
+              "label": "近10日低",
+              "price": 1228.0,
+              "pct_vs_now": 0.0,
+              "prob_pct": 23.3
+            },
+            {
+              "label": "四轨",
+              "price": 1242.72,
+              "pct_vs_now": 1.2,
+              "prob_pct": 33.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 1303.26,
+              "pct_vs_now": 6.13,
+              "prob_pct": 25.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_001309_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "001309",
+      "name": "德明利",
+      "price_at": 627.5,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 595.49,
+          "hi": 659.51,
+          "lo_pct": -5.1,
+          "hi_pct": 5.1,
+          "anchor": 652.76,
+          "anchor_pct": 4.03,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 595.49,
+              "pct_vs_now": -5.1,
+              "prob_pct": 1.7
+            },
+            {
+              "label": "四轨",
+              "price": 617.94,
+              "pct_vs_now": -1.52,
+              "prob_pct": 15.1
+            },
+            {
+              "label": "中轨",
+              "price": 659.27,
+              "pct_vs_now": 5.06,
+              "prob_pct": 46.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 659.51,
+              "pct_vs_now": 5.1,
+              "prob_pct": 36.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 578.6,
+          "hi": 676.4,
+          "lo_pct": -7.79,
+          "hi_pct": 7.79,
+          "anchor": 644.97,
+          "anchor_pct": 2.78,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 578.6,
+              "pct_vs_now": -7.79,
+              "prob_pct": 7.4
+            },
+            {
+              "label": "近10日低",
+              "price": 588.1,
+              "pct_vs_now": -6.28,
+              "prob_pct": 10.6
+            },
+            {
+              "label": "四轨",
+              "price": 617.94,
+              "pct_vs_now": -1.52,
+              "prob_pct": 28.1
+            },
+            {
+              "label": "中轨",
+              "price": 659.27,
+              "pct_vs_now": 5.06,
+              "prob_pct": 33.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 676.4,
+              "pct_vs_now": 7.79,
+              "prob_pct": 20.8
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_688072_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "688072",
+      "name": "拓荆科技",
+      "price_at": 618.0,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 564.04,
+          "hi": 671.96,
+          "lo_pct": -8.73,
+          "hi_pct": 8.73,
+          "anchor": 623.15,
+          "anchor_pct": 0.83,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 564.04,
+              "pct_vs_now": -8.73,
+              "prob_pct": 13.5
+            },
+            {
+              "label": "近10日低",
+              "price": 568.47,
+              "pct_vs_now": -8.01,
+              "prob_pct": 15.9
+            },
+            {
+              "label": "中轨",
+              "price": 609.17,
+              "pct_vs_now": -1.43,
+              "prob_pct": 51.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 671.96,
+              "pct_vs_now": 8.73,
+              "prob_pct": 19.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 535.58,
+          "hi": 700.42,
+          "lo_pct": -13.34,
+          "hi_pct": 13.34,
+          "anchor": 632.72,
+          "anchor_pct": 2.38,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 535.58,
+              "pct_vs_now": -13.34,
+              "prob_pct": 7.1
+            },
+            {
+              "label": "四轨",
+              "price": 539.51,
+              "pct_vs_now": -12.7,
+              "prob_pct": 9.7
+            },
+            {
+              "label": "近10日低",
+              "price": 568.47,
+              "pct_vs_now": -8.01,
+              "prob_pct": 12.5
+            },
+            {
+              "label": "中轨",
+              "price": 609.17,
+              "pct_vs_now": -1.43,
+              "prob_pct": 22.9
+            },
+            {
+              "label": "近10日高",
+              "price": 672.61,
+              "pct_vs_now": 8.84,
+              "prob_pct": 16.4
+            },
+            {
+              "label": "二轨",
+              "price": 678.83,
+              "pct_vs_now": 9.84,
+              "prob_pct": 19.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 700.42,
+              "pct_vs_now": 13.34,
+              "prob_pct": 12.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300502_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "300502",
+      "name": "新易盛",
+      "price_at": 772.29,
+      "zone_at": "二轨~顶轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 715.98,
+          "hi": 828.6,
+          "lo_pct": -7.29,
+          "hi_pct": 7.29,
+          "anchor": 743.2,
+          "anchor_pct": -3.77,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 715.98,
+              "pct_vs_now": -7.29,
+              "prob_pct": 29.8
+            },
+            {
+              "label": "二轨",
+              "price": 755.5,
+              "pct_vs_now": -2.17,
+              "prob_pct": 44.8
+            },
+            {
+              "label": "近10日高",
+              "price": 785.73,
+              "pct_vs_now": 1.74,
+              "prob_pct": 21.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 828.6,
+              "pct_vs_now": 7.29,
+              "prob_pct": 3.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 686.27,
+          "hi": 858.31,
+          "lo_pct": -11.14,
+          "hi_pct": 11.14,
+          "anchor": 731.46,
+          "anchor_pct": -5.29,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 686.27,
+              "pct_vs_now": -11.14,
+              "prob_pct": 27.7
+            },
+            {
+              "label": "二轨",
+              "price": 755.5,
+              "pct_vs_now": -2.17,
+              "prob_pct": 39.9
+            },
+            {
+              "label": "近10日高",
+              "price": 785.73,
+              "pct_vs_now": 1.74,
+              "prob_pct": 25.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 858.31,
+              "pct_vs_now": 11.14,
+              "prob_pct": 7.1
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_001267_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "001267",
+      "name": "汇绿生态",
+      "price_at": 50.8,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 47.18,
+          "hi": 54.42,
+          "lo_pct": -7.13,
+          "hi_pct": 7.13,
+          "anchor": 54.42,
+          "anchor_pct": 7.13,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 47.18,
+              "pct_vs_now": -7.13,
+              "prob_pct": 0.8
+            },
+            {
+              "label": "五轨",
+              "price": 48.94,
+              "pct_vs_now": -3.66,
+              "prob_pct": 5.4
+            },
+            {
+              "label": "近10日低",
+              "price": 49.04,
+              "pct_vs_now": -3.46,
+              "prob_pct": 4.7
+            },
+            {
+              "label": "四轨",
+              "price": 53.6,
+              "pct_vs_now": 5.51,
+              "prob_pct": 48.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 54.42,
+              "pct_vs_now": 7.13,
+              "prob_pct": 40.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 45.27,
+          "hi": 56.33,
+          "lo_pct": -10.89,
+          "hi_pct": 10.89,
+          "anchor": 54.72,
+          "anchor_pct": 7.72,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 45.27,
+              "pct_vs_now": -10.89,
+              "prob_pct": 3.7
+            },
+            {
+              "label": "五轨",
+              "price": 48.94,
+              "pct_vs_now": -3.66,
+              "prob_pct": 17.2
+            },
+            {
+              "label": "近10日低",
+              "price": 49.04,
+              "pct_vs_now": -3.46,
+              "prob_pct": 14.1
+            },
+            {
+              "label": "四轨",
+              "price": 53.6,
+              "pct_vs_now": 5.51,
+              "prob_pct": 36.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 56.33,
+              "pct_vs_now": 10.89,
+              "prob_pct": 28.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_301308_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "301308",
+      "name": "江波龙",
+      "price_at": 505.87,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 481.84,
+          "hi": 529.9,
+          "lo_pct": -4.75,
+          "hi_pct": 4.75,
+          "anchor": 525.47,
+          "anchor_pct": 3.87,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 481.84,
+              "pct_vs_now": -4.75,
+              "prob_pct": 1.8
+            },
+            {
+              "label": "五轨",
+              "price": 483.52,
+              "pct_vs_now": -4.42,
+              "prob_pct": 2.9
+            },
+            {
+              "label": "近10日低",
+              "price": 485.06,
+              "pct_vs_now": -4.11,
+              "prob_pct": 2.9
+            },
+            {
+              "label": "四轨",
+              "price": 514.55,
+              "pct_vs_now": 1.72,
+              "prob_pct": 47.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 529.9,
+              "pct_vs_now": 4.75,
+              "prob_pct": 44.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 469.17,
+          "hi": 542.57,
+          "lo_pct": -7.25,
+          "hi_pct": 7.25,
+          "anchor": 525.47,
+          "anchor_pct": 3.87,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 469.17,
+              "pct_vs_now": -7.25,
+              "prob_pct": 5.9
+            },
+            {
+              "label": "五轨",
+              "price": 483.52,
+              "pct_vs_now": -4.42,
+              "prob_pct": 15.7
+            },
+            {
+              "label": "近10日低",
+              "price": 485.06,
+              "pct_vs_now": -4.11,
+              "prob_pct": 13.4
+            },
+            {
+              "label": "四轨",
+              "price": 514.55,
+              "pct_vs_now": 1.72,
+              "prob_pct": 37.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 542.57,
+              "pct_vs_now": 7.25,
+              "prob_pct": 27.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_688041_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "688041",
+      "name": "海光信息",
+      "price_at": 284.88,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 266.68,
+          "hi": 303.08,
+          "lo_pct": -6.39,
+          "hi_pct": 6.39,
+          "anchor": 297.27,
+          "anchor_pct": 4.35,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 266.68,
+              "pct_vs_now": -6.39,
+              "prob_pct": 2.5
+            },
+            {
+              "label": "四轨",
+              "price": 276.17,
+              "pct_vs_now": -3.06,
+              "prob_pct": 13.2
+            },
+            {
+              "label": "中轨",
+              "price": 299.66,
+              "pct_vs_now": 5.19,
+              "prob_pct": 48.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 303.08,
+              "pct_vs_now": 6.39,
+              "prob_pct": 35.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 257.07,
+          "hi": 312.69,
+          "lo_pct": -9.76,
+          "hi_pct": 9.76,
+          "anchor": 289.79,
+          "anchor_pct": 1.72,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 257.07,
+              "pct_vs_now": -9.76,
+              "prob_pct": 10.2
+            },
+            {
+              "label": "近10日低",
+              "price": 259.7,
+              "pct_vs_now": -8.84,
+              "prob_pct": 11.9
+            },
+            {
+              "label": "四轨",
+              "price": 276.17,
+              "pct_vs_now": -3.06,
+              "prob_pct": 29.2
+            },
+            {
+              "label": "中轨",
+              "price": 299.66,
+              "pct_vs_now": 5.19,
+              "prob_pct": 31.7
+            },
+            {
+              "label": "区间上沿",
+              "price": 312.69,
+              "pct_vs_now": 9.76,
+              "prob_pct": 17.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300442_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "300442",
+      "name": "润泽科技",
+      "price_at": 77.1,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 70.63,
+          "hi": 83.57,
+          "lo_pct": -8.39,
+          "hi_pct": 8.39,
+          "anchor": 82.19,
+          "anchor_pct": 6.6,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 70.63,
+              "pct_vs_now": -8.39,
+              "prob_pct": 1.9
+            },
+            {
+              "label": "五轨",
+              "price": 70.8,
+              "pct_vs_now": -8.17,
+              "prob_pct": 2.6
+            },
+            {
+              "label": "近10日低",
+              "price": 74.11,
+              "pct_vs_now": -3.88,
+              "prob_pct": 9.5
+            },
+            {
+              "label": "四轨",
+              "price": 79.15,
+              "pct_vs_now": 2.66,
+              "prob_pct": 44.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 83.57,
+              "pct_vs_now": 8.39,
+              "prob_pct": 41.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 67.22,
+          "hi": 86.98,
+          "lo_pct": -12.81,
+          "hi_pct": 12.81,
+          "anchor": 82.19,
+          "anchor_pct": 6.6,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 67.22,
+              "pct_vs_now": -12.81,
+              "prob_pct": 4.6
+            },
+            {
+              "label": "五轨",
+              "price": 70.8,
+              "pct_vs_now": -8.17,
+              "prob_pct": 11.5
+            },
+            {
+              "label": "近10日低",
+              "price": 74.11,
+              "pct_vs_now": -3.88,
+              "prob_pct": 14.8
+            },
+            {
+              "label": "四轨",
+              "price": 79.15,
+              "pct_vs_now": 2.66,
+              "prob_pct": 28.0
+            },
+            {
+              "label": "近10日高",
+              "price": 86.47,
+              "pct_vs_now": 12.15,
+              "prob_pct": 20.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 86.98,
+              "pct_vs_now": 12.81,
+              "prob_pct": 20.2
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_688008_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "688008",
+      "name": "澜起科技",
+      "price_at": 230.9,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 219.3,
+          "hi": 242.5,
+          "lo_pct": -5.02,
+          "hi_pct": 5.02,
+          "anchor": 241.92,
+          "anchor_pct": 4.77,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 219.3,
+              "pct_vs_now": -5.02,
+              "prob_pct": 1.1
+            },
+            {
+              "label": "五轨",
+              "price": 222.51,
+              "pct_vs_now": -3.63,
+              "prob_pct": 3.5
+            },
+            {
+              "label": "近10日低",
+              "price": 224.31,
+              "pct_vs_now": -2.85,
+              "prob_pct": 4.6
+            },
+            {
+              "label": "四轨",
+              "price": 237.49,
+              "pct_vs_now": 2.85,
+              "prob_pct": 47.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 242.5,
+              "pct_vs_now": 5.02,
+              "prob_pct": 43.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 213.19,
+          "hi": 248.61,
+          "lo_pct": -7.67,
+          "hi_pct": 7.67,
+          "anchor": 242.76,
+          "anchor_pct": 5.14,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 213.19,
+              "pct_vs_now": -7.67,
+              "prob_pct": 4.2
+            },
+            {
+              "label": "五轨",
+              "price": 222.51,
+              "pct_vs_now": -3.63,
+              "prob_pct": 15.3
+            },
+            {
+              "label": "近10日低",
+              "price": 224.31,
+              "pct_vs_now": -2.85,
+              "prob_pct": 14.4
+            },
+            {
+              "label": "四轨",
+              "price": 237.49,
+              "pct_vs_now": 2.85,
+              "prob_pct": 36.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 248.61,
+              "pct_vs_now": 7.67,
+              "prob_pct": 29.1
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300017_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "300017",
+      "name": "网宿科技",
+      "price_at": 14.01,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 12.76,
+          "hi": 15.26,
+          "lo_pct": -8.92,
+          "hi_pct": 8.92,
+          "anchor": 15.18,
+          "anchor_pct": 8.35,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 12.76,
+              "pct_vs_now": -8.92,
+              "prob_pct": 1.0
+            },
+            {
+              "label": "五轨",
+              "price": 13.06,
+              "pct_vs_now": -6.78,
+              "prob_pct": 2.9
+            },
+            {
+              "label": "近10日低",
+              "price": 14.01,
+              "pct_vs_now": 0.0,
+              "prob_pct": 16.3
+            },
+            {
+              "label": "四轨",
+              "price": 14.69,
+              "pct_vs_now": 4.85,
+              "prob_pct": 41.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 15.26,
+              "pct_vs_now": 8.92,
+              "prob_pct": 38.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 12.09,
+          "hi": 15.93,
+          "lo_pct": -13.7,
+          "hi_pct": 13.7,
+          "anchor": 15.18,
+          "anchor_pct": 8.35,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 12.09,
+              "pct_vs_now": -13.7,
+              "prob_pct": 3.5
+            },
+            {
+              "label": "五轨",
+              "price": 13.06,
+              "pct_vs_now": -6.78,
+              "prob_pct": 11.6
+            },
+            {
+              "label": "近10日低",
+              "price": 14.01,
+              "pct_vs_now": 0.0,
+              "prob_pct": 17.1
+            },
+            {
+              "label": "四轨",
+              "price": 14.69,
+              "pct_vs_now": 4.85,
+              "prob_pct": 26.6
+            },
+            {
+              "label": "近10日高",
+              "price": 15.67,
+              "pct_vs_now": 11.85,
+              "prob_pct": 21.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 15.93,
+              "pct_vs_now": 13.7,
+              "prob_pct": 20.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002156_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "002156",
+      "name": "通富微电",
+      "price_at": 61.13,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 56.97,
+          "hi": 65.29,
+          "lo_pct": -6.81,
+          "hi_pct": 6.81,
+          "anchor": 64.02,
+          "anchor_pct": 4.73,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 56.97,
+              "pct_vs_now": -6.81,
+              "prob_pct": 1.9
+            },
+            {
+              "label": "四轨",
+              "price": 59.23,
+              "pct_vs_now": -3.11,
+              "prob_pct": 10.8
+            },
+            {
+              "label": "近10日低",
+              "price": 61.13,
+              "pct_vs_now": 0.0,
+              "prob_pct": 19.7
+            },
+            {
+              "label": "中轨",
+              "price": 64.6,
+              "pct_vs_now": 5.68,
+              "prob_pct": 38.8
+            },
+            {
+              "label": "区间上沿",
+              "price": 65.29,
+              "pct_vs_now": 6.81,
+              "prob_pct": 28.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 54.78,
+          "hi": 67.48,
+          "lo_pct": -10.39,
+          "hi_pct": 10.39,
+          "anchor": 65.17,
+          "anchor_pct": 6.61,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 54.78,
+              "pct_vs_now": -10.39,
+              "prob_pct": 3.9
+            },
+            {
+              "label": "四轨",
+              "price": 59.23,
+              "pct_vs_now": -3.11,
+              "prob_pct": 17.9
+            },
+            {
+              "label": "近10日低",
+              "price": 61.13,
+              "pct_vs_now": 0.0,
+              "prob_pct": 20.1
+            },
+            {
+              "label": "中轨",
+              "price": 64.6,
+              "pct_vs_now": 5.68,
+              "prob_pct": 33.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 67.48,
+              "pct_vs_now": 10.39,
+              "prob_pct": 24.5
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_688048_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "688048",
+      "name": "长光华芯",
+      "price_at": 340.71,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 316.79,
+          "hi": 364.63,
+          "lo_pct": -7.02,
+          "hi_pct": 7.02,
+          "anchor": 358.65,
+          "anchor_pct": 5.27,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 316.79,
+              "pct_vs_now": -7.02,
+              "prob_pct": 2.1
+            },
+            {
+              "label": "近10日低",
+              "price": 334.0,
+              "pct_vs_now": -1.97,
+              "prob_pct": 15.1
+            },
+            {
+              "label": "四轨",
+              "price": 346.93,
+              "pct_vs_now": 1.83,
+              "prob_pct": 42.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 364.63,
+              "pct_vs_now": 7.02,
+              "prob_pct": 40.3
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 304.17,
+          "hi": 377.25,
+          "lo_pct": -10.72,
+          "hi_pct": 10.72,
+          "anchor": 358.65,
+          "anchor_pct": 5.27,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 304.17,
+              "pct_vs_now": -10.72,
+              "prob_pct": 6.0
+            },
+            {
+              "label": "五轨",
+              "price": 316.05,
+              "pct_vs_now": -7.24,
+              "prob_pct": 13.9
+            },
+            {
+              "label": "近10日低",
+              "price": 334.0,
+              "pct_vs_now": -1.97,
+              "prob_pct": 21.3
+            },
+            {
+              "label": "四轨",
+              "price": 346.93,
+              "pct_vs_now": 1.83,
+              "prob_pct": 34.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 377.25,
+              "pct_vs_now": 10.72,
+              "prob_pct": 24.5
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_600584_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "600584",
+      "name": "长电科技",
+      "price_at": 73.35,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 64.79,
+          "hi": 81.91,
+          "lo_pct": -11.67,
+          "hi_pct": 11.67,
+          "anchor": 74.94,
+          "anchor_pct": 2.17,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 64.79,
+              "pct_vs_now": -11.67,
+              "prob_pct": 9.2
+            },
+            {
+              "label": "近10日低",
+              "price": 70.3,
+              "pct_vs_now": -4.16,
+              "prob_pct": 27.5
+            },
+            {
+              "label": "中轨",
+              "price": 73.23,
+              "pct_vs_now": -0.16,
+              "prob_pct": 44.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 81.91,
+              "pct_vs_now": 11.67,
+              "prob_pct": 19.2
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 60.28,
+          "hi": 86.42,
+          "lo_pct": -17.82,
+          "hi_pct": 17.82,
+          "anchor": 76.58,
+          "anchor_pct": 4.4,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 60.28,
+              "pct_vs_now": -17.82,
+              "prob_pct": 6.2
+            },
+            {
+              "label": "四轨",
+              "price": 62.17,
+              "pct_vs_now": -15.24,
+              "prob_pct": 9.9
+            },
+            {
+              "label": "近10日低",
+              "price": 70.3,
+              "pct_vs_now": -4.16,
+              "prob_pct": 16.0
+            },
+            {
+              "label": "中轨",
+              "price": 73.23,
+              "pct_vs_now": -0.16,
+              "prob_pct": 22.6
+            },
+            {
+              "label": "二轨",
+              "price": 84.28,
+              "pct_vs_now": 14.9,
+              "prob_pct": 18.4
+            },
+            {
+              "label": "近10日高",
+              "price": 84.74,
+              "pct_vs_now": 15.53,
+              "prob_pct": 14.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 86.42,
+              "pct_vs_now": 17.82,
+              "prob_pct": 12.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_688047_na_daily",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "daily",
+      "session": "",
+      "code": "688047",
+      "name": "龙芯中科",
+      "price_at": 134.0,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 124.29,
+          "hi": 143.71,
+          "lo_pct": -7.25,
+          "hi_pct": 7.25,
+          "anchor": 142.19,
+          "anchor_pct": 6.11,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 124.29,
+              "pct_vs_now": -7.25,
+              "prob_pct": 1.5
+            },
+            {
+              "label": "五轨",
+              "price": 125.41,
+              "pct_vs_now": -6.41,
+              "prob_pct": 2.9
+            },
+            {
+              "label": "近10日低",
+              "price": 129.88,
+              "pct_vs_now": -3.07,
+              "prob_pct": 8.9
+            },
+            {
+              "label": "四轨",
+              "price": 137.94,
+              "pct_vs_now": 2.94,
+              "prob_pct": 44.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 143.71,
+              "pct_vs_now": 7.25,
+              "prob_pct": 42.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 119.17,
+          "hi": 148.83,
+          "lo_pct": -11.07,
+          "hi_pct": 11.07,
+          "anchor": 142.19,
+          "anchor_pct": 6.11,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 119.17,
+              "pct_vs_now": -11.07,
+              "prob_pct": 5.3
+            },
+            {
+              "label": "五轨",
+              "price": 125.41,
+              "pct_vs_now": -6.41,
+              "prob_pct": 14.9
+            },
+            {
+              "label": "近10日低",
+              "price": 129.88,
+              "pct_vs_now": -3.07,
+              "prob_pct": 18.3
+            },
+            {
+              "label": "四轨",
+              "price": 137.94,
+              "pct_vs_now": 2.94,
+              "prob_pct": 35.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 148.83,
+              "pct_vs_now": 11.07,
+              "prob_pct": 26.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_600021_Wilson_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "Wilson",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "600021",
+      "name": "上海电力",
+      "price_at": 17.26,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 16.05,
+          "hi": 18.47,
+          "lo_pct": -7.01,
+          "hi_pct": 7.01,
+          "anchor": 18.1,
+          "anchor_pct": 4.87,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 16.05,
+              "pct_vs_now": -7.01,
+              "prob_pct": 2.3
+            },
+            {
+              "label": "近10日低",
+              "price": 17.26,
+              "pct_vs_now": 0.0,
+              "prob_pct": 24.4
+            },
+            {
+              "label": "四轨",
+              "price": 17.47,
+              "pct_vs_now": 1.22,
+              "prob_pct": 37.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 18.47,
+              "pct_vs_now": 7.01,
+              "prob_pct": 35.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 15.41,
+          "hi": 19.11,
+          "lo_pct": -10.72,
+          "hi_pct": 10.72,
+          "anchor": 18.23,
+          "anchor_pct": 5.62,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 15.41,
+              "pct_vs_now": -10.72,
+              "prob_pct": 4.2
+            },
+            {
+              "label": "五轨",
+              "price": 15.92,
+              "pct_vs_now": -7.76,
+              "prob_pct": 9.1
+            },
+            {
+              "label": "近10日低",
+              "price": 17.26,
+              "pct_vs_now": 0.0,
+              "prob_pct": 18.4
+            },
+            {
+              "label": "四轨",
+              "price": 17.47,
+              "pct_vs_now": 1.22,
+              "prob_pct": 24.8
+            },
+            {
+              "label": "中轨",
+              "price": 19.03,
+              "pct_vs_now": 10.25,
+              "prob_pct": 24.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 19.11,
+              "pct_vs_now": 10.72,
+              "prob_pct": 19.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_000010_Wilson_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "Wilson",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "000010",
+      "name": "ST美丽",
+      "price_at": 2.31,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 2.12,
+          "hi": 2.5,
+          "lo_pct": -8.23,
+          "hi_pct": 8.23,
+          "anchor": 2.34,
+          "anchor_pct": 1.3,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 2.12,
+              "pct_vs_now": -8.23,
+              "prob_pct": 9.7
+            },
+            {
+              "label": "中轨",
+              "price": 2.3,
+              "pct_vs_now": -0.43,
+              "prob_pct": 43.2
+            },
+            {
+              "label": "近10日高",
+              "price": 2.43,
+              "pct_vs_now": 5.19,
+              "prob_pct": 29.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 2.5,
+              "pct_vs_now": 8.23,
+              "prob_pct": 18.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 2.01,
+          "hi": 2.61,
+          "lo_pct": -12.99,
+          "hi_pct": 12.99,
+          "anchor": 2.25,
+          "anchor_pct": -2.6,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 2.01,
+              "pct_vs_now": -12.99,
+              "prob_pct": 14.1
+            },
+            {
+              "label": "四轨",
+              "price": 2.04,
+              "pct_vs_now": -11.69,
+              "prob_pct": 19.7
+            },
+            {
+              "label": "中轨",
+              "price": 2.3,
+              "pct_vs_now": -0.43,
+              "prob_pct": 27.4
+            },
+            {
+              "label": "近10日高",
+              "price": 2.43,
+              "pct_vs_now": 5.19,
+              "prob_pct": 17.3
+            },
+            {
+              "label": "二轨",
+              "price": 2.55,
+              "pct_vs_now": 10.39,
+              "prob_pct": 13.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 2.61,
+              "pct_vs_now": 12.99,
+              "prob_pct": 7.9
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002730_Wilson_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "Wilson",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "002730",
+      "name": "电光科技",
+      "price_at": 28.29,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 26.99,
+          "hi": 29.59,
+          "lo_pct": -4.6,
+          "hi_pct": 4.6,
+          "anchor": 29.44,
+          "anchor_pct": 4.07,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 26.99,
+              "pct_vs_now": -4.6,
+              "prob_pct": 1.3
+            },
+            {
+              "label": "五轨",
+              "price": 27.22,
+              "pct_vs_now": -3.78,
+              "prob_pct": 3.1
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.77,
+              "prob_pct": 8.8
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.16,
+              "prob_pct": 44.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 29.59,
+              "pct_vs_now": 4.6,
+              "prob_pct": 42.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 26.3,
+          "hi": 30.28,
+          "lo_pct": -7.03,
+          "hi_pct": 7.03,
+          "anchor": 29.44,
+          "anchor_pct": 4.07,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 26.3,
+              "pct_vs_now": -7.03,
+              "prob_pct": 5.0
+            },
+            {
+              "label": "五轨",
+              "price": 27.22,
+              "pct_vs_now": -3.78,
+              "prob_pct": 15.2
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.77,
+              "prob_pct": 18.2
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.16,
+              "prob_pct": 35.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 30.28,
+              "pct_vs_now": 7.03,
+              "prob_pct": 26.2
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300061_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "300061",
+      "name": "旗天科技",
+      "price_at": 7.87,
+      "zone_at": "底轨~五轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 7.14,
+          "hi": 8.6,
+          "lo_pct": -9.28,
+          "hi_pct": 9.28,
+          "anchor": 8.6,
+          "anchor_pct": 9.28,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 7.14,
+              "pct_vs_now": -9.28,
+              "prob_pct": 1.0
+            },
+            {
+              "label": "近10日低",
+              "price": 7.87,
+              "pct_vs_now": 0.0,
+              "prob_pct": 19.3
+            },
+            {
+              "label": "五轨",
+              "price": 7.93,
+              "pct_vs_now": 0.76,
+              "prob_pct": 28.2
+            },
+            {
+              "label": "区间上沿",
+              "price": 8.6,
+              "pct_vs_now": 9.28,
+              "prob_pct": 51.5
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 6.76,
+          "hi": 8.98,
+          "lo_pct": -14.1,
+          "hi_pct": 14.1,
+          "anchor": 8.95,
+          "anchor_pct": 13.72,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 6.76,
+              "pct_vs_now": -14.1,
+              "prob_pct": 1.7
+            },
+            {
+              "label": "底轨",
+              "price": 6.99,
+              "pct_vs_now": -11.18,
+              "prob_pct": 3.7
+            },
+            {
+              "label": "近10日低",
+              "price": 7.87,
+              "pct_vs_now": 0.0,
+              "prob_pct": 14.0
+            },
+            {
+              "label": "五轨",
+              "price": 7.93,
+              "pct_vs_now": 0.76,
+              "prob_pct": 18.8
+            },
+            {
+              "label": "四轨",
+              "price": 8.87,
+              "pct_vs_now": 12.71,
+              "prob_pct": 34.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 8.98,
+              "pct_vs_now": 14.1,
+              "prob_pct": 27.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300077_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "300077",
+      "name": "国民技术",
+      "price_at": 21.65,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 20.29,
+          "hi": 23.01,
+          "lo_pct": -6.28,
+          "hi_pct": 6.28,
+          "anchor": 23.01,
+          "anchor_pct": 6.28,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 20.29,
+              "pct_vs_now": -6.28,
+              "prob_pct": 1.3
+            },
+            {
+              "label": "五轨",
+              "price": 21.31,
+              "pct_vs_now": -1.57,
+              "prob_pct": 17.1
+            },
+            {
+              "label": "近10日低",
+              "price": 21.49,
+              "pct_vs_now": -0.74,
+              "prob_pct": 18.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 23.01,
+              "pct_vs_now": 6.28,
+              "prob_pct": 63.1
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 19.58,
+          "hi": 23.72,
+          "lo_pct": -9.56,
+          "hi_pct": 9.56,
+          "anchor": 23.35,
+          "anchor_pct": 7.85,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 19.58,
+              "pct_vs_now": -9.56,
+              "prob_pct": 2.6
+            },
+            {
+              "label": "五轨",
+              "price": 21.31,
+              "pct_vs_now": -1.57,
+              "prob_pct": 17.8
+            },
+            {
+              "label": "近10日低",
+              "price": 21.49,
+              "pct_vs_now": -0.74,
+              "prob_pct": 16.1
+            },
+            {
+              "label": "四轨",
+              "price": 23.06,
+              "pct_vs_now": 6.51,
+              "prob_pct": 35.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 23.72,
+              "pct_vs_now": 9.56,
+              "prob_pct": 28.1
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002348_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "002348",
+      "name": "高乐股份",
+      "price_at": 12.07,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 11.28,
+          "hi": 12.86,
+          "lo_pct": -6.55,
+          "hi_pct": 6.55,
+          "anchor": 12.86,
+          "anchor_pct": 6.55,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 11.28,
+              "pct_vs_now": -6.55,
+              "prob_pct": 0.7
+            },
+            {
+              "label": "五轨",
+              "price": 11.76,
+              "pct_vs_now": -2.57,
+              "prob_pct": 6.6
+            },
+            {
+              "label": "近10日低",
+              "price": 12.07,
+              "pct_vs_now": 0.0,
+              "prob_pct": 13.3
+            },
+            {
+              "label": "四轨",
+              "price": 12.78,
+              "pct_vs_now": 5.88,
+              "prob_pct": 43.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 12.86,
+              "pct_vs_now": 6.55,
+              "prob_pct": 35.5
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 10.86,
+          "hi": 13.28,
+          "lo_pct": -10.02,
+          "hi_pct": 10.02,
+          "anchor": 13.02,
+          "anchor_pct": 7.87,
+          "bias": "偏低反弹机会",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 10.86,
+              "pct_vs_now": -10.02,
+              "prob_pct": 2.9
+            },
+            {
+              "label": "五轨",
+              "price": 11.76,
+              "pct_vs_now": -2.57,
+              "prob_pct": 16.4
+            },
+            {
+              "label": "近10日低",
+              "price": 12.07,
+              "pct_vs_now": 0.0,
+              "prob_pct": 18.3
+            },
+            {
+              "label": "四轨",
+              "price": 12.78,
+              "pct_vs_now": 5.88,
+              "prob_pct": 34.7
+            },
+            {
+              "label": "区间上沿",
+              "price": 13.28,
+              "pct_vs_now": 10.02,
+              "prob_pct": 27.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002378_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "002378",
+      "name": "章源钨业",
+      "price_at": 30.52,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 29.33,
+          "hi": 31.71,
+          "lo_pct": -3.9,
+          "hi_pct": 3.9,
+          "anchor": 30.13,
+          "anchor_pct": -1.28,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 29.33,
+              "pct_vs_now": -3.9,
+              "prob_pct": 20.1
+            },
+            {
+              "label": "中轨",
+              "price": 29.49,
+              "pct_vs_now": -3.37,
+              "prob_pct": 29.5
+            },
+            {
+              "label": "二轨",
+              "price": 31.03,
+              "pct_vs_now": 1.67,
+              "prob_pct": 22.4
+            },
+            {
+              "label": "近10日高",
+              "price": 31.03,
+              "pct_vs_now": 1.67,
+              "prob_pct": 22.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 31.71,
+              "pct_vs_now": 3.9,
+              "prob_pct": 5.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 28.7,
+          "hi": 32.34,
+          "lo_pct": -5.96,
+          "hi_pct": 5.96,
+          "anchor": 29.54,
+          "anchor_pct": -3.21,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 28.7,
+              "pct_vs_now": -5.96,
+              "prob_pct": 22.4
+            },
+            {
+              "label": "中轨",
+              "price": 29.49,
+              "pct_vs_now": -3.37,
+              "prob_pct": 32.6
+            },
+            {
+              "label": "二轨",
+              "price": 31.03,
+              "pct_vs_now": 1.67,
+              "prob_pct": 20.1
+            },
+            {
+              "label": "近10日高",
+              "price": 31.03,
+              "pct_vs_now": 1.67,
+              "prob_pct": 20.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 32.34,
+              "pct_vs_now": 5.96,
+              "prob_pct": 4.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300748_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "300748",
+      "name": "金力永磁",
+      "price_at": 29.35,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 27.88,
+          "hi": 30.82,
+          "lo_pct": -5.01,
+          "hi_pct": 5.01,
+          "anchor": 30.82,
+          "anchor_pct": 5.01,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 27.88,
+              "pct_vs_now": -5.01,
+              "prob_pct": 0.7
+            },
+            {
+              "label": "五轨",
+              "price": 28.79,
+              "pct_vs_now": -1.91,
+              "prob_pct": 7.0
+            },
+            {
+              "label": "近10日低",
+              "price": 29.19,
+              "pct_vs_now": -0.55,
+              "prob_pct": 10.9
+            },
+            {
+              "label": "四轨",
+              "price": 30.69,
+              "pct_vs_now": 4.57,
+              "prob_pct": 45.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 30.82,
+              "pct_vs_now": 5.01,
+              "prob_pct": 36.3
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 27.1,
+          "hi": 31.6,
+          "lo_pct": -7.67,
+          "hi_pct": 7.67,
+          "anchor": 31.08,
+          "anchor_pct": 5.89,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 27.1,
+              "pct_vs_now": -7.67,
+              "prob_pct": 3.0
+            },
+            {
+              "label": "五轨",
+              "price": 28.79,
+              "pct_vs_now": -1.91,
+              "prob_pct": 17.0
+            },
+            {
+              "label": "近10日低",
+              "price": 29.19,
+              "pct_vs_now": -0.55,
+              "prob_pct": 17.3
+            },
+            {
+              "label": "四轨",
+              "price": 30.69,
+              "pct_vs_now": 4.57,
+              "prob_pct": 35.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 31.6,
+              "pct_vs_now": 7.67,
+              "prob_pct": 27.6
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300672_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "300672",
+      "name": "国科微",
+      "price_at": 273.04,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 241.67,
+          "hi": 304.41,
+          "lo_pct": -11.49,
+          "hi_pct": 11.49,
+          "anchor": 291.17,
+          "anchor_pct": 6.64,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 241.67,
+              "pct_vs_now": -11.49,
+              "prob_pct": 2.7
+            },
+            {
+              "label": "四轨",
+              "price": 252.63,
+              "pct_vs_now": -7.48,
+              "prob_pct": 9.0
+            },
+            {
+              "label": "近10日低",
+              "price": 273.04,
+              "pct_vs_now": 0.0,
+              "prob_pct": 22.7
+            },
+            {
+              "label": "中轨",
+              "price": 293.13,
+              "pct_vs_now": 7.36,
+              "prob_pct": 39.2
+            },
+            {
+              "label": "区间上沿",
+              "price": 304.41,
+              "pct_vs_now": 11.49,
+              "prob_pct": 26.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 225.12,
+          "hi": 320.96,
+          "lo_pct": -17.55,
+          "hi_pct": 17.55,
+          "anchor": 299.25,
+          "anchor_pct": 9.6,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 225.12,
+              "pct_vs_now": -17.55,
+              "prob_pct": 4.8
+            },
+            {
+              "label": "四轨",
+              "price": 252.63,
+              "pct_vs_now": -7.48,
+              "prob_pct": 17.0
+            },
+            {
+              "label": "近10日低",
+              "price": 273.04,
+              "pct_vs_now": 0.0,
+              "prob_pct": 21.7
+            },
+            {
+              "label": "中轨",
+              "price": 293.13,
+              "pct_vs_now": 7.36,
+              "prob_pct": 33.3
+            },
+            {
+              "label": "区间上沿",
+              "price": 320.96,
+              "pct_vs_now": 17.55,
+              "prob_pct": 23.2
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_600570_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "600570",
+      "name": "恒生电子",
+      "price_at": 21.78,
+      "zone_at": "底轨~五轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 20.66,
+          "hi": 22.9,
+          "lo_pct": -5.14,
+          "hi_pct": 5.14,
+          "anchor": 22.9,
+          "anchor_pct": 5.14,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 20.66,
+              "pct_vs_now": -5.14,
+              "prob_pct": 1.0
+            },
+            {
+              "label": "近10日低",
+              "price": 21.78,
+              "pct_vs_now": 0.0,
+              "prob_pct": 18.1
+            },
+            {
+              "label": "五轨",
+              "price": 22.01,
+              "pct_vs_now": 1.06,
+              "prob_pct": 32.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 22.9,
+              "pct_vs_now": 5.14,
+              "prob_pct": 48.3
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 20.08,
+          "hi": 23.48,
+          "lo_pct": -7.81,
+          "hi_pct": 7.81,
+          "anchor": 23.48,
+          "anchor_pct": 7.81,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 20.08,
+              "pct_vs_now": -7.81,
+              "prob_pct": 1.5
+            },
+            {
+              "label": "底轨",
+              "price": 20.57,
+              "pct_vs_now": -5.56,
+              "prob_pct": 4.1
+            },
+            {
+              "label": "近10日低",
+              "price": 21.78,
+              "pct_vs_now": 0.0,
+              "prob_pct": 13.2
+            },
+            {
+              "label": "五轨",
+              "price": 22.01,
+              "pct_vs_now": 1.06,
+              "prob_pct": 19.9
+            },
+            {
+              "label": "四轨",
+              "price": 23.45,
+              "pct_vs_now": 7.67,
+              "prob_pct": 34.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 23.48,
+              "pct_vs_now": 7.81,
+              "prob_pct": 27.2
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_301517_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "301517",
+      "name": "陕西华达",
+      "price_at": 52.02,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 47.12,
+          "hi": 56.92,
+          "lo_pct": -9.42,
+          "hi_pct": 9.42,
+          "anchor": 55.74,
+          "anchor_pct": 7.15,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 47.12,
+              "pct_vs_now": -9.42,
+              "prob_pct": 1.9
+            },
+            {
+              "label": "近10日低",
+              "price": 52.02,
+              "pct_vs_now": 0.0,
+              "prob_pct": 22.2
+            },
+            {
+              "label": "四轨",
+              "price": 53.37,
+              "pct_vs_now": 2.6,
+              "prob_pct": 38.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 56.92,
+              "pct_vs_now": 9.42,
+              "prob_pct": 37.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 44.53,
+          "hi": 59.51,
+          "lo_pct": -14.4,
+          "hi_pct": 14.4,
+          "anchor": 55.74,
+          "anchor_pct": 7.15,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 44.53,
+              "pct_vs_now": -14.4,
+              "prob_pct": 4.6
+            },
+            {
+              "label": "五轨",
+              "price": 47.04,
+              "pct_vs_now": -9.57,
+              "prob_pct": 10.9
+            },
+            {
+              "label": "近10日低",
+              "price": 52.02,
+              "pct_vs_now": 0.0,
+              "prob_pct": 19.3
+            },
+            {
+              "label": "四轨",
+              "price": 53.37,
+              "pct_vs_now": 2.6,
+              "prob_pct": 26.7
+            },
+            {
+              "label": "近10日高",
+              "price": 59.4,
+              "pct_vs_now": 14.19,
+              "prob_pct": 19.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 59.51,
+              "pct_vs_now": 14.4,
+              "prob_pct": 19.2
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300476_刘岚_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "刘岚",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "300476",
+      "name": "胜宏科技",
+      "price_at": 329.85,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 313.83,
+          "hi": 345.87,
+          "lo_pct": -4.86,
+          "hi_pct": 4.86,
+          "anchor": 340.65,
+          "anchor_pct": 3.27,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 313.83,
+              "pct_vs_now": -4.86,
+              "prob_pct": 3.2
+            },
+            {
+              "label": "近10日低",
+              "price": 314.8,
+              "pct_vs_now": -4.56,
+              "prob_pct": 3.9
+            },
+            {
+              "label": "四轨",
+              "price": 332.15,
+              "pct_vs_now": 0.7,
+              "prob_pct": 47.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 345.87,
+              "pct_vs_now": 4.86,
+              "prob_pct": 45.2
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 305.38,
+          "hi": 354.32,
+          "lo_pct": -7.42,
+          "hi_pct": 7.42,
+          "anchor": 340.65,
+          "anchor_pct": 3.27,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 305.38,
+              "pct_vs_now": -7.42,
+              "prob_pct": 5.4
+            },
+            {
+              "label": "五轨",
+              "price": 311.48,
+              "pct_vs_now": -5.57,
+              "prob_pct": 10.9
+            },
+            {
+              "label": "近10日低",
+              "price": 314.8,
+              "pct_vs_now": -4.56,
+              "prob_pct": 10.9
+            },
+            {
+              "label": "四轨",
+              "price": 332.15,
+              "pct_vs_now": 0.7,
+              "prob_pct": 27.9
+            },
+            {
+              "label": "中轨",
+              "price": 352.83,
+              "pct_vs_now": 6.97,
+              "prob_pct": 25.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 354.32,
+              "pct_vs_now": 7.42,
+              "prob_pct": 19.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002510_微_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "微",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "002510",
+      "name": "天汽模",
+      "price_at": 6.54,
+      "zone_at": "四轨~中轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 6.23,
+          "hi": 6.85,
+          "lo_pct": -4.74,
+          "hi_pct": 4.74,
+          "anchor": 6.78,
+          "anchor_pct": 3.67,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 6.23,
+              "pct_vs_now": -4.74,
+              "prob_pct": 1.3
+            },
+            {
+              "label": "四轨",
+              "price": 6.44,
+              "pct_vs_now": -1.53,
+              "prob_pct": 10.7
+            },
+            {
+              "label": "近10日高",
+              "price": 6.77,
+              "pct_vs_now": 3.52,
+              "prob_pct": 27.9
+            },
+            {
+              "label": "中轨",
+              "price": 6.84,
+              "pct_vs_now": 4.59,
+              "prob_pct": 33.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 6.85,
+              "pct_vs_now": 4.74,
+              "prob_pct": 26.5
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 6.07,
+          "hi": 7.01,
+          "lo_pct": -7.19,
+          "hi_pct": 7.19,
+          "anchor": 6.71,
+          "anchor_pct": 2.6,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 6.07,
+              "pct_vs_now": -7.19,
+              "prob_pct": 5.8
+            },
+            {
+              "label": "近10日低",
+              "price": 6.18,
+              "pct_vs_now": -5.5,
+              "prob_pct": 8.8
+            },
+            {
+              "label": "四轨",
+              "price": 6.44,
+              "pct_vs_now": -1.53,
+              "prob_pct": 21.6
+            },
+            {
+              "label": "近10日高",
+              "price": 6.77,
+              "pct_vs_now": 3.52,
+              "prob_pct": 21.6
+            },
+            {
+              "label": "中轨",
+              "price": 6.84,
+              "pct_vs_now": 4.59,
+              "prob_pct": 25.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 7.01,
+              "pct_vs_now": 7.19,
+              "prob_pct": 16.3
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002570_微_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "微",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "002570",
+      "name": "贝因美",
+      "price_at": 5.16,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 4.97,
+          "hi": 5.35,
+          "lo_pct": -3.68,
+          "hi_pct": 3.68,
+          "anchor": 5.15,
+          "anchor_pct": -0.19,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 4.97,
+              "pct_vs_now": -3.68,
+              "prob_pct": 17.2
+            },
+            {
+              "label": "中轨",
+              "price": 5.08,
+              "pct_vs_now": -1.55,
+              "prob_pct": 45.3
+            },
+            {
+              "label": "二轨",
+              "price": 5.32,
+              "pct_vs_now": 3.1,
+              "prob_pct": 23.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 5.35,
+              "pct_vs_now": 3.68,
+              "prob_pct": 14.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 4.88,
+          "hi": 5.44,
+          "lo_pct": -5.43,
+          "hi_pct": 5.43,
+          "anchor": 5.12,
+          "anchor_pct": -0.78,
+          "bias": "中枢震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 4.88,
+              "pct_vs_now": -5.43,
+              "prob_pct": 15.6
+            },
+            {
+              "label": "近10日低",
+              "price": 4.92,
+              "pct_vs_now": -4.65,
+              "prob_pct": 18.4
+            },
+            {
+              "label": "中轨",
+              "price": 5.08,
+              "pct_vs_now": -1.55,
+              "prob_pct": 32.7
+            },
+            {
+              "label": "二轨",
+              "price": 5.32,
+              "pct_vs_now": 3.1,
+              "prob_pct": 23.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 5.44,
+              "pct_vs_now": 5.43,
+              "prob_pct": 10.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_000983_微_sug_portfolio",
+      "date": "2026-06-10",
+      "holder": "微",
+      "source": "sug_portfolio",
+      "session": "午盘",
+      "code": "000983",
+      "name": "山西焦煤",
+      "price_at": 7.16,
+      "zone_at": "中轨~二轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 6.83,
+          "hi": 7.49,
+          "lo_pct": -4.61,
+          "hi_pct": 4.61,
+          "anchor": 7.11,
+          "anchor_pct": -0.7,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 6.83,
+              "pct_vs_now": -4.61,
+              "prob_pct": 20.6
+            },
+            {
+              "label": "中轨",
+              "price": 6.97,
+              "pct_vs_now": -2.65,
+              "prob_pct": 43.6
+            },
+            {
+              "label": "二轨",
+              "price": 7.4,
+              "pct_vs_now": 3.35,
+              "prob_pct": 24.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 7.49,
+              "pct_vs_now": 4.61,
+              "prob_pct": 11.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-14",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 6.65,
+          "hi": 7.67,
+          "lo_pct": -7.12,
+          "hi_pct": 7.12,
+          "anchor": 7.16,
+          "anchor_pct": 0.0,
+          "bias": "偏多震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 6.65,
+              "pct_vs_now": -7.12,
+              "prob_pct": 13.0
+            },
+            {
+              "label": "近10日低",
+              "price": 6.72,
+              "pct_vs_now": -6.15,
+              "prob_pct": 15.6
+            },
+            {
+              "label": "中轨",
+              "price": 6.97,
+              "pct_vs_now": -2.65,
+              "prob_pct": 30.1
+            },
+            {
+              "label": "二轨",
+              "price": 7.4,
+              "pct_vs_now": 3.35,
+              "prob_pct": 28.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 7.67,
+              "pct_vs_now": 7.12,
+              "prob_pct": 13.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-11",
+          "due_date": "2026-06-18",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002730_na_analysis_report",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "analysis_report",
+      "session": "",
+      "code": "002730",
+      "name": "电光科技",
+      "price_at": 28.31,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "1d": {
+          "days": 1,
+          "lo": 27.56,
+          "hi": 29.06,
+          "lo_pct": -2.65,
+          "hi_pct": 2.65,
+          "anchor": 29.06,
+          "anchor_pct": 2.65,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 27.56,
+              "pct_vs_now": -2.65,
+              "prob_pct": 0.5
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.84,
+              "prob_pct": 1.8
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.08,
+              "prob_pct": 53.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 29.06,
+              "pct_vs_now": 2.65,
+              "prob_pct": 44.7
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-11",
+          "review": null
+        },
+        "3d": {
+          "days": 3,
+          "lo": 27.02,
+          "hi": 29.6,
+          "lo_pct": -4.56,
+          "hi_pct": 4.56,
+          "anchor": 29.45,
+          "anchor_pct": 4.03,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 27.02,
+              "pct_vs_now": -4.56,
+              "prob_pct": 1.3
+            },
+            {
+              "label": "五轨",
+              "price": 27.22,
+              "pct_vs_now": -3.85,
+              "prob_pct": 2.9
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.84,
+              "prob_pct": 8.5
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.08,
+              "prob_pct": 44.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 29.6,
+              "pct_vs_now": 4.56,
+              "prob_pct": 42.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-13",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 26.33,
+          "hi": 30.29,
+          "lo_pct": -6.99,
+          "hi_pct": 6.99,
+          "anchor": 29.45,
+          "anchor_pct": 4.03,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 26.33,
+              "pct_vs_now": -6.99,
+              "prob_pct": 5.0
+            },
+            {
+              "label": "五轨",
+              "price": 27.22,
+              "pct_vs_now": -3.85,
+              "prob_pct": 15.0
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.84,
+              "prob_pct": 18.1
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.08,
+              "prob_pct": 35.5
+            },
+            {
+              "label": "区间上沿",
+              "price": 30.29,
+              "pct_vs_now": 6.99,
+              "prob_pct": 26.4
+            }
+          ],
+          "params_version": "2026-06-10",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-17",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_002730_na_analysis_report",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "analysis_report",
+      "session": "",
+      "code": "002730",
+      "name": "电光科技",
+      "price_at": 28.31,
+      "zone_at": "五轨~四轨",
+      "horizons": {
+        "1d": {
+          "days": 1,
+          "lo": 27.35,
+          "hi": 29.27,
+          "lo_pct": -3.39,
+          "hi_pct": 3.39,
+          "anchor": 29.27,
+          "anchor_pct": 3.39,
+          "prob_center": 28.74,
+          "prob_center_pct": 1.52,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 27.35,
+              "pct_vs_now": -3.39,
+              "prob_pct": 10.3
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.84,
+              "prob_pct": 19.4
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.08,
+              "prob_pct": 41.8
+            },
+            {
+              "label": "区间上沿",
+              "price": 29.27,
+              "pct_vs_now": 3.39,
+              "prob_pct": 28.6
+            }
+          ],
+          "most_likely": {
+            "label": "四轨",
+            "price": 28.9,
+            "pct_vs_now": 2.08,
+            "prob_pct": 41.8,
+            "drift_hint": 1.1328500000000001,
+            "pick_method": "mode",
+            "pick_target": 28.74
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-11",
+          "review": null
+        },
+        "3d": {
+          "days": 3,
+          "lo": 26.65,
+          "hi": 29.97,
+          "lo_pct": -5.86,
+          "hi_pct": 5.86,
+          "anchor": 29.45,
+          "anchor_pct": 4.03,
+          "prob_center": 29.11,
+          "prob_center_pct": 2.83,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 26.65,
+              "pct_vs_now": -5.86,
+              "prob_pct": 8.0
+            },
+            {
+              "label": "五轨",
+              "price": 27.22,
+              "pct_vs_now": -3.85,
+              "prob_pct": 15.5
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.84,
+              "prob_pct": 19.6
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.08,
+              "prob_pct": 32.7
+            },
+            {
+              "label": "区间上沿",
+              "price": 29.97,
+              "pct_vs_now": 5.86,
+              "prob_pct": 24.2
+            }
+          ],
+          "most_likely": {
+            "label": "区间上沿",
+            "price": 29.97,
+            "pct_vs_now": 5.86,
+            "prob_pct": 24.2,
+            "drift_hint": 0.6720900000000001,
+            "pick_method": "anchor_snap",
+            "pick_target": 29.45
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-13",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 25.77,
+          "hi": 30.85,
+          "lo_pct": -8.97,
+          "hi_pct": 8.97,
+          "anchor": 29.45,
+          "anchor_pct": 4.03,
+          "prob_center": 29.66,
+          "prob_center_pct": 4.77,
+          "bias": "偏空震荡",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 25.77,
+              "pct_vs_now": -8.97,
+              "prob_pct": 5.8
+            },
+            {
+              "label": "五轨",
+              "price": 27.22,
+              "pct_vs_now": -3.85,
+              "prob_pct": 13.8
+            },
+            {
+              "label": "近10日低",
+              "price": 27.79,
+              "pct_vs_now": -1.84,
+              "prob_pct": 16.4
+            },
+            {
+              "label": "四轨",
+              "price": 28.9,
+              "pct_vs_now": 2.08,
+              "prob_pct": 22.4
+            },
+            {
+              "label": "中轨",
+              "price": 30.58,
+              "pct_vs_now": 8.02,
+              "prob_pct": 21.9
+            },
+            {
+              "label": "区间上沿",
+              "price": 30.85,
+              "pct_vs_now": 8.97,
+              "prob_pct": 19.8
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 30.58,
+            "pct_vs_now": 8.02,
+            "prob_pct": 21.9,
+            "drift_hint": 2.6450400000000003,
+            "pick_method": "mid_revert_7d",
+            "pick_target": 30.58
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-17",
+          "review": null
+        }
+      }
+    },
+    {
+      "id": "2026-06-10_300482_na_analysis_report",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "analysis_report",
+      "session": "",
+      "code": "300482",
+      "name": "万孚生物",
+      "price_at": 19.03,
+      "zone_at": "二轨~顶轨",
+      "horizons": {
+        "1d": {
+          "days": 1,
+          "lo": 17.97,
+          "hi": 20.09,
+          "lo_pct": -5.57,
+          "hi_pct": 5.57,
+          "anchor": 18.78,
+          "anchor_pct": -1.31,
+          "prob_center": 18.92,
+          "prob_center_pct": -0.58,
+          "bias": "偏高回落风险",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 17.97,
+              "pct_vs_now": -5.57,
+              "prob_pct": 19.4
+            },
+            {
+              "label": "中轨",
+              "price": 18.09,
+              "pct_vs_now": -4.94,
+              "prob_pct": 26.9
+            },
+            {
+              "label": "二轨",
+              "price": 18.99,
+              "pct_vs_now": -0.21,
+              "prob_pct": 38.4
+            },
+            {
+              "label": "区间上沿",
+              "price": 20.09,
+              "pct_vs_now": 5.57,
+              "prob_pct": 15.3
+            }
+          ],
+          "most_likely": {
+            "label": "二轨",
+            "price": 18.99,
+            "pct_vs_now": -0.21,
+            "prob_pct": 38.4,
+            "drift_hint": -1.6378699999999997,
+            "pick_method": "mode",
+            "pick_target": 18.92
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-11",
+          "review": null
+        },
+        "3d": {
+          "days": 3,
+          "lo": 17.19,
+          "hi": 20.87,
+          "lo_pct": -9.67,
+          "hi_pct": 9.67,
+          "anchor": 18.78,
+          "anchor_pct": -1.31,
+          "prob_center": 18.81,
+          "prob_center_pct": -1.16,
+          "bias": "偏高回落风险",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 17.19,
+              "pct_vs_now": -9.67,
+              "prob_pct": 13.7
+            },
+            {
+              "label": "四轨",
+              "price": 17.19,
+              "pct_vs_now": -9.67,
+              "prob_pct": 13.7
+            },
+            {
+              "label": "中轨",
+              "price": 18.09,
+              "pct_vs_now": -4.94,
+              "prob_pct": 19.7
+            },
+            {
+              "label": "二轨",
+              "price": 18.99,
+              "pct_vs_now": -0.21,
+              "prob_pct": 21.4
+            },
+            {
+              "label": "近10日高",
+              "price": 20.45,
+              "pct_vs_now": 7.46,
+              "prob_pct": 11.6
+            },
+            {
+              "label": "顶轨",
+              "price": 20.78,
+              "pct_vs_now": 9.2,
+              "prob_pct": 11.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 20.87,
+              "pct_vs_now": 9.67,
+              "prob_pct": 8.9
+            }
+          ],
+          "most_likely": {
+            "label": "二轨",
+            "price": 18.99,
+            "pct_vs_now": -0.21,
+            "prob_pct": 21.4,
+            "drift_hint": -0.9297099999999997,
+            "pick_method": "anchor_snap",
+            "pick_target": 18.78
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-13",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 16.22,
+          "hi": 21.84,
+          "lo_pct": -14.77,
+          "hi_pct": 14.77,
+          "anchor": 18.51,
+          "anchor_pct": -2.73,
+          "prob_center": 18.44,
+          "prob_center_pct": -3.1,
+          "bias": "偏高回落风险",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 16.22,
+              "pct_vs_now": -14.77,
+              "prob_pct": 11.0
+            },
+            {
+              "label": "五轨",
+              "price": 16.29,
+              "pct_vs_now": -14.4,
+              "prob_pct": 11.8
+            },
+            {
+              "label": "四轨",
+              "price": 17.19,
+              "pct_vs_now": -9.67,
+              "prob_pct": 14.8
+            },
+            {
+              "label": "中轨",
+              "price": 18.09,
+              "pct_vs_now": -4.94,
+              "prob_pct": 16.5
+            },
+            {
+              "label": "二轨",
+              "price": 18.99,
+              "pct_vs_now": -0.21,
+              "prob_pct": 16.3
+            },
+            {
+              "label": "近10日高",
+              "price": 20.45,
+              "pct_vs_now": 7.46,
+              "prob_pct": 11.8
+            },
+            {
+              "label": "顶轨",
+              "price": 20.78,
+              "pct_vs_now": 9.2,
+              "prob_pct": 11.1
+            },
+            {
+              "label": "区间上沿",
+              "price": 21.84,
+              "pct_vs_now": 14.77,
+              "prob_pct": 6.8
+            }
+          ],
+          "most_likely": {
+            "label": "中轨",
+            "price": 18.09,
+            "pct_vs_now": -4.94,
+            "prob_pct": 16.5,
+            "drift_hint": -2.69855,
+            "pick_method": "mid_revert_7d",
+            "pick_target": 18.09
+          },
+          "params_version": "2026-06-10-vipdoc-prob",
+          "track_from": "2026-06-10",
+          "due_date": "2026-06-17",
+          "review": null
+        }
+      }
+    }
+  ],
+  "meta": {
+    "started": "2026-06-10",
+    "note": "sug / 分析报告 / daily / 持仓 3日·7日预测登记",
+    "migrated_from": "F:\\AIGC\\Stocks\\CyberAdvisor\\Wiki\\数据\\技术预测追踪.json"
+  }
+}

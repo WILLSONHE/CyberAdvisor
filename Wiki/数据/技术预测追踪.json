@@ -1,0 +1,93 @@
+{
+  "records": [
+    {
+      "id": "2026-06-10_300482_na_analysis_report",
+      "date": "2026-06-10",
+      "holder": "",
+      "source": "analysis_report",
+      "session": "",
+      "code": "300482",
+      "name": "万孚生物",
+      "price_at": 19.05,
+      "zone_at": "二轨~顶轨",
+      "horizons": {
+        "3d": {
+          "days": 3,
+          "lo": 18.35,
+          "hi": 19.75,
+          "lo_pct": -3.67,
+          "hi_pct": 3.67,
+          "anchor": 18.79,
+          "anchor_pct": -1.36,
+          "bias": "偏高回落风险",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 18.35,
+              "pct_vs_now": -3.67,
+              "prob_pct": 34.1
+            },
+            {
+              "label": "二轨",
+              "price": 18.99,
+              "pct_vs_now": -0.31,
+              "prob_pct": 58.0
+            },
+            {
+              "label": "区间上沿",
+              "price": 19.75,
+              "pct_vs_now": 3.67,
+              "prob_pct": 8.0
+            }
+          ],
+          "params_version": "2026-06-10",
+          "due_date": "2026-06-13",
+          "review": null
+        },
+        "7d": {
+          "days": 7,
+          "lo": 17.99,
+          "hi": 20.11,
+          "lo_pct": -5.56,
+          "hi_pct": 5.56,
+          "anchor": 18.52,
+          "anchor_pct": -2.78,
+          "bias": "偏高回落风险",
+          "levels": [
+            {
+              "label": "区间下沿",
+              "price": 17.99,
+              "pct_vs_now": -5.56,
+              "prob_pct": 25.9
+            },
+            {
+              "label": "中轨",
+              "price": 18.09,
+              "pct_vs_now": -5.04,
+              "prob_pct": 34.4
+            },
+            {
+              "label": "二轨",
+              "price": 18.99,
+              "pct_vs_now": -0.31,
+              "prob_pct": 33.6
+            },
+            {
+              "label": "区间上沿",
+              "price": 20.11,
+              "pct_vs_now": 5.56,
+              "prob_pct": 6.1
+            }
+          ],
+          "params_version": "2026-06-10",
+          "due_date": "2026-06-17",
+          "review": null
+        }
+      }
+    }
+  ],
+  "meta": {
+    "started": "2026-06-10",
+    "note": "sug / 分析报告 3日·7日技术倾向登记；由 scripts/outlook_tracker.py 维护"
+  }
+}

@@ -1,4 +1,4 @@
-"""trk {标的} — 博主标的全痕迹追踪。"""
+"""trk {标的} — 标的全痕迹追踪。"""
 from __future__ import annotations
 
 import os
@@ -71,7 +71,7 @@ def track_stock(query: str) -> str:
         parts.append("")
         parts.append(read_text(track_path))
     else:
-        parts.append(f"（尚无专用追踪页 Wiki/博主/标的追踪/{name}.md）")
+        parts.append(f"（尚无专用追踪页 Wiki/内容源/标的追踪/{name}.md）")
         parts.extend(["", _grep_mentions(name)])
 
     return "\n".join(parts).strip()

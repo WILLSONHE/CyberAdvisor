@@ -37,9 +37,9 @@ class MentionHit:
 
 def active_pool_names() -> set[str]:
     try:
-        from fine_screen import BLOGGER_STOCKS
+        from fine_screen import TRACK_STOCKS
 
-        return set(BLOGGER_STOCKS.keys())
+        return set(TRACK_STOCKS.keys())
     except Exception:
         return set()
 
@@ -196,7 +196,7 @@ def render_track_page(name: str, hits: list[MentionHit]) -> str:
     lines = [
         f"# {name} 全痕迹追踪",
         "",
-        f"> 博主共提及 **{n}** 次{span}",
+        f"> Wiki 共提及 **{n}** 次{span}",
         "",
         "## 时间线",
         "",
@@ -241,13 +241,13 @@ def _ensure_dirs() -> None:
 
 def run_track_maintenance(*, refresh_existing: bool = False) -> str:
     """
-    1. 非博主标的池 → 移入 不活跃标的/
+    1. 非核心标的池 → 移入 不活跃标的/
     2. 标的池内且提及≥3 → 活跃目录建页/回迁；从 inactive 迁回 active
     """
     _ensure_dirs()
     pool = active_pool_names()
     if not pool:
-        return "无法加载 BLOGGER_STOCKS，跳过标的追踪维护"
+        return "无法加载 TRACK_STOCKS，跳过标的追踪维护"
 
     moved_inactive: list[str] = []
     promoted: list[str] = []

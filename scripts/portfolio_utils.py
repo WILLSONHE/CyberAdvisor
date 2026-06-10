@@ -11,7 +11,7 @@ import urllib.request
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 PORTFOLIO_MD = os.path.join(ROOT, "portfolio.md")
-POOL_MD = os.path.join(ROOT, "Wiki", "数据", "博主标的池日报.md")
+POOL_MD = os.path.join(ROOT, "Wiki", "数据", "标的池日报.md")
 SUG_VAULT = os.path.join(ROOT, "SugVault")
 
 HOLDER_SECTION = re.compile(r"^##\s+持有人：(.+)\s*$", re.MULTILINE)

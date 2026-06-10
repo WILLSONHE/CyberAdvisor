@@ -22,7 +22,7 @@ from wiki.common import (
     resolve_wiki_link,
 )
 
-OVERVIEW_MD = os.path.join(WIKI, "博主", "标的总览.md")
+OVERVIEW_MD = os.path.join(WIKI, "内容源", "标的总览.md")
 STATUS_EMOJI = re.compile(r"[🟢🟡🔴⚫]")
 
 

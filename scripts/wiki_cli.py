@@ -6,7 +6,7 @@ Wiki 轻量查询 CLI（与飞书 Bot 共用逻辑）。
   python wiki_cli.py trk 寒武纪
   python wiki_cli.py chk
   python wiki_cli.py track-maintain
-  python wiki_cli.py qry 博主怎么看存储
+  python wiki_cli.py qry Wiki怎么看存储
   python wiki_cli.py sim-sync
   python wiki_cli.py sim-handle "sim 买 利通电子"
 """

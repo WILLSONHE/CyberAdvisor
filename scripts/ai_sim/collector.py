@@ -16,19 +16,43 @@ from ai_sim.schedule_util import nearest_tick_label, tick_phase
 from ai_sim.supplement_registry import build_supplement_payload
 from ai_sim.supplement_state import enabled_metrics
 from ai_sim.universe import UniverseEntry, build_universe
+from bollinger_utils import _outlook_3d_7d, bollinger_for_code
 from market_daily.fetch import fetch_indices
 from portfolio_utils import fetch_spot_price
+from report_data import fetch_vipdoc_stats
 
 
 def _quote_row(entry: UniverseEntry) -> dict:
     price = fetch_spot_price(entry.code)
     time.sleep(0.15)
-    return {
+    boll = bollinger_for_code(entry.code)
+    row = {
         "name": entry.name,
         "code": entry.code,
         "source": entry.source,
         "price": price,
     }
+    vip = fetch_vipdoc_stats(entry.code)
+    if vip and not vip.get("error"):
+        row["vipdoc"] = vip
+    if boll and "error" not in boll:
+        row["boll_zone"] = boll.get("zone")
+        row["boll_signal"] = boll.get("signal")
+        row["boll_mid"] = boll.get("mid")
+        row["boll_track2"] = boll.get("track2")
+        row["boll_track4"] = boll.get("track4")
+        row["boll_track5"] = boll.get("track5")
+        row["boll_top"] = boll.get("top")
+        row["boll_bot"] = boll.get("bot")
+        try:
+            outlook = _outlook_3d_7d(boll, kline_extra=boll.get("kline_extra"))
+            for hk, ok in (("1d", "d1_most_likely"), ("3d", "d3_most_likely"), ("7d", "d7_most_likely")):
+                ml = outlook.get(ok)
+                if ml:
+                    row[f"outlook_{hk}"] = ml
+        except Exception:
+            pass
+    return row
 
 
 def collect_tick(*, force_label: str = "") -> str:

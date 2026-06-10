@@ -1,0 +1,21 @@
+{
+  "symbols": [
+    {
+      "code": "300482",
+      "name": "万孚生物",
+      "first_seen": "2026-06-10",
+      "last_seen": "2026-06-10",
+      "source": "analysis_report"
+    },
+    {
+      "code": "002730",
+      "name": "电光科技",
+      "first_seen": "2026-06-10",
+      "last_seen": "2026-06-10",
+      "source": "analysis_report"
+    }
+  ],
+  "meta": {
+    "note": "用户询问过的标的（qry / 分析报告 / register-queried / chat）"
+  }
+}

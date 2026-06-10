@@ -82,6 +82,120 @@ def fetch_index_kline_60m(*, secid: str, limit: int = 20) -> list[dict[str, Any]
     return []
 
 
+def _stock_secid(code: str) -> str:
+    code = str(code).zfill(6)
+    if code.startswith(("6", "9")) or code in ("000001", "000300", "000016", "000688", "000905"):
+        return f"1.{code}"
+    return f"0.{code}"
+
+
+def fetch_stock_kline_em(code: str, *, klt: int = 5, limit: int = 48) -> list[dict[str, Any]]:
+    """个股 K 线（东方财富）。klt: 1=1分 5=5分 15/30/60/101=日。"""
+    session = _session()
+    params = {
+        "secid": _stock_secid(code),
+        "klt": str(klt),
+        "fqt": "1",
+        "lmt": limit,
+        "end": "20500101",
+        "fields1": "f1,f2,f3,f4,f5,f6",
+        "fields2": "f51,f52,f53,f54,f55,f56,f57,f58",
+    }
+    last_err: Exception | None = None
+    for host in (EM_HIS, EM_PUSH):
+        for attempt in range(3):
+            try:
+                r = session.get(f"{host}/api/qt/stock/kline/get", params=params, timeout=20)
+                r.raise_for_status()
+                klines = (r.json().get("data") or {}).get("klines") or []
+                out = [_parse_kline_bar(x) for x in klines]
+                bars = [b for b in out if b]
+                if bars:
+                    return bars
+            except Exception as exc:
+                last_err = exc
+                time.sleep(0.4 * (attempt + 1))
+    if last_err:
+        pass
+    return []
+
+
+def fetch_minute_kline(code: str, *, klt: int = 5, limit: int = 48) -> dict[str, Any]:
+    """5 分钟 K 摘要（做 T 时点参考）。"""
+    bars = fetch_stock_kline_em(code, klt=klt, limit=limit)
+    if not bars:
+        return {"code": code, "error": "分钟K线抓取失败"}
+    last = bars[-1]
+    highs = [b["high"] for b in bars if b.get("high")]
+    lows = [b["low"] for b in bars if b.get("low")]
+    return {
+        "code": code,
+        "klt": klt,
+        "bars_count": len(bars),
+        "last_time": last.get("time"),
+        "last_close": last.get("close"),
+        "session_high": max(highs) if highs else None,
+        "session_low": min(lows) if lows else None,
+        "recent_bars": bars[-6:],
+    }
+
+
+def fetch_rs_vs_hs300(code: str, *, days: int = 20) -> dict[str, Any]:
+    """相对沪深300的20日相对强度（收益率差）。"""
+    from bollinger_utils import get_kline
+
+    def _ret_from_closes(closes: list[float], n: int) -> float | None:
+        if len(closes) < n + 1:
+            return None
+        base = closes[-(n + 1)]
+        if base <= 0:
+            return None
+        return round((closes[-1] / base - 1) * 100, 2)
+
+    def _ret_kline(kl, n: int) -> float | None:
+        if kl is None or len(kl) < n + 1:
+            return None
+        c = kl["close"]
+        return _ret_from_closes([float(x) for x in c.tolist()], n)
+
+    sk = get_kline(code, days + 10, min_bars=days + 2)
+    sr = _ret_kline(sk, days)
+
+    ik = get_kline("000300", days + 10, min_bars=days + 2)
+    ir = _ret_kline(ik, days)
+    if ir is None:
+        bars = fetch_stock_kline_em("000300", klt=101, limit=days + 15)
+        closes = [float(b["close"]) for b in bars if b.get("close")]
+        ir = _ret_from_closes(closes, days)
+    if sr is None:
+        bars = fetch_stock_kline_em(code, klt=101, limit=days + 15)
+        closes = [float(b["close"]) for b in bars if b.get("close")]
+        sr = _ret_from_closes(closes, days)
+
+    if sr is None or ir is None:
+        return {"code": code, "benchmark": "000300", "days": days, "error": "日K不足，无法计算RS"}
+    spread = round(sr - ir, 2)
+    if spread > 3:
+        label = "显著强于沪深300"
+    elif spread > 0:
+        label = "略强于沪深300"
+    elif spread > -3:
+        label = "与沪深300接近"
+    elif spread > -8:
+        label = "弱于沪深300"
+    else:
+        label = "显著弱于沪深300"
+    return {
+        "code": code,
+        "benchmark": "000300",
+        "days": days,
+        "stock_ret_pct": sr,
+        "index_ret_pct": ir,
+        "rs_spread_pct": spread,
+        "label": label,
+    }
+
+
 def fetch_klines_60m_multi(*, limit: int = 20) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for secid, name in KLINE_INDEX.items():

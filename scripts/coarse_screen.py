@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 脚本1：全市场粗筛（每日15:30后运行）
-用腾讯财经API批量拉全市场PE/PB/市值，按博主框架硬门槛粗筛。
+用腾讯财经API批量拉全市场PE/PB/市值，按 Wiki 框架硬门槛粗筛。
 输出：Wiki/数据/粗筛结果.csv
 """
 import time
@@ -151,7 +151,7 @@ def generate_code_list() -> list[str]:
 
 
 def coarse_filter(quotes: dict) -> list[dict]:
-    """博主框架粗筛"""
+    """Wiki 框架粗筛"""
     passed = []
     for code, q in quotes.items():
         if q["price"] <= 0 or q["pe_ttm"] <= 0:

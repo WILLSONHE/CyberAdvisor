@@ -141,14 +141,14 @@ def format_turnover_section(history: list[dict]) -> list[str]:
 
 def format_multi_index_section(history: list[dict]) -> list[str]:
     lines = [
-        "### 关键点位（L1/L3/L4）",
+        "### 关键点位（L1/L3/L4 · Wiki 参考，非规则引擎硬编码）",
     ]
     sh_cur = None
     if history:
         sh_cur = (history[-1].get("indices") or {}).get("000001", {}).get("close")
     if sh_cur:
         lines.append(
-            f"- L1：**4033** / **4130** | 上证现价 **{sh_cur:.2f}**（距 4033 {sh_cur - 4033:+.2f} 点）"
+            f"- L1（Wiki）：见 [[指数纪律框架]] — 常见 **4033** / **4130** | 上证现价 **{sh_cur:.2f}**（距 Wiki L1 4033 {sh_cur - 4033:+.2f} 点，**供你判断，非引擎门禁**）"
         )
     else:
         lines.append("- L1：**4033** / **4130**")

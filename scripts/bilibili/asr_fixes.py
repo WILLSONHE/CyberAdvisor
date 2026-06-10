@@ -1,4 +1,4 @@
-"""视频字幕 ASR 常见误识别校正（财经/半导体/博主口癖）。"""
+"""视频字幕 ASR 常见误识别校正（财经/半导体/口播习惯）。"""
 from __future__ import annotations
 
 import re

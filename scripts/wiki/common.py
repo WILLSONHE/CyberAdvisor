@@ -10,16 +10,16 @@ from bilibili.env import ROOT
 
 WIKI = os.path.join(ROOT, "Wiki")
 RAW = os.path.join(ROOT, "Raw")
-TRACK_DIR = os.path.join(WIKI, "博主", "标的追踪")
+TRACK_DIR = os.path.join(WIKI, "内容源", "标的追踪")
 TRACK_INACTIVE_DIR = os.path.join(TRACK_DIR, "不活跃标的")
-OVERVIEW_MD = os.path.join(WIKI, "博主", "标的总览.md")
+OVERVIEW_MD = os.path.join(WIKI, "内容源", "标的总览.md")
 
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from raw_paths import RAW_PENDING_VIDEO, RAW_APPROVED_VIDEO  # noqa: E402
 
 PENDING_VIDEO = RAW_PENDING_VIDEO
 APPROVED_VIDEO = RAW_APPROVED_VIDEO
-POOL_MD = os.path.join(WIKI, "数据", "博主标的池日报.md")
+POOL_MD = os.path.join(WIKI, "数据", "标的池日报.md")
 LOG_MD = os.path.join(WIKI, "log.md")
 
 WIKI_LINK = re.compile(r"\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]")

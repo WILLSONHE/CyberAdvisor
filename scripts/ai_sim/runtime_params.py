@@ -9,18 +9,19 @@ from ai_sim.config import ROOT
 
 OVERRIDE_PATH = os.path.join(ROOT, "Wiki", "数据", "AI模拟盘参数.override.json")
 
-# Agent 仅允许调整以下键；含类型与硬边界
+# Agent 可调参数（执行层数值边界；指数/布林门禁不在此列）
 PARAM_SCHEMA: dict[str, dict[str, Any]] = {
     "STOP_LOSS_PCT": {"type": float, "min": -20.0, "max": -1.0},
     "TAKE_PROFIT_PCT": {"type": float, "min": 5.0, "max": 50.0},
-    "EQUITY_TARGET_BELOW_CLEAR": {"type": float, "min": 0.1, "max": 0.6},
-    "EQUITY_TARGET_NORMAL": {"type": float, "min": 0.4, "max": 0.9},
+    "EQUITY_TARGET_NORMAL": {"type": float, "min": 0.0, "max": 0.9},
     "BUY_MIN_GAP": {"type": float, "min": 0.02, "max": 0.2},
     "MAX_BUYS_PER_TICK": {"type": int, "min": 0, "max": 3},
     "REBALANCE_MIN_HOLD_DAYS": {"type": int, "min": 0, "max": 5},
-    "NO_BUY_BELOW_CLEAR": {"type": bool},
     "MIN_TRADE_YUAN": {"type": float, "min": 30_000.0, "max": 500_000.0},
 }
+
+# 已废弃：旧版软约束键，override 中若存在则忽略
+_DEPRECATED_KEYS = frozenset({"NO_BUY_BELOW_CLEAR", "EQUITY_TARGET_BELOW_CLEAR"})
 
 _overrides: dict[str, Any] = {}
 
@@ -93,6 +94,9 @@ def apply_patch(patch: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     applied: dict[str, Any] = {}
     warnings: list[str] = []
     for key, val in patch.items():
+        if key in _DEPRECATED_KEYS:
+            warnings.append(f"已废弃参数 {key}，请用 buy_permission + EQUITY_TARGET_NORMAL（Wiki 判断含 4033 等）")
+            continue
         if key not in PARAM_SCHEMA:
             warnings.append(f"忽略未授权参数 {key}")
             continue

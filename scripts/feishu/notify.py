@@ -40,7 +40,7 @@ def build_pipeline_summary() -> tuple[str, list[tuple[str, str]]]:
     if not one_liner:
         one_liner = f"（今日尚未生成 sug，请在 Cursor 说 sug {{持有人}}，如 sug {holders[0] if holders else 'Wilson'}）"
 
-    pool_head = _read_head(os.path.join(ROOT, "Wiki", "数据", "博主标的池日报.md"), 18)
+    pool_head = _read_head(os.path.join(ROOT, "Wiki", "数据", "标的池日报.md"), 18)
     pool_lines = [ln for ln in pool_head.splitlines() if ln.strip()][:8]
     pool_snip = "\n".join(pool_lines) if pool_lines else "（暂无标的池日报）"
 
@@ -57,7 +57,7 @@ def build_pipeline_summary() -> tuple[str, list[tuple[str, str]]]:
         ("text", f"完成时间：{now}"),
         ("text", f"持有人：{holder_line}"),
         ("text", f"今日一句话：{one_liner}"),
-        ("text", "标的池见 Wiki/数据/博主标的池日报.md"),
+        ("text", "标的池见 Wiki/数据/标的池日报.md"),
         ("text", "下一步：Cursor 说 sug {持有人} 生成完整交易策略"),
     ]
     return text, post_lines
@@ -196,10 +196,7 @@ def push_ai_sim_journal(
             send_post(
                 cfg.webhook_url,
                 title,
-                [
-                    ("text", f"时间：{now}"),
-                    ("text", preview),
-                ],
+                [("text", f"时间：{now}\n\n{preview}")],
             )
             print("已推送 AI 模拟盘新增日志（Webhook）")
     elif not cfg.notify_chat_enabled:

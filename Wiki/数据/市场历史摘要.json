@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-06-10T11:41:34",
+  "updated": "2026-06-10T15:12:04",
   "daily": [
     {
       "date": "2026-06-05",
@@ -112,30 +112,30 @@
       "indices": {
         "000001": {
           "name": "上证指数",
-          "close": 3986.66,
+          "close": 3993.23,
           "open": 3985.12,
           "high": 4006.31,
-          "low": 3972.87,
-          "change_pct": -0.58,
-          "turnover_yi": 8070.12
+          "low": 3963.44,
+          "change_pct": -0.42,
+          "turnover_yi": 12270.7
         },
         "399001": {
           "name": "深证成指",
-          "close": 14972.75,
+          "close": 14954.1,
           "open": 15062.51,
           "high": 15149.37,
-          "low": 14901.7,
-          "change_pct": -1.94,
-          "turnover_yi": 9231.85
+          "low": 14817.11,
+          "change_pct": -2.06,
+          "turnover_yi": 13921.73
         },
         "399006": {
           "name": "创业板指",
-          "close": 3870.83,
+          "close": 3854.79,
           "open": 3897.73,
           "high": 3928.36,
-          "low": 3844.59,
-          "change_pct": -2.29,
-          "turnover_yi": 4274.68
+          "low": 3818.31,
+          "change_pct": -2.7,
+          "turnover_yi": 6488.12
         }
       },
       "northbound": {

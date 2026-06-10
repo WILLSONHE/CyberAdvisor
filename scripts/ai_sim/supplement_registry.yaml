@@ -39,3 +39,15 @@ metrics:
     default: false
     always_on: false
     fetcher: us_10y_yield
+
+  minute_kline:
+    label: 分钟级K线（做T精确时点；标的级）
+    default: true
+    always_on: false
+    fetcher: minute_kline
+
+  rs_vs_hs300:
+    label: 个股相对强度 RS（相对沪深300，20日）
+    default: true
+    always_on: false
+    fetcher: rs_vs_hs300

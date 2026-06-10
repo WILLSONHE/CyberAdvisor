@@ -181,7 +181,7 @@ def handle_command(text: str) -> CommandResult:
             "【Wiki 查询】\n"
             "• 策略文件 — Wiki 目录树\n"
             "• 打开 {路径或文件名} — 发送 Wiki .md 原文件\n"
-            "• trk {标的} — 博主痕迹追踪\n"
+            "• trk {标的} — 标的全痕迹追踪\n"
             "• chk — Wiki 体检\n"
             "• qry {问题} — Wiki 关键词检索\n\n"
             "• ping — 连通测试\n\n"
