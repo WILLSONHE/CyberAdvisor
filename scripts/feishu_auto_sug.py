@@ -56,6 +56,7 @@ def _write_sugvault(holder: str, session: str | None, body: str, *, agent_id: st
 def run_sug_for_holder(holder: str, *, session: str | None) -> dict:
     from ai_sim.agent_client import AgentClientError, run_analysis_prompt
 
+    apply_config_to_environ()
     log.info("生成 sug %s %s …", holder, session or "")
     prompt = build_sug_prompt(holder, session=session)
     resp = run_analysis_prompt(prompt)
@@ -105,11 +106,11 @@ def run_auto_sug(
     for h in holders:
         try:
             info = run_sug_for_holder(h, session=session)
-            print(f"  ✅ {h} → {info['path']}")
+            print(f"  [OK] {h} -> {info['path']}")
             ok += 1
         except Exception as e:
             log.exception("sug 失败 %s", h)
-            print(f"  ❌ {h}: {e}")
+            print(f"  [FAIL] {h}: {e}")
             fail += 1
 
     print(f"完成：成功 {ok}，失败 {fail}")
@@ -123,6 +124,11 @@ def run_auto_sug(
 
 
 def main() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     ap = argparse.ArgumentParser(description="自动 Cloud Agent 生成 sug 全员")
     ap.add_argument("--after-daily", action="store_true", help="daily.bat 调用：检查 FEISHU_AUTO_SUG 与时段")

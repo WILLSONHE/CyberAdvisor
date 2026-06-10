@@ -456,7 +456,7 @@ def calibrate(*, min_samples: int = 3) -> dict[str, Any]:
         1
         for rec in data.get("records", [])
         for hk in HORIZON_KEYS
-        if ((rec.get("horizons") or {}).get(hk) or {}).get("review", {}).get("status") == "done"
+        if (((rec.get("horizons") or {}).get(hk) or {}).get("review") or {}).get("status") == "done"
     )
     if notes:
         hist = params.setdefault("calibration_notes", [])

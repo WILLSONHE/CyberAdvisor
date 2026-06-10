@@ -125,7 +125,7 @@ def _github_default_branch(owner: str, repo: str) -> str | None:
         return None
 
 
-def resolve_starting_ref(repo: str, *, fallback: str = "main") -> str:
+def resolve_starting_ref(repo: str, *, fallback: str = "master") -> str:
     """CURSOR_CLOUD_REF → GitHub default_branch → fallback。"""
     explicit = (os.environ.get("CURSOR_CLOUD_REF") or "").strip()
     if explicit:
@@ -160,7 +160,7 @@ def create_cloud_run(
     if repo:
         if not repo.startswith("http"):
             repo = f"https://github.com/{repo.lstrip('/')}"
-        branch = resolve_starting_ref(repo, fallback=starting_ref or "main")
+        branch = resolve_starting_ref(repo, fallback=starting_ref or "master")
         body["repos"] = [{"url": repo, "startingRef": branch}]
         body["workOnCurrentBranch"] = True
 
