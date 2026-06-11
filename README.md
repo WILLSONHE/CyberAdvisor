@@ -75,11 +75,11 @@ FEISHU_PORTFOLIO_URL=https://xxx.feishu.cn/sheets/shtxxxxxxxx
 sug Wilson              # 读 SugVault 已有报告
 sug Wilson 早盘          # 读归档 YYYY-MM-DD_Wilson_sug 早盘.md
 sug Wilson 午盘          # 读归档 YYYY-MM-DD_Wilson_sug 午盘.md
-sug 全员                 # 分段读取各持有人已有报告
+sug 全员                 # 飞书 Bot：合并 .md 附件；Cursor：逐人生成
 sug 全员 午盘            # 同上，匹配午盘归档文件名
 agent sug 全员 午盘      # Cloud Agent 异步生成（每人一份 .md 附件）
-持仓 Wilson              # 查看该持有人持仓（Cursor / 飞书均可）
-标的池 Wilson            # 核心标的池 + 该持有人做T（Cursor / 飞书均可）
+持仓 Wilson              # 查看该持有人持仓（飞书 Bot → .md 附件）
+标的池 Wilson            # 核心标的池 + 该持有人做T（飞书 Bot → .md 附件）
 sim 买 利通电子，江波龙    # 模拟买入（100 万起/标的）
 sim 卖 利通电子            # 模拟卖出并冻结盈亏
 ```
@@ -112,7 +112,9 @@ sim 卖 利通电子            # 模拟卖出并冻结盈亏
 | 手动干预   | `sim 买/卖 …`（飞书 Bot 或 CLI，见 `sim_portfolio.py`）                                         |
 
 
-**布林七轨 + vipdoc + 1/3/7 最有可能价**（`scripts/bollinger_utils.py` / `scripts/tdx_vipdoc.py`）：采集 tick 时写入 `boll_zone`、`vipdoc`（本地日 K σ）、`outlook_1d/3d/7d`；Agent 与规则引擎须参考；`.env` 可设 `TDX_VIPDOC=C:\zd_zsone\vipdoc`。
+**布林七轨 + vipdoc + 1/3/7 最有可能价**（`scripts/bollinger_utils.py` / `scripts/tdx_vipdoc.py`）：读取本地 `.day` 计算 `vipdoc`（σ）、七轨、`outlook_1d/3d/7d`；**无独立定时任务**——在 `vipdoc_refresh.py`、`analysis_report.py`、飞书 `agent sug` 预抓取、AI 模拟盘 tick 采集时 **按需计算**。`.env` 设 `TDX_VIPDOC=C:\new_tdx64\vipdoc`（A 股）；期货/期权目录 `TDX_VIPDOC_QH=C:\new_tdxqh\vipdoc` **当前未接入**。
+
+**vipdoc 与 daily 的时序**：通达信 PC 版通常在 **15:45 后**才写入当日 `.day`；计划任务 **15:00** 的 `daily.bat` 第 6 步 `outlook_tracker batch` **早于**该更新，**不能**当作午盘 sug 的 vipdoc 数据源。收盘后请 **手动** Cursor 指令 **`vipdoc`**（≈15:50），再 **`sug 全员 午盘`** / **`agent sug 全员 午盘`**。
 
 ```powershell
 # 项目根目录（PowerShell 须加 .\）
@@ -142,7 +144,7 @@ python ai_sim_tick.py --force
 | 3   | `coarse_screen.py`             | 全市场粗筛                                                                |
 | 4   | `fine_screen.py`               | 精筛 + 核心标的池 + 布林线 → `Wiki/数据/标的池日报.md`                                |
 | 5   | `daily_report.py`          | **市场状态日报** → `Wiki/数据/市场状态日报.md` |
-| 6   | `outlook_tracker.py batch` | 追踪标的批预测 |
+| 6   | `outlook_tracker.py batch` | 追踪标的批预测（**15:00 跑时 vipdoc 尚无当日 K**） |
 | 7   | `bilibili_fetch.py`            | 抓取新视频字幕 |
 | 8   | `rw_video.py --pending-only`   | 待审阅稿补标点 |
 | 9   | `bilibili_fetch.py --dry-run`  | 预览 |
@@ -153,11 +155,25 @@ python ai_sim_tick.py --force
 
 **是的**：`daily.bat` **会自动运行** `daily_report.py`（第 5 步），无需单独双击。跑完后可选 Webhook 推送摘要。
 
-约 15–25 分钟（含 `daily_report`、**标的追踪批预测** `outlook_tracker batch --universe track`，约 1–3 分钟）。完成后：
+约 15–25 分钟（含 `daily_report`、**标的追踪批预测** `outlook_tracker batch --universe track`，约 1–3 分钟）。**daily 不含 vipdoc 当日 K 刷新**（见下节）。
 
-- **读报告**：飞书 `sug Wilson` / `sug 全员 午盘`（读 SugVault 已有归档）
-- **生成报告**：Cursor `sug {持有人}`，或飞书 `agent sug 全员 午盘`
-- **自动生成**（可选）：`.env` 设 `FEISHU_AUTO_SUG=1` + `CURSOR_API_KEY`，`daily.bat` 在 **11:30–13:00** 自动跑 `sug 全员 早盘`，**15:00 后** 自动跑 `sug 全员 午盘`，写入 `SugVault/` 并 Webhook 通知
+### 收盘后流程（推荐）
+
+| 时刻 | 动作 | 说明 |
+| --- | --- | --- |
+| **15:00** | 计划任务 **`daily.bat`** | 持仓同步、市场日报、粗精筛、track 批追踪、bilibili… |
+| **~15:50** | Cursor **`vipdoc`** | 等通达信写入 `.day` 后跑；`python scripts/vipdoc_refresh.py` |
+| **任意** | **`sug 全员 午盘`** / **`agent sug 全员 午盘`** | Cursor 生成或飞书 Cloud Agent；读 **vipdoc 刷新后** 的 σ/七轨/1·3·7 |
+
+**`vipdoc` 做什么**：检查 `TDX_VIPDOC` 下 `.day` 是否含 **当日** K 线 → 重跑 `outlook_tracker batch --universe track` + `batch --universe portfolio --session 午盘` → `sim_portfolio sync`；输出在 `Wiki/数据/股价预测追踪/复盘/`。
+
+**不推荐**在 15:00 立刻开 `FEISHU_AUTO_SUG=1` 自动生成午盘 sug（此时 vipdoc 常缺当日 bar）；若启用自动 sug，请改在 **vipdoc 之后**再手动 `agent sug 全员 午盘`，或关闭 `FEISHU_AUTO_SUG` 走上表手动流。
+
+完成后：
+
+- **读报告**：飞书 `sug Wilson` / `sug 全员 午盘` → **.md 附件**（SugVault 已有归档）
+- **生成报告**：先 **`vipdoc`**，再 Cursor `sug {持有人}`，或飞书 `agent sug 全员 午盘`
+- **自动生成**（可选）：`.env` 设 `FEISHU_AUTO_SUG=1` + `CURSOR_API_KEY`，`daily.bat` 在 **11:30–13:00** 可自动跑 `sug 全员 早盘`；**午盘**因 vipdoc 时序问题 **建议关闭自动、改 vipdoc 后手动**
 
 每次 sug **前先** `review --holder …`，**归档后** `record`（数据目录 `Wiki/数据/股价预测追踪/`，见 `ANALYSIS_REPORT_SPEC.md`）。
 
@@ -166,7 +182,7 @@ python ai_sim_tick.py --force
 | 组件 | 运行位置 | 能否读本机 vipdoc / 模拟持仓 |
 | --- | --- | --- |
 | **飞书 Bot**（`feishu_bot.bat`） | 你的电脑 | ✅ 本机脚本读 xlsx、vipdoc、Wiki，**嵌入 prompt** 再发给 Cloud Agent |
-| **Cloud Agent**（`agent …` / AI 模拟盘 tick） | Cursor 云端 | ❌ 不能打开 `C:\zd_zsone\vipdoc`；只能看 prompt 内嵌数据 + 可选 GitHub 仓库 |
+| **Cloud Agent**（`agent …` / AI 模拟盘 tick） | Cursor 云端 | ❌ 不能打开本机 `vipdoc`；只能看 prompt 内嵌数据 + 可选 GitHub 仓库 |
 | **Cursor IDE**（`sug Wilson`） | 你的电脑 | ✅ 直接读全项目 |
 
 **GitHub（`CURSOR_CLOUD_REPO`）是可选的**：给 Cloud Agent 补 Wiki 全文镜像；**不能**替代 vipdoc（GitHub 上没有 `.day` 文件）。本机 Bot / `ai_sim_tick` 在调用 Agent **之前**会抓取 vipdoc σ、1/3/7 最有可能价、`模拟持仓.xlsx` 摘要并写入 prompt 或 tick JSON。
@@ -174,9 +190,10 @@ python ai_sim_tick.py --force
 `.env` 示例：
 
 ```env
-TDX_VIPDOC=C:\zd_zsone\vipdoc
+TDX_VIPDOC=C:\new_tdx64\vipdoc
+# TDX_VIPDOC_QH=C:\new_tdxqh\vipdoc   # 期货/期权；当前未接入
 CURSOR_API_KEY=...
-FEISHU_AUTO_SUG=1          # daily.bat 完成后自动 sug 全员
+# FEISHU_AUTO_SUG=1          # 可选；午盘 sug 建议在 vipdoc 后手动 agent sug，勿依赖 15:00 自动
 # CURSOR_CLOUD_REPO=...    # 可选，见下文「私有 GitHub」
 ```
 
@@ -240,40 +257,45 @@ FEISHU_AUTO_SUG=1          # daily.bat 完成后自动 sug 全员
 
 前提：**飞书 Bot** = 本机运行 `feishu_bot.bat` 且电脑在线；**Cursor** = 安装 `SKILL.md` 后在 IDE 对话。群 **Webhook 推送**不含交互命令，仅 `daily.bat` 完成后发摘要。
 
+**飞书 Bot 回复形式**：除 `帮助` / `ping` / `agent` 提交确认 / 短错误提示外，**内容类指令只发 `.md` 附件**（临时文件发送后自动删除；SugVault / Wiki 原文件不删）。详见 `scripts/feishu/delivery.py`。
+
 **`agent …` 仅飞书 Bot**（须 `.env` 配 `CURSOR_API_KEY`；Cloud Agent 在 Cursor 云端运行，本机 Bot 先抓取 vipdoc/持仓等嵌入 prompt）。Cursor IDE 对话**不需要**也不识别 `agent` 前缀。
 
 
 | 命令                       | 飞书 Bot | Cursor + skill | 说明                                                     |
 | ------------------------ | ------ | -------------- | ------------------------------------------------------ |
 | `ing`                    | —      | ✅ 生成           | 消化 Raw 入 Wiki；Bot 无 AI 写作能力                            |
+| **`vipdoc`**             | —      | ✅ 脚本           | `python scripts/vipdoc_refresh.py`；**15:50 左右、午盘 sug 前** |
 | `rw`                     | —      | ✅ / 脚本         | 视频稿 ASR 校正；`python scripts/rw_video.py --pending-only` |
 | `txtcfm`                 | —      | ✅ / 脚本         | 批量审批；视频稿移入 `Raw/已审阅视频文稿/`                              |
 | `sum`                    | —      | ✅ 生成           | 跨文章归纳；仅 Cursor                                         |
-| `sug {持有人}`          | 📖 读 SugVault | ✅ **生成**       | Bot 只读已有归档；生成请用 Cursor 或 `agent sug …` |
-| `sug {持有人} 早盘/午盘`    | 📖 读 | ✅ 生成 | 读 `SugVault/` 对应盘次文件名 |
-| `sug 全员`             | 📖 分段读 | ✅ 逐人生成 | 读各持有人已有报告 |
-| `sug 全员 早盘/午盘`       | 📖 分段读 | ✅ 逐人生成 | 读午盘/早盘归档；`FEISHU_AUTO_SUG=1` 时 daily 可自动写入 |
+| `sug {持有人}`          | 📎 .md 附件 | ✅ **生成**       | Bot 附 SugVault 原文件；生成请用 Cursor 或 `agent sug …` |
+| `sug {持有人} 早盘/午盘`    | 📎 .md 附件 | ✅ 生成 | 读 `SugVault/` 对应盘次文件名 |
+| `sug 全员`             | 📎 .md 附件 | ✅ 逐人生成 | 合并为一份 .md 附件 |
+| `sug 全员 早盘/午盘`       | 📎 .md 附件 | ✅ 逐人生成 | 读午盘/早盘归档；`FEISHU_AUTO_SUG=1` 时 daily 可自动写入 |
 | **`agent sug {持有人}`** | ✅ 异步生成 | — | Cloud Agent；`.md` 附件 + 本机 Temp；**不写** SugVault |
 | **`agent sug {持有人} 早盘/午盘`** | ✅ 异步生成 | — | 同上，prompt 含本机 vipdoc/模拟持仓快照 |
 | **`agent sug 全员 [早盘/午盘]`** | ✅ 异步生成 × N | — | 每位持有人各一份附件 |
 | **`agent qry {问题}`** | ✅ 异步生成 | — | 深度 Wiki 作答（Markdown 附件） |
 | **`agent {自由任务}`** | ✅ 异步生成 | — | 如 `agent 给我一份新易盛的分析报告` |
 | `agent`（无参数）           | ✅ 帮助 | — | 列出上述 agent 子命令 |
-| `持仓 {持有人}`               | ✅ 读    | ✅ 读            | 读 `portfolio.md` 对应章节                                  |
-| `标的池 {持有人}` / `日报 {持有人}` | ✅ 读    | ✅ 读            | 读标的池日报 + 该持有人做 T 章节                                    |
-| `trk {标的}`               | ✅ 轻量   | ✅ 深度           | Bot：追踪页 + grep；Cursor：可刷新页、态度分析                        |
-| `chk`                    | ✅ 轻量   | ✅ 深度           | Bot：待 ing 计数、断链/时效抽样；Cursor：可修复、归档                     |
-| `qry {问题}`               | ✅ 轻量   | ✅ 深度           | Bot：本地 Wiki 关键词检索（非 Cloud Agent） |
-| `策略文件`                   | ✅ 读    | —              | Bot：Wiki 目录树（`每日复盘/` 不列文件）                             |
-| `打开 {路径或文件名}`            | ✅ 读    | —              | Bot：发送 Wiki `.md` 原文件（如 `打开 仓位管理`）                     |
-| `sim 买/卖 {标的…}`          | ✅ 写    | ✅ 写            | 模拟持仓 `模拟持仓.xlsx`；Cursor `sug` 前自动 `sim sync`           |
+| `持仓 {持有人}`               | 📎 .md 附件    | ✅ 读            | 读 `portfolio.md` 对应章节                                  |
+| `标的池 {持有人}` / `日报 {持有人}` | 📎 .md 附件    | ✅ 读            | 读标的池日报 + 该持有人做 T 章节                                    |
+| `trk {标的}`               | 📎 .md 附件   | ✅ 深度           | Bot：追踪页摘要；Cursor：可刷新页、态度分析                        |
+| `chk`                    | 📎 .md 附件   | ✅ 深度           | Bot：待 ing 计数、断链/时效抽样；Cursor：可修复、归档                     |
+| `qry {问题}`               | 📎 .md 附件   | ✅ 深度           | Bot：本地 Wiki 关键词检索（非 Cloud Agent） |
+| `策略文件`                   | 📎 .md 附件    | —              | Bot：Wiki 目录树（`每日复盘/` 不列文件）                             |
+| `打开 {路径或文件名}`            | 📎 .md 附件    | —              | Bot：发送 Wiki `.md` 原文件（如 `打开 仓位管理`）                     |
+| `sim 买/卖 {标的…}`          | 📎 .md 附件    | ✅ 写            | 模拟持仓 `模拟持仓.xlsx`；Cursor `sug` 前自动 `sim sync`           |
 | `帮助` / `ping`            | ✅      | —              | Bot 连通测试与指令列表（含 agent 说明）                          |
 | `daily.bat`              | —      | —              | 双击运行；Webhook 推送；可选 `FEISHU_AUTO_SUG=1` 自动 agent sug 全员 |
 
 
-图例：**✅ 生成** = AI 新建/更新内容；**📖 读** = 读本地已有文件；**✅ 读** = 双方均可查询；**—** = 不支持。**异步生成** = 先回复「已提交」，3–10 分钟后 `.md` 附件。
+图例：**✅ 生成** = AI 新建/更新内容；**📎 .md 附件** = 飞书 Bot 只发 Markdown 文件；**✅ 读** = Cursor 可读本地文件；**—** = 不支持。**异步生成** = 先回复「已提交」，完成后 `.md` 附件（无正文长串）。
 
-**典型日流程**：`daily.bat`（11:30/15:00 计划任务）→ Webhook 收摘要 → 若 `FEISHU_AUTO_SUG=1` 自动写入 `SugVault/` → 飞书 `sug 全员 午盘` 阅读，或 `agent sug 全员 午盘` 手动触发生成。
+**典型日流程（午盘）**：**15:00** `daily.bat` → Webhook 收摘要 → **~15:50** Cursor **`vipdoc`** → **`agent sug 全员 午盘`**（或 Cursor `sug 全员 午盘`）→ 飞书 `sug 全员 午盘` 阅读。
+
+**典型日流程（早盘）**：**11:30** `daily.bat` → 可选 `sug 全员 早盘`（vipdoc 当日 K 已在前一交易日收盘写入，无 15:45 等待问题）。
 
 CLI 自测（与 Bot 同源）：`python scripts/wiki_cli.py trk 寒武纪` / `chk` / `qry 存储`
 
@@ -284,6 +306,7 @@ cd scripts
 python coarse_screen.py
 python fine_screen.py
 python daily_report.py    # 也可单独跑，输出 Wiki/数据/市场状态日报.md
+python vipdoc_refresh.py  # 15:45+ vipdoc 就绪后；午盘 sug 前
 ```
 
 ### 抓取 B 站 B 站新内容

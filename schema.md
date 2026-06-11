@@ -110,7 +110,7 @@
 
 ## 三·二、飞书 Bot 与 Cursor 分工
 
-- **飞书 Bot**（`feishu_bot.bat`）：本机在线时读本地 Wiki / SugVault；`sug` 只读已有报告，不生成。
+- **飞书 Bot**（`feishu_bot.bat`）：本机在线时读本地 Wiki / SugVault；`sug` 只读已有报告，不生成。**内容类回复只发 `.md` 附件**（`帮助`/`ping`/agent 确认除外）；见 `scripts/feishu/delivery.py`。
 - **Cursor + skill**：`ing` / `sug` 生成 / `sum` / 深度 `qry`·`chk`·`trk`。
 - **Webhook 推送**：`daily.bat` 完成后群发摘要，非交互 Bot。
 

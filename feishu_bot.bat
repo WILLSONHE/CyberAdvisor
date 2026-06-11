@@ -1,6 +1,8 @@
 @echo off
 setlocal
 chcp 65001 >nul
+set PYTHONUTF8=1
+set PYTHONIOENCODING=utf-8
 REM CyberAdvisor Feishu Bot + ngrok tunnel on port 8765
 set "ROOT=%~dp0"
 set "SCRIPTS=%ROOT%scripts"

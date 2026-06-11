@@ -1,4 +1,4 @@
-"""读取通达信/招商 vipdoc 本地日 K（.day），供 realized volatility 与 get_kline 兜底。"""
+"""读取通达信 vipdoc 本地日 K（.day），供 realized volatility 与 get_kline 兜底。"""
 from __future__ import annotations
 
 import os
@@ -7,11 +7,17 @@ from typing import Any
 
 import pandas as pd
 
-DEFAULT_VIPDOC = os.environ.get("TDX_VIPDOC", r"C:\zd_zsone\vipdoc")
+DEFAULT_VIPDOC = os.environ.get("TDX_VIPDOC", r"C:\new_tdx64\vipdoc")
+DEFAULT_VIPDOC_QH = os.environ.get("TDX_VIPDOC_QH", r"C:\new_tdxqh\vipdoc")
 
 
 def vipdoc_root() -> str:
     return os.environ.get("TDX_VIPDOC", DEFAULT_VIPDOC)
+
+
+def vipdoc_root_qh() -> str:
+    """期货/期权 vipdoc 根目录（当前流水线未接入，预留）。"""
+    return os.environ.get("TDX_VIPDOC_QH", DEFAULT_VIPDOC_QH)
 
 
 _SH_INDEX_CODES = frozenset({"000001", "000016", "000300", "000688", "000852", "000905"})

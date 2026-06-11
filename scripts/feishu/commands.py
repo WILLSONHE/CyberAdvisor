@@ -23,7 +23,7 @@ from wiki import run_chk, search_wiki, track_stock
 from wiki.common import format_hint as wiki_format_hint
 from wiki.common import parse_tail_arg
 
-from feishu.text_util import MAX_CHUNK
+from feishu.text_util import encoding_damage_note, read_text_file
 
 SUG_VERBS = ("sug", "交易策略", "开仓")
 SIM_PREFIX = "sim"
@@ -40,7 +40,11 @@ OPEN_RE = re.compile(r"^打开\s+(.+)$", re.IGNORECASE)
 
 
 def _text_result(text: str) -> CommandResult:
-    return CommandResult(text=text)
+    return CommandResult.from_text(text)
+
+
+def _md_result(body: str, *, filename: str) -> CommandResult:
+    return CommandResult.from_markdown(body, filename=filename)
 
 
 def _agent_disabled_message() -> str:
@@ -60,8 +64,8 @@ def _agent_ack(label: str, *, extra: str = "") -> str:
 
 def _handle_wiki_tree() -> CommandResult:
     tree = build_wiki_tree()
-    header = "Wiki 目录（`每日复盘/` 仅显示文件夹，不列文件）\n\n"
-    return _text_result(header + tree)
+    body = "Wiki 目录（`每日复盘/` 仅显示文件夹，不列文件）\n\n" + tree
+    return _md_result(body, filename="wiki目录")
 
 
 def _handle_open_wiki(query: str) -> CommandResult:
@@ -81,38 +85,17 @@ def _handle_open_wiki(query: str) -> CommandResult:
         return _text_result("\n".join(lines))
 
     md_path = matches[0]
-    rel = os.path.relpath(md_path, WIKI_ROOT).replace("\\", "/")
-    return CommandResult(
-        text=f"Wiki/{rel}",
-        file_path=str(md_path),
-        file_name=md_path.name,
-        file_type="stream",
-    )
+    return CommandResult.from_existing_file(str(md_path), file_name=md_path.name)
 
 
-def _read_tail(path: str, max_chars: int = 6000) -> str:
-    if not os.path.isfile(path):
-        return f"（文件不存在：{path}）"
-    with open(path, encoding="utf-8") as f:
-        text = f.read()
-    return _truncate(text, max_chars)
-
-
-def _truncate(text: str, max_chars: int) -> str:
-    if len(text) <= max_chars:
-        return text
-    return "…（内容过长，仅显示末尾）\n\n" + text[-max_chars:]
-
-
-def _handle_holder_command(text: str, verbs: tuple[str, ...], handler) -> str | None:
-    parsed = parse_holder_arg(text, verbs)
-    if parsed is None:
-        return None
-    holder, err = parsed
-    if err:
-        return err
-    assert holder is not None
-    return handler(holder)
+def _read_sug_body(holder: str, session: str | None) -> str:
+    path = latest_sug_path(holder, session)
+    if not path:
+        return ""
+    text, damaged = read_text_file(path)
+    if damaged:
+        text = encoding_damage_note(holder=holder, session=session) + text
+    return text
 
 
 def _sug_missing_message(holder: str, session: str | None) -> str:
@@ -131,23 +114,6 @@ def _sug_missing_message(holder: str, session: str | None) -> str:
     )
 
 
-def _read_sug(holder: str, session: str | None) -> str:
-    path = latest_sug_path(holder, session)
-    if path:
-        return _read_tail(path, MAX_CHUNK * 2)
-    return _sug_missing_message(holder, session)
-
-
-def _read_sug_all(session: str | None) -> str:
-    names = load_holder_names()
-    if not names:
-        return "尚无持仓数据，请先运行 daily.bat 同步 持仓.xlsx"
-    blocks: list[str] = []
-    for h in names:
-        blocks.append(f"=== {h} ===\n{_read_sug(h, session)}")
-    return _truncate("\n\n".join(blocks), MAX_CHUNK * 2)
-
-
 def _handle_sug_command(text: str) -> CommandResult | None:
     parsed = parse_sug_command(text)
     if parsed is None:
@@ -156,9 +122,24 @@ def _handle_sug_command(text: str) -> CommandResult | None:
     if err:
         return _text_result(err)
     assert holder is not None
+
     if holder == "__ALL__":
-        return _text_result(_read_sug_all(session))
-    return _text_result(_read_sug(holder, session))
+        names = load_holder_names()
+        if not names:
+            return _text_result("尚无持仓数据，请先运行 daily.bat 同步 持仓.xlsx")
+        blocks: list[str] = []
+        for h in names:
+            body = _read_sug_body(h, session)
+            if not body:
+                body = _sug_missing_message(h, session)
+            blocks.append(f"# {h}\n\n{body}")
+        sess = session or "当日"
+        return _md_result("\n\n---\n\n".join(blocks), filename=f"sug_全员_{sess}")
+
+    path = latest_sug_path(holder, session)
+    if path:
+        return CommandResult.from_existing_file(path, file_name=os.path.basename(path))
+    return _text_result(_sug_missing_message(holder, session))
 
 
 def _handle_agent_sug(rest: str) -> CommandResult:
@@ -191,7 +172,7 @@ def _handle_agent_command(text: str) -> CommandResult | None:
             "• agent sug 全员 [早盘|午盘]\n"
             "• agent qry {问题}\n"
             "• agent 给我一份新易盛的分析报告\n\n"
-            "普通 sug / qry 仍为本地读 SugVault / Wiki 检索。"
+            "普通 sug / qry 仍为本地读 SugVault / Wiki 检索（.md 附件）。"
         )
 
     m = AGENT_PREFIX_RE.match(stripped)
@@ -231,6 +212,17 @@ def _handle_tail_command(text: str, verbs: tuple[str, ...], handler, *, arg_labe
     return handler(arg)
 
 
+def _handle_holder_command(text: str, verbs: tuple[str, ...], handler) -> str | None:
+    parsed = parse_holder_arg(text, verbs)
+    if parsed is None:
+        return None
+    holder, err = parsed
+    if err:
+        return err
+    assert holder is not None
+    return handler(holder)
+
+
 def handle_command(text: str) -> CommandResult:
     cmd = text.strip()
     lower = cmd.lower()
@@ -250,16 +242,16 @@ def handle_command(text: str) -> CommandResult:
             "• agent sug 全员 [早盘|午盘]\n"
             "• agent qry {问题} — 深度 Wiki 作答\n"
             "• agent {自由任务} — 如：agent 给我一份新易盛的分析报告\n\n"
-            "【持仓 / 交易 · 本地读】\n"
-            "• sug {持有人} [早盘|午盘] — 读 SugVault 已有报告\n"
+            "【持仓 / 交易 · 本地读 → .md 附件】\n"
+            "• sug {持有人} [早盘|午盘] — SugVault 已有报告\n"
             "• sug 全员 [早盘|午盘]\n"
             "• 持仓 {持有人} | 标的池 {持有人}\n"
             "• sim 买/卖 …\n\n"
-            "【Wiki 查询】\n"
+            "【Wiki 查询 → .md 附件】\n"
             "• 策略文件 | 打开 {路径}\n"
             "• trk {标的} | chk | qry {关键词}\n\n"
             "• ping — 连通测试\n\n"
-            f"示例：agent sug 全员 午盘 / sug Wilson 读 / qry 存储{names_hint}\n\n"
+            f"示例：agent sug 全员 午盘 / sug Wilson / qry 存储{names_hint}\n\n"
             "ing / rw / txtcfm → Cursor + SKILL.md。"
         )
 
@@ -280,23 +272,19 @@ def handle_command(text: str) -> CommandResult:
     if lower.startswith(SIM_PREFIX):
         reply = handle_sim_command(cmd)
         if reply is not None:
-            return _text_result(_truncate(reply, MAX_CHUNK))
+            return _md_result(reply, filename="sim")
         return _text_result("sim 指令格式：sim 买 利通电子，江波龙 / sim 卖 利通电子")
 
     if lower in CHK_VERBS:
-        return _text_result(_truncate(run_chk(), MAX_CHUNK * 2))
+        return _md_result(run_chk(), filename="chk")
 
-    reply = _handle_tail_command(
-        cmd, TRK_VERBS, lambda name: _truncate(track_stock(name), MAX_CHUNK * 2), arg_label="标的"
-    )
+    reply = _handle_tail_command(cmd, TRK_VERBS, track_stock, arg_label="标的")
     if reply is not None:
-        return _text_result(reply)
+        return _md_result(reply, filename=f"trk_{cmd.split()[-1]}")
 
-    reply = _handle_tail_command(
-        cmd, QRY_VERBS, lambda q: _truncate(search_wiki(q), MAX_CHUNK * 2), arg_label="问题"
-    )
+    reply = _handle_tail_command(cmd, QRY_VERBS, search_wiki, arg_label="问题")
     if reply is not None:
-        return _text_result(reply)
+        return _md_result(reply, filename="qry")
 
     reply = _handle_sug_command(cmd)
     if reply is not None:
@@ -305,18 +293,18 @@ def handle_command(text: str) -> CommandResult:
     reply = _handle_holder_command(
         cmd,
         HOLDING_VERBS,
-        lambda holder: _truncate(filter_portfolio_md(holder), MAX_CHUNK),
+        lambda holder: filter_portfolio_md(holder),
     )
     if reply is not None:
-        return _text_result(reply)
+        return _md_result(reply, filename=f"持仓_{cmd.split()[-1]}")
 
     reply = _handle_holder_command(
         cmd,
         POOL_VERBS,
-        lambda holder: _truncate(filter_pool_md(holder), MAX_CHUNK * 2),
+        lambda holder: filter_pool_md(holder),
     )
     if reply is not None:
-        return _text_result(reply)
+        return _md_result(reply, filename=f"标的池_{cmd.split()[-1]}")
 
     if lower in SUG_VERBS:
         return _text_result(format_hint("sug"))

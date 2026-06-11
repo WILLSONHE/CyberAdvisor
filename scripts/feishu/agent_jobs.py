@@ -17,7 +17,14 @@ from feishu.agent_prompts import (
     guess_stock_in_text,
     output_basename,
 )
-from feishu.client import reply_file, reply_text, send_file_to_chat, send_text_to_chat, upload_im_file
+from feishu.client import (
+    reply_text,
+    send_text_to_chat,
+    upload_im_file,
+    reply_file,
+    send_file_to_chat,
+)
+from feishu.delivery import remove_temp_file, write_temp_md
 from feishu.text_util import split_reply
 from feishu.env import FeishuConfig
 from feishu.output_dir import resolve_feishu_output_dir
@@ -54,18 +61,6 @@ def agent_enabled() -> bool:
     if (os.environ.get("FEISHU_AGENT") or "1").strip().lower() in ("0", "false", "no", "off"):
         return False
     return bool((os.environ.get("CURSOR_API_KEY") or "").strip())
-
-
-def _format_tokens(usage: dict | None, token_total: int | None) -> str:
-    if not token_total and usage:
-        token_total = sum(
-            int(usage.get(k) or 0)
-            for k in ("inputTokens", "outputTokens", "cacheReadTokens", "cacheWriteTokens")
-        )
-    if not token_total:
-        return ""
-    est = "（估算）" if usage and usage.get("estimated") else ""
-    return f" | Token {token_total:,}{est}"
 
 
 def _write_output(path: str, body: str, *, meta_header: str) -> None:
@@ -143,34 +138,28 @@ def run_agent_task(cfg: FeishuConfig, message_id: str, chat_id: str, task: Agent
         _deliver_text(cfg, chat_id, message_id, f"❌ Cloud Agent 无输出（{task.label}）")
         return
 
-    url = resp.get("url") or ""
-    tokens = _format_tokens(resp.get("usage"), resp.get("token_total"))
     meta = (
         f"<!-- feishu-agent kind={task.kind} label={task.label} "
         f"agent={resp.get('agent_id', '')} -->"
     )
     _write_output(out_path, body, meta_header=meta)
 
-    header = (
-        f"✅ **{task.label}** 已生成\n"
-        f"- 已发送 **.md 附件**（`{os.path.basename(out_path)}`）\n"
-        f"- 未写入 SugVault / Wiki{tokens}"
-    )
-    if url:
-        header += f"\n- Agent：{url}"
-
-    _deliver_text(cfg, chat_id, message_id, header)
-
     try:
         _deliver_file(cfg, chat_id, message_id, out_path)
     except Exception as e:
-        log.warning("发送 .md 附件失败，改分条正文: %s", e)
-        _deliver_text(
-            cfg,
-            chat_id,
-            message_id,
-            f"⚠️ 附件发送失败（{e}），以下为正文：\n\n{body}",
-        )
+        log.warning("发送 .md 附件失败，改发临时文件: %s", e)
+        fallback = write_temp_md(body, task.output_name.replace(".md", ""))
+        try:
+            _deliver_file(cfg, chat_id, message_id, fallback)
+        except Exception as e2:
+            _deliver_text(
+                cfg,
+                chat_id,
+                message_id,
+                f"⚠️ 附件发送失败（{e2}）",
+            )
+        finally:
+            remove_temp_file(fallback)
 
     _remove_output_file(out_path)
 

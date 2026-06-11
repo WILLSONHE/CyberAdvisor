@@ -72,7 +72,7 @@ def format_glossary_markdown(
         ),
         (
             "vipdoc 本地日 K",
-            f"招商/通达信 `TDX_VIPDOC` 本地 .day 文件；用于实现波动 σ 与区间加宽（近 {vip.get('lookback', 20)} 日）。",
+            f"通达信 `TDX_VIPDOC` 本地 .day 文件；用于实现波动 σ 与区间加宽（近 {vip.get('lookback', 20)} 日）。",
             (
                 f"σ **{vip.get('stdev_pct')}%**，平均绝对涨跌 **{vip.get('mean_abs_pct')}%**"
                 if vip.get("stdev_pct") is not None

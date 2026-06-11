@@ -12,14 +12,12 @@ from urllib.parse import urlparse
 
 from bilibili.env import ROOT
 from feishu.client import (
-    reply_file,
     reply_text,
-    send_file_to_chat,
     send_text_to_chat,
-    upload_im_file,
 )
 from feishu.commands import handle_command
-from feishu.text_util import split_reply
+from feishu.delivery import deliver_result
+from feishu.text_util import configure_stdio_utf8
 from feishu.agent_jobs import run_agent_tasks
 from feishu.decrypt import decrypt_event
 from feishu.env import FeishuConfig
@@ -200,70 +198,26 @@ def _process_message(cfg: FeishuConfig, message_id: str, chat_id: str, text: str
     try:
         result = handle_command(text)
 
-        if result.text:
-            for i, chunk in enumerate(split_reply(result.text)):
-                try:
-                    if i == 0:
-                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
-                    elif chat_id:
-                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
-                    else:
-                        reply_text(cfg.app_id, cfg.app_secret, message_id, chunk)
-                except Exception as e:
-                    log.warning("reply 失败，改 send_to_chat: %s", e)
-                    if chat_id:
-                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, chunk)
-                    else:
-                        raise
-
         if result.agent_tasks:
+            if result.text:
+                try:
+                    if chat_id:
+                        send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, result.text)
+                    else:
+                        reply_text(cfg.app_id, cfg.app_secret, message_id, result.text)
+                except Exception as e:
+                    log.warning("Agent 确认消息发送失败: %s", e)
+            else:
+                reply_text(cfg.app_id, cfg.app_secret, message_id, "⏳ 已提交 Cloud Agent…")
             threading.Thread(
                 target=run_agent_tasks,
                 args=(cfg, message_id, chat_id, result.agent_tasks),
                 daemon=True,
             ).start()
             log.info("已提交 %d 个 Cloud Agent 任务", len(result.agent_tasks))
-            if not result.text:
-                reply_text(cfg.app_id, cfg.app_secret, message_id, "⏳ 已提交 Cloud Agent…")
             return
 
-        file_key = ""
-        file_path = result.file_path if result.file_path and os.path.isfile(result.file_path) else ""
-        if file_path:
-            try:
-                file_key = upload_im_file(
-                    cfg.app_id,
-                    cfg.app_secret,
-                    file_path,
-                    file_type=result.file_type or "stream",
-                    file_name=result.file_name,
-                )
-            except Exception as e:
-                log.exception("上传文件失败")
-                err = f"文件上传失败：{e}"
-                if chat_id:
-                    send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, err)
-                else:
-                    reply_text(cfg.app_id, cfg.app_secret, message_id, err)
-                file_key = ""
-
-        if not result.text and not file_path:
-            reply_text(cfg.app_id, cfg.app_secret, message_id, "（无回复内容）")
-
-        if file_key:
-            try:
-                if chat_id:
-                    send_file_to_chat(cfg.app_id, cfg.app_secret, chat_id, file_key)
-                else:
-                    reply_file(cfg.app_id, cfg.app_secret, message_id, file_key)
-                log.info("已发送文件 %s", file_path)
-            except Exception as e:
-                log.exception("发送文件失败")
-                err = f"文件发送失败：{e}"
-                if chat_id:
-                    send_text_to_chat(cfg.app_id, cfg.app_secret, chat_id, err)
-                else:
-                    reply_text(cfg.app_id, cfg.app_secret, message_id, err)
+        deliver_result(cfg, message_id, chat_id, text, result)
         log.info("已回复 %r", text)
     except Exception as e:
         log.exception("处理失败")
@@ -373,6 +327,7 @@ def run_server(cfg: FeishuConfig, host: str = "0.0.0.0", port: int | None = None
 
 
 def main() -> None:
+    configure_stdio_utf8()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     cfg = FeishuConfig.load()
     run_server(cfg)

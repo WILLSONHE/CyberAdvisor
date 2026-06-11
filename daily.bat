@@ -1,11 +1,11 @@
 @echo off
-REM Double-click: open a new terminal and keep it open (cmd /k)
-if /i not "%~1"=="_run" (
-  start "CyberAdvisor Daily" cmd /k call "%~f0" _run
-  exit /b 0
-)
+REM UTF-8 first (before any non-ASCII echo); then launcher vs main body.
+chcp 65001 >nul 2>nul
+if /i "%~1"=="_run" goto :main
+start "" /D "%~dp0" cmd /k "%~f0" _run %*
+exit /b 0
 
-chcp 65001 >nul
+:main
 title CyberAdvisor Daily Pipeline
 cd /d "%~dp0"
 
@@ -80,7 +80,7 @@ python "%~dp0scripts\feishu_auto_sug.py" --after-daily
 echo.
 echo ============================================================
 echo  Done: %DATE% %TIME%
-echo  Next: sug Wilson / agent sug 全员 午盘（或 FEISHU_AUTO_SUG=1 自动）
+echo  Next: ~15:50 run vipdoc, then sug/agent sug all holders pm session
 echo ============================================================
 goto :end
 
@@ -91,6 +91,6 @@ echo [FAIL] Pipeline stopped. See errors above.
 
 :end
 if /i not "%~2"=="_nopause" (
-  echo.
-  pause
+    echo.
+    pause
 )

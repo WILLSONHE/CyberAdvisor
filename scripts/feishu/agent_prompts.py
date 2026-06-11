@@ -123,6 +123,7 @@ def build_sug_prompt(holder: str, *, session: str | None = None) -> str:
 4. {session_note or "未指定盘次：按当前最新日更与大盘状态撰写。"}
 5. 金额单位用「元」；不推荐科创板（688xxx）新开仓。
 6. §七 1/3/7 日须引用下方「持仓标的本机快照」中的 **最有可能价** 与 vipdoc σ；AI 模拟盘章节参考「模拟持仓」。
+7. §八 只写复盘结论；**禁止**写「未在本环境执行」「outlook_tracker 未运行」等元信息（登记由本机归档脚本完成）。
 
 ## 数据来源
 {_local_paths_note()}
@@ -151,7 +152,7 @@ def build_sug_prompt(holder: str, *, session: str | None = None) -> str:
 ## 标的池日报（全文摘要）
 {_read(POOL_DAILY, max_chars=4000)}
 
-请直接输出完整 sug Markdown（含 §八预测复盘占位说明时可写「飞书生成，未登记 outlook」）。
+请直接输出完整 sug Markdown；§八 只写复盘结论，**禁止**写「未在本环境执行 outlook_tracker」等元信息。
 """
 
 
