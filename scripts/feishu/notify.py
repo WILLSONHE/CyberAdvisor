@@ -165,6 +165,24 @@ def push_sug_done(
     return sent
 
 
+def should_push_ai_sim_tick(
+    trades: list | None,
+    agent: dict | None,
+) -> tuple[bool, str]:
+    """仅当本 tick 有成交或 Agent 实际调参时才推送飞书。"""
+    has_trades = bool(trades)
+    applied = (agent or {}).get("applied") or {}
+    has_param_change = bool(applied)
+    if has_trades and has_param_change:
+        return True, "本 tick 有成交且 Agent 调参"
+    if has_trades:
+        return True, "本 tick 有成交"
+    if has_param_change:
+        keys = ", ".join(str(k) for k in applied)
+        return True, f"Agent 调参：{keys}"
+    return False, "无成交且未调参"
+
+
 def push_ai_sim_journal(
     cfg: FeishuConfig,
     *,

@@ -69,9 +69,14 @@ def run(*, force: bool = False, tick_label: str = "", agent: bool = True) -> int
 
     try:
         from feishu.env import FeishuConfig
-        from feishu.notify import push_ai_sim_journal
+        from feishu.notify import push_ai_sim_journal, should_push_ai_sim_tick
 
-        push_ai_sim_journal(FeishuConfig.load(), new_block=new_journal)
+        should_push, push_reason = should_push_ai_sim_tick(trades, agent_result)
+        if should_push:
+            print(f"飞书推送：{push_reason}")
+            push_ai_sim_journal(FeishuConfig.load(), new_block=new_journal)
+        else:
+            print("飞书推送跳过：无成交且未调参（日志已写入本地）")
     except Exception as e:
         print(f"飞书推送跳过：{e}")
 

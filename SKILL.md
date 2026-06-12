@@ -156,7 +156,7 @@ CLI：`python scripts/sim_portfolio.py buy …` / `sell` / `sync` / `init`
 4. **买入**（可选）：须 Agent **`buy_permission.allowed=true`** + 仓位低于目标；标的按池内综合得分排序（含布林参考，**无顶轨/跌幅硬过滤**）；`MAX_BUYS_PER_TICK` 控制笔数  
 5. **卖出**（可选）：止损/止盈（Agent 可调 %）或超配降仓；**无布林自动离场**  
 6. 成交写入 `模拟持仓.xlsx`；日志含 **阶段标签** + **数据扩展（data_requests 调整及原因）**  
-7. **飞书推送**（`FEISHU_WEBHOOK_URL`）：本 tick **新增** 日志 + 可选附件  
+7. **飞书推送**（`FEISHU_WEBHOOK_URL`）：**仅当**本 tick **有成交** 或 Agent **实际调参**（`applied` 非空）时推送新增日志 + 可选附件；其余 tick 只写本地日志  
 
 **数据自我扩展**：Agent JSON 含 `data_requests: [{metric, action, reason, priority}]`；registry 见 `scripts/ai_sim/supplement_registry.yaml`；已注册 metric 可 **enable/disable**（下一 tick 采集）；未注册写入 `Wiki/数据/待扩展指标.md`。**禁止** Agent 自定义 HTTP。
 

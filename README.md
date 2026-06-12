@@ -99,7 +99,7 @@ sim 卖 利通电子            # 模拟卖出并冻结盈亏
 
 ### 4. AI 模拟持仓（500 万自主盘）
 
-根目录 `**模拟持仓.xlsx**`，持有人 **AI**，总资金 **500 万元**。盘中由计划任务每 **15 分钟** 执行 `ai_sim_tick.bat`（**09:30–11:15、13:00–14:45**；**11:30 / 15:00 休市改跑 `daily.bat`**）：**采集 → Cloud Agent 分析/调参 → 规则引擎买卖（有信号才成交）** → 写入 `**Wiki/数据/AI模拟交易日志.md`**。行情快照：`Raw/每15分钟市场数据/`。
+根目录 `**模拟持仓.xlsx**`，持有人 **AI**，总资金 **500 万元**。盘中由计划任务每 **15 分钟** 执行 `ai_sim_tick.bat`（**09:30–11:15、13:00–14:45**；**11:30 / 15:00 休市改跑 `daily.bat`**）：**采集 → Cloud Agent 分析/调参 → 规则引擎买卖（有信号才成交）** → 写入 `**Wiki/数据/AI模拟交易日志.md`**。行情快照：`Raw/每15分钟市场数据/`。**飞书 Webhook**（`FEISHU_WEBHOOK_URL`）仅在 **本 tick 有成交** 或 **Agent 实际调参** 时推送；其余 tick 只写本地日志。
 
 首次启用 Cloud Agent：复制 `.env.example` 为 `.env`，填入 `CURSOR_API_KEY`（[Cursor Integrations](https://cursor.com/dashboard/integrations)）。
 
