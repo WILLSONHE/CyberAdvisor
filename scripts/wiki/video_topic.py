@@ -82,6 +82,9 @@ _META = {
 _RAW_NAME = re.compile(
     r"^(\d{2}-\d{2}-\d{2})_BV[\w]+_(.+)\.md$", re.I
 )
+_DOUYIN_NAME = re.compile(
+    r"^(\d{2}-\d{2}-\d{2})_\d+_(.+)\.md$", re.I
+)
 
 
 def _read_fm(path: str) -> tuple[dict[str, str], str]:
@@ -111,7 +114,7 @@ def _sanitize_slug(text: str, *, max_len: int = 40) -> str:
 
 def wiki_slug_from_raw_basename(name: str, *, title: str | None = None) -> str:
     """26-05-14_BV1xxx_倒车接人.md → 视频26-05-14-倒车接人"""
-    m = _RAW_NAME.match(name)
+    m = _RAW_NAME.match(name) or _DOUYIN_NAME.match(name)
     if m:
         date_part, raw_title = m.group(1), m.group(2)
         slug_title = _sanitize_slug(title or raw_title)

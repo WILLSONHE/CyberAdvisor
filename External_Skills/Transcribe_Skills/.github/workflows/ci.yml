@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax-check:
+    name: Python Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check syntax of all Python files
+        run: |
+          find . -name "*.py" -type f | while read f; do
+            echo "Checking $f..."
+            python -m py_compile "$f" || exit 1
+          done
+          echo "All syntax checks passed."
+
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff check
+        run: ruff check . --select E,F,W --ignore E501,W503 || true
+
+  test-zero-dep-scripts:
+    name: Test zero-dependency scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Test scan.py help
+        run: |
+          cd industry-intelligence-radar/scripts
+          python scan.py --help
+
+      - name: Test vault_health_check.py help
+        run: |
+          cd knowledge-base-management/scripts
+          python vault_health_check.py --help || true

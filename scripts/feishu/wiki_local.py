@@ -21,7 +21,7 @@ FOLDER_HINTS: dict[str, str] = {
     "每日复盘": "按日归档复盘",
     "内容源": "标的总览、追踪、决策时间线",
     "数据": "脚本输出（市场日报、标的池、粗筛/精筛 CSV）",
-    "待审阅视频文稿": "bilibili_fetch 写入，待 txtcfm",
+    "待审阅视频文稿": "bilibili_fetch / douyin_fetch 写入，待 txtcfm",
     "标的追踪": "活跃池标的专页",
     "不活跃标的": "已移出活跃池的追踪页",
 }

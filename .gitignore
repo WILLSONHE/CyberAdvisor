@@ -6,8 +6,10 @@ secrets/
 __pycache__/
 *.pyc
 Wiki/数据/feishu_debug.log
+Wiki/数据/_rw_run2.log
 .obsidian/
 云/
+*.base
 
 # Raw/ 本地文稿、视频稿、材料与 tick 行情不进库；目录结构靠 .gitkeep
 Raw/**/*

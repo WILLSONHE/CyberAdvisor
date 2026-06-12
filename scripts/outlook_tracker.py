@@ -29,6 +29,45 @@ def _parse_date(s: str) -> date:
     return datetime.strptime(s[:10], "%Y-%m-%d").date()
 
 
+def _is_trading_day(d: date) -> bool:
+    return d.weekday() < 5
+
+
+def add_trading_days(start: date, n: int) -> date:
+    """自 start 起第 n 个交易日（不含 start；周末顺延）。"""
+    if n <= 0:
+        return start
+    d = start
+    added = 0
+    while added < n:
+        d += timedelta(days=1)
+        if _is_trading_day(d):
+            added += 1
+    return d
+
+
+def subtract_trading_days(start: date, n: int) -> date:
+    """自 start 往前第 n 个交易日（周末顺延）。"""
+    if n <= 0:
+        return start
+    d = start
+    sub = 0
+    while sub < n:
+        d -= timedelta(days=1)
+        if _is_trading_day(d):
+            sub += 1
+    return d
+
+
+def next_trading_day(start: date | None = None) -> date:
+    """start 之后的下一个交易日（默认今天之后）。"""
+    return add_trading_days(start or _today(), 1)
+
+
+def due_date_for_horizon(track_from: date, days: int) -> date:
+    return add_trading_days(track_from, days)
+
+
 def _load_log() -> dict[str, Any]:
     if not os.path.isfile(LOG_PATH):
         return {"records": [], "meta": {"started": str(_today())}}
@@ -76,7 +115,7 @@ def _infer_track_from(record: dict[str, Any]) -> date:
         due = ref.get("due_date")
         days = ref.get("days")
         if due and days:
-            return _parse_date(str(due)) - timedelta(days=int(days))
+            return subtract_trading_days(_parse_date(str(due)), int(days))
     return _parse_date(str(record.get("date") or _today()))
 
 
@@ -106,7 +145,7 @@ def _append_horizon_to_record(
     track_from = _infer_track_from(record)
     h = export_outlook_horizon(b, days=days, kline_extra=ke, params=params)
     h["track_from"] = str(track_from)
-    h["due_date"] = str(track_from + timedelta(days=days))
+    h["due_date"] = str(due_date_for_horizon(track_from, days))
     h["review"] = None
     hz[hk] = h
     return True
@@ -255,7 +294,7 @@ def make_snapshot(
     horizons: dict[str, Any] = {}
     for d in HORIZONS:
         h = export_outlook_horizon(b, days=d, kline_extra=ke, params=params)
-        due = track_from + timedelta(days=d)
+        due = due_date_for_horizon(track_from, d)
         h["track_from"] = str(track_from)
         h["due_date"] = str(due)
         h["review"] = None
@@ -307,6 +346,87 @@ def record_outlooks(
             register_queried(code, nm or code, source=source)
     _save_log(data)
     return added
+
+
+def backfill_trading_due_dates(
+    *,
+    fix_track_from: bool = True,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """全量按交易日重算 track_from / due_date（周末顺延）。"""
+    data = _load_log()
+    changed = 0
+    samples: list[str] = []
+    for rec in data.get("records", []):
+        rec_date = _parse_date(str(rec.get("date") or _today()))
+        hz = rec.get("horizons") or {}
+        for hk in HORIZON_KEYS:
+            h = hz.get(hk)
+            if not h:
+                continue
+            days = int(h.get("days") or hk.replace("d", ""))
+            track_from = _parse_date(str(h["track_from"])) if h.get("track_from") else rec_date
+            if fix_track_from and track_from > rec_date:
+                track_from = rec_date
+            new_due = str(due_date_for_horizon(track_from, days))
+            old_due = h.get("due_date")
+            old_tf = h.get("track_from")
+            if new_due != old_due or str(track_from) != old_tf:
+                changed += 1
+                if len(samples) < 8:
+                    samples.append(
+                        f"{rec.get('code')} {rec.get('date')} {hk}: "
+                        f"tf {old_tf}→{track_from} due {old_due}→{new_due}"
+                    )
+                if not dry_run:
+                    h["track_from"] = str(track_from)
+                    h["due_date"] = new_due
+    if not dry_run:
+        _save_log(data)
+    return {"changed": changed, "samples": samples, "dry_run": dry_run}
+
+
+def rerecord_daily_outlooks(
+    track_from: date,
+    *,
+    registration_date: date | None = None,
+    universes: tuple[str, ...] = ("track", "portfolio"),
+) -> dict[str, Any]:
+    """删除 registration_date 的 daily 登记并以 track_from 收盘重算 1/3/7 预测。"""
+    from outlook_universe import iter_universe, names_map
+
+    registration_date = registration_date or _today()
+    reg_s = str(registration_date)
+    data = _load_log()
+    before = len(data.get("records", []))
+    data["records"] = [
+        r
+        for r in data.get("records", [])
+        if not (r.get("date") == reg_s and r.get("source") == "daily")
+    ]
+    removed = before - len(data["records"])
+    _save_log(data)
+
+    added_by_uni: dict[str, list[str]] = {}
+    for uni in universes:
+        entries = iter_universe(uni)
+        nm = names_map(entries)
+        codes = [e.code for e in entries]
+        added = record_outlooks(
+            codes,
+            names=nm,
+            source="daily",
+            session="",
+            track_from=track_from,
+        )
+        added_by_uni[uni] = added
+
+    return {
+        "registration_date": reg_s,
+        "track_from": str(track_from),
+        "removed": removed,
+        "added": added_by_uni,
+    }
 
 
 def _top_level(levels: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -582,7 +702,7 @@ def run_batch(
         cal = calibrate(min_samples=3)
         cal_notes = cal.get("notes") or []
 
-    tomorrow = _today() + timedelta(days=1)
+    tomorrow = next_trading_day(_today())
     new_codes: list[str] = []
     skipped: list[str] = []
     for e in entries:
@@ -726,6 +846,29 @@ def main() -> int:
         help="缺省仅补 1d；可重复指定如 --horizon 1 --horizon 3",
     )
 
+    p_bfd = sub.add_parser("backfill-dues", help="按交易日重算全部 due_date（周末顺延）")
+    p_bfd.add_argument("--dry-run", action="store_true")
+    p_bfd.add_argument(
+        "--keep-track-from",
+        action="store_true",
+        help="不修正 track_from>登记日 的脏数据",
+    )
+
+    p_rr = sub.add_parser("rerecord-daily", help="重做某日 daily 预测（指定 track_from 数据日）")
+    p_rr.add_argument("--track-from", required=True, help="数据日 YYYY-MM-DD（vipdoc 收盘日）")
+    p_rr.add_argument(
+        "--registration-date",
+        default="",
+        help="登记日（默认今天）；会先删该日 source=daily 的旧记录",
+    )
+    p_rr.add_argument(
+        "--universe",
+        action="append",
+        default=[],
+        choices=("track", "portfolio"),
+        help="默认 track+portfolio",
+    )
+
     args = parser.parse_args()
 
     if args.cmd == "record":
@@ -739,7 +882,7 @@ def main() -> int:
         if not codes:
             print("无标的可登记", file=sys.stderr)
             return 1
-        track_from = _today() + timedelta(days=1) if args.track_from_tomorrow else None
+        track_from = next_trading_day(_today()) if args.track_from_tomorrow else None
         added = record_outlooks(
             codes,
             names=names,
@@ -817,6 +960,27 @@ def main() -> int:
             print("跳过：" + "；".join(result["skipped"][:12]))
             if len(result["skipped"]) > 12:
                 print(f"  …共 {len(result['skipped'])} 只")
+        return 0
+
+    if args.cmd == "backfill-dues":
+        result = backfill_trading_due_dates(
+            fix_track_from=not args.keep_track_from,
+            dry_run=args.dry_run,
+        )
+        tag = "[DRY] " if args.dry_run else ""
+        print(f"{tag}重算 due_date：{result['changed']} 条 horizon 变更")
+        for s in result["samples"]:
+            print(f"  {s}")
+        return 0
+
+    if args.cmd == "rerecord-daily":
+        tf = _parse_date(args.track_from)
+        reg = _parse_date(args.registration_date) if args.registration_date else _today()
+        universes = tuple(args.universe) if args.universe else ("track", "portfolio")
+        result = rerecord_daily_outlooks(tf, registration_date=reg, universes=universes)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        for uni, added in result["added"].items():
+            print(f"  {uni}: {len(added)}/{len(added)} registered")
         return 0
 
     return 1

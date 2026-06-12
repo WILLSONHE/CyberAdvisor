@@ -1,0 +1,7 @@
+# 抖音 ASR 抓取（douyin_fetch.py / fetch tiktok）
+# funasr 需 Python≤3.12；3.14+ 自动 fallback faster-whisper
+funasr>=1.0.0; python_version<"3.13"
+modelscope>=1.10.0; python_version<"3.13"
+torch>=2.0.0
+torchaudio>=2.0.0
+faster-whisper>=1.0.0

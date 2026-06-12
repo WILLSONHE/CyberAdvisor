@@ -14,7 +14,7 @@
 ├── Raw/
 │   ├── 未分析归档/          ← ingest 输入（手动专栏/动态 md）
 │   ├── 已分析归档/          ← 专栏/动态 ing 完成后的原稿
-│   ├── 未审阅视频文稿/      ← bilibili_fetch 写入
+│   ├── 未审阅视频文稿/      ← bilibili_fetch / douyin_fetch 写入
 │   ├── 已审阅视频文稿/      ← txtcfm 后；视频 ing 后仍留此目录
 │   ├── 未分析其他材料/      ← pdf/pptx/docx 等
 │   └── 已分析其他材料/
@@ -76,7 +76,9 @@
 
 来源：`Raw/已审阅视频文稿/`（`review_status: approved`；用户 `txtcfm` 批量审批后移入此目录）。
 
-流程：`bilibili_fetch` → `Raw/未审阅视频文稿/` → `rw` → **`txtcfm`**（→ `已审阅视频文稿/`）→ **`ing`（双轨）**。
+流程：`bilibili_fetch` / `douyin_fetch` → `Raw/未审阅视频文稿/` → `rw` → **`txtcfm`**（→ `已审阅视频文稿/`）→ **`ing`（双轨）**。
+
+批量 ing（钱加贝等 ASR 稿）：`python scripts/video_ingest_batch.py`（结构化提取 → 日更 + 视频专题；精修仍走主 agent `ing`）。
 
 **`ing` 必须遍历 `Raw/已审阅视频文稿/`**（队列：`python scripts/ing_pending.py`）：
 

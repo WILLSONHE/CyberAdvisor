@@ -1,0 +1,28 @@
+{
+  "creator": "钱加贝",
+  "sec_uid": "MS4wLjABAAAA6DxQ0-ZPlNTXGX2vGEUfNisdS5ZassI0AwR_cPbOYy9kZKWbzq4tNFuT0EtFVarc",
+  "since": "2025-12-11",
+  "note": "浏览器未登录时 API 仅返回近 ~20 条；登录后重新导出可补全 6 个月。",
+  "items": [
+    {"aweme_id": "7647446141101568613", "title": "6月4日收评", "create_time": 1780559807},
+    {"aweme_id": "7647381810771278181", "title": "6月4日午评", "create_time": 1780544830},
+    {"aweme_id": "7647075586699020005", "title": "6月3日收评", "create_time": 1780473532},
+    {"aweme_id": "7647011637107240357", "title": "6月3日午评", "create_time": 1780458642},
+    {"aweme_id": "7646702499249269626", "title": "6月2日收评", "create_time": 1780386665},
+    {"aweme_id": "7646651446531728805", "title": "6月2日午评", "create_time": 1780374778},
+    {"aweme_id": "7646355982221951845", "title": "6月1日收评", "create_time": 1780305985},
+    {"aweme_id": "7646280339106684389", "title": "6月1日午评", "create_time": 1780288374},
+    {"aweme_id": "7645230400952682661", "title": "5月29日收评", "create_time": 1780043916},
+    {"aweme_id": "7645165612273465317", "title": "5月29日午评", "create_time": 1780028831},
+    {"aweme_id": "7644871423760239589", "title": "5月28日收评", "create_time": 1779960334},
+    {"aweme_id": "7644789527227557489", "title": "5月28日午评", "create_time": 1779941267},
+    {"aweme_id": "7644466775383510139", "title": "5月27日收评", "create_time": 1779866120},
+    {"aweme_id": "7644422243824665573", "title": "5月27日午评", "create_time": 1779855752},
+    {"aweme_id": "7644151263122717093", "title": "5月26日收评", "create_time": 1779792659},
+    {"aweme_id": "7644052405882363323", "title": "5月26日午评", "create_time": 1779769642},
+    {"aweme_id": "7643749168410107761", "title": "5月25日收评", "create_time": 1779699041},
+    {"aweme_id": "7643680205874623461", "title": "5月25日午评", "create_time": 1779682983},
+    {"aweme_id": "7642638476127490405", "title": "5月22日收评", "create_time": 1779440436},
+    {"aweme_id": "7642565279528342714", "title": "5月22日午评", "create_time": 1779423393}
+  ]
+}

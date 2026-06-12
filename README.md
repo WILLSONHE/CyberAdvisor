@@ -134,7 +134,7 @@ python ai_sim_tick.py --force
 
 ### 每日操作
 
-**一键流水线**（双击根目录 `daily.bat`，在新终端依次执行 **8 步**；计划任务 **11:30 / 15:00** 自动跑 `daily.bat _run _nopause`）：
+**一键流水线**（双击根目录 `daily.bat`，在新终端依次执行 **11 步**；计划任务 **11:30 / 15:00** 自动跑 `daily.bat _run _nopause`）：
 
 
 | 步   | 脚本                             | 说明                                                                   |
@@ -145,9 +145,11 @@ python ai_sim_tick.py --force
 | 4   | `fine_screen.py`               | 精筛 + 核心标的池 + 布林线 → `Wiki/数据/标的池日报.md`                                |
 | 5   | `daily_report.py`          | **市场状态日报** → `Wiki/数据/市场状态日报.md` |
 | 6   | `outlook_tracker.py batch` | 追踪标的批预测（**15:00 跑时 vipdoc 尚无当日 K**） |
-| 7   | `bilibili_fetch.py`            | 抓取新视频字幕 |
-| 8   | `rw_video.py --pending-only`   | 待审阅稿补标点 |
-| 9   | `bilibili_fetch.py --dry-run`  | 预览 |
+| 7   | `bilibili_fetch.py`            | B 站 UP 主新视频字幕 |
+| 8   | `douyin_fetch.py`              | **fetch tiktok** 钱加贝等抖音 ASR 稿 |
+| 9   | `rw_video.py --pending-only`   | 待审阅稿补标点 |
+| 10  | `bilibili_fetch.py --dry-run`  | B 站预览 |
+| 11  | `douyin_fetch.py --dry-run`    | 抖音预览 |
 | —   | `sim_portfolio.py sync`        | 刷新模拟持仓现价（可选） |
 | —   | `feishu_notify.py --pipeline-done` | Webhook 推送摘要（可选） |
 | —   | `feishu_auto_sug.py --after-daily` | **自动** `agent sug 全员`（须 `FEISHU_AUTO_SUG=1`；按时段选早盘/午盘） |
@@ -166,6 +168,8 @@ python ai_sim_tick.py --force
 | **任意** | **`sug 全员 午盘`** / **`agent sug 全员 午盘`** | Cursor 生成或飞书 Cloud Agent；读 **vipdoc 刷新后** 的 σ/七轨/1·3·7 |
 
 **`vipdoc` 做什么**：检查 `TDX_VIPDOC` 下 `.day` 是否含 **当日** K 线 → 重跑 `outlook_tracker batch --universe track` + `batch --universe portfolio --session 午盘` → `sim_portfolio sync`；输出在 `Wiki/数据/股价预测追踪/复盘/`。
+
+**1/3/7 到期日**：按 **交易日** 计数、周末顺延（如 6/10 数据 → 复盘日 6/11、6/15、6/19）。vipdoc 就绪后若需以 **昨日收盘** 重做当日登记：`python outlook_tracker.py rerecord-daily --track-from YYYY-MM-DD`。
 
 **不推荐**在 15:00 立刻开 `FEISHU_AUTO_SUG=1` 自动生成午盘 sug（此时 vipdoc 常缺当日 bar）；若启用自动 sug，请改在 **vipdoc 之后**再手动 `agent sug 全员 午盘`，或关闭 `FEISHU_AUTO_SUG` 走上表手动流。
 
@@ -326,6 +330,28 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 
 > 专栏/充电文不再自动抓取（B 站 API 易限流）。仅视频走 `bilibili_fetch.py`。
 
+### 抓取抖音（fetch tiktok / 钱加贝）
+
+配置 `.env` 中 `DOUYIN_COOKIE`（或 `secrets/douyin.cookie`），安装 `pip install -r requirements-douyin.txt` 与 **ffmpeg**（`winget install Gyan.FFmpeg`），然后：
+
+> **Cookie**：从 DevTools → Network → `aweme/post` 请求头复制**完整** Cookie（含 `ttwid` 等 HttpOnly）。  
+> **6 个月全量**：须**登录**抖音；未登录 API 常仅 ~20 条。可维护 `Wiki/数据/douyin_fetch_queue.json` 并用 `--queue-file` 补抓。  
+> **转录**：Python ≤3.12 用 SenseVoice（funasr）；3.13+ 自动 **faster-whisper-small**。验证 Cookie：`python douyin_cookie_check.py`
+
+```bash
+cd scripts
+python douyin_fetch.py              # 默认近 180 天增量
+python douyin_fetch.py --since 2025-12-11   # 指定起点全量/补抓
+python douyin_fetch.py --dry-run
+python tiktok_fetch.py              # 别名
+python douyin_cookie_check.py       # Cookie + 列表 API 自检
+```
+
+- **抖音 ASR 稿**（自动）→ `Raw/未审阅视频文稿/` → **`rw`** → **`txtcfm`** → **`ing`**
+- 批量 ing（钱加贝 ASR 稿）：`python video_ingest_batch.py`（双轨：日更 + 视频专题）
+- 同步状态：`Wiki/数据/douyin_sync.json`
+- External 源技能见 `External_Skills/Transcribe_Skills/douyin-transcribe`（只读；已消化到 `scripts/douyin/`）
+
 ### 消化的文字稿
 
 
@@ -333,6 +359,7 @@ python bilibili_fetch.py --dry-run    # 预览不写文件
 | ------------ | --------------------------------------------------------------------- |
 | 专栏/动态（手动 md） | `Raw/未分析归档/` → `**ing`** → Wiki + `Raw/已分析归档/`                        |
 | 视频字幕稿        | `Raw/未审阅视频文稿/` → `**rw`** → `**txtcfm`** → `Raw/已审阅视频文稿/` → `**ing`** |
+| 抖音 ASR 稿      | 同上（`douyin_fetch.py` → SenseVoice） |
 
 
 ### 操作代号速查（Cursor 为主）
@@ -417,11 +444,12 @@ CyberAdvisor/
 ├── trade_template.md        ← sug 回复模板（§七研判 + §八预测复盘）
 ├── ANALYSIS_REPORT_SPEC.md  ← sug / 单标的 / qry 报告统一规范
 ├── SugVault/                ← sug 历史（默认 YYYY-MM-DD_{持有人}_sug.md；早盘/午盘加后缀）
+├── EXTERNAL_SKILLS.md       ← External_Skills 消化约定（只读源目录）
 ├── schema.md                ← Wiki 操作规范
 ├── Raw/                     ← 原始文字稿
 │   ├── 未分析归档/          ← 手动放入待 ing 的 md（专栏/动态）
 │   ├── 已分析归档/          ← ing 完成后的原稿备份
-│   ├── 未审阅视频文稿/      ← bilibili_fetch 写入
+│   ├── 未审阅视频文稿/      ← bilibili_fetch / douyin_fetch 写入
 │   └── 已审阅视频文稿/      ← txtcfm 审批后
 ├── Wiki/
 │   ├── 投资方法论/
@@ -448,6 +476,12 @@ CyberAdvisor/
     ├── daily_report.py      ← 市场状态日报入口
     ├── market_daily/        ← 日报抓取与 Markdown 生成
     ├── bilibili_fetch.py    ← B 站视频字幕（仅视频）
+    ├── douyin_fetch.py      ← 抖音 ASR（fetch tiktok / 钱加贝）
+    ├── tiktok_fetch.py      ← douyin_fetch 别名
+    ├── douyin/              ← 抖音下载/转录/同步
+    ├── douyin_cookie_check.py
+    ├── video_ingest_batch.py  ← 已审阅视频稿批量 ing（抖音/B站）
+    ├── outlook_deviation_report.py  ← 1/3/7 预测偏差复盘
     ├── rw_video.py          ← 视频稿 rw 校对
     ├── txtcfm.py            ← 批量审批未审阅文稿
     └── xlsx_utils.py          ← 持仓/模拟持仓 Excel 千位数字格式

@@ -16,7 +16,7 @@ echo  Start: %DATE% %TIME%
 echo ============================================================
 echo.
 
-echo [1/9] feishu_download_portfolio.py ...
+echo [1/11] feishu_download_portfolio.py ...
 python "%~dp0scripts\feishu_download_portfolio.py"
 if errorlevel 1 (
     echo [FAIL] Feishu portfolio download
@@ -24,7 +24,7 @@ if errorlevel 1 (
 )
 echo.
 
-echo [2/9] sync_portfolio_from_xlsx.py ...
+echo [2/11] sync_portfolio_from_xlsx.py ...
 python "%~dp0scripts\sync_portfolio_from_xlsx.py"
 if errorlevel 1 (
     echo [FAIL] Portfolio sync
@@ -32,39 +32,49 @@ if errorlevel 1 (
 )
 echo.
 
-echo [3/9] coarse_screen.py ...
+echo [3/11] coarse_screen.py ...
 cd /d "%~dp0scripts"
 python coarse_screen.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [4/9] fine_screen.py ...
+echo [4/11] fine_screen.py ...
 python fine_screen.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [5/9] daily_report.py ...
+echo [5/11] daily_report.py ...
 python daily_report.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [6/9] outlook_tracker.py batch --universe track ...
+echo [6/11] outlook_tracker.py batch --universe track ...
 python outlook_tracker.py batch --universe track
 if errorlevel 1 goto :fail
 
 echo.
-echo [7/9] bilibili_fetch.py ...
+echo [7/11] bilibili_fetch.py ...
 python bilibili_fetch.py
 if errorlevel 1 goto :fail
 
 echo.
-echo [8/9] rw_video.py --pending-only ...
+echo [8/11] douyin_fetch.py (fetch tiktok / 钱加贝) ...
+python douyin_fetch.py
+if errorlevel 1 goto :fail
+
+echo.
+echo [9/11] rw_video.py --pending-only ...
 python rw_video.py --pending-only
 if errorlevel 1 goto :fail
 
 echo.
-echo [9/9] bilibili_fetch.py --dry-run ...
+echo [10/11] bilibili_fetch.py --dry-run ...
 python bilibili_fetch.py --dry-run
+if errorlevel 1 goto :fail
+
+echo.
+echo [11/11] douyin_fetch.py --dry-run ...
+python douyin_fetch.py --dry-run
 if errorlevel 1 goto :fail
 
 cd /d "%~dp0"

@@ -108,11 +108,27 @@ def _holdings_local_data(holder: str, *, max_stocks: int = 15) -> str:
 
 
 def build_sug_prompt(holder: str, *, session: str | None = None) -> str:
+    import os
+
     session_note = ""
     if session == "早盘":
         session_note = "本次为 **早盘回顾**（上午收盘后），禁止写「收盘前必盯」等前瞻表述。"
     elif session == "午盘":
         session_note = "本次为 **午盘回顾**（全天收盘后），须写实际收盘点位及相对 4033/4130 纪律。"
+
+    skip_vipdoc = (os.environ.get("SKIP_VIPDOC_TODAY") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+    vipdoc_note = ""
+    if skip_vipdoc:
+        vipdoc_note = (
+            "8. **今日跳过 vipdoc 批刷新**（通达信 new_tdx64 当日 .day 未就绪）："
+            "§七 七轨/σ/1·3·7 仅引用下方快照与 market 日报；"
+            "若快照标注 vipdoc 不可用，写「数据缺口」勿编造当日 K。"
+        )
 
     return f"""你是 CyberAdvisor 交易策略助手。根据下方 **只读上下文** 为持有人 **{holder}** 生成完整 sug 报告。
 
@@ -124,6 +140,7 @@ def build_sug_prompt(holder: str, *, session: str | None = None) -> str:
 5. 金额单位用「元」；不推荐科创板（688xxx）新开仓。
 6. §七 1/3/7 日须引用下方「持仓标的本机快照」中的 **最有可能价** 与 vipdoc σ；AI 模拟盘章节参考「模拟持仓」。
 7. §八 只写复盘结论；**禁止**写「未在本环境执行」「outlook_tracker 未运行」等元信息（登记由本机归档脚本完成）。
+{vipdoc_note}
 
 ## 数据来源
 {_local_paths_note()}

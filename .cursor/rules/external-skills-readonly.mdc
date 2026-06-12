@@ -1,0 +1,11 @@
+---
+description: External_Skills 目录只读；AI 不得修改 External_Skills 内任何文件
+globs: External_Skills/**
+alwaysApply: false
+---
+
+# External Skills 只读
+
+- `External_Skills/` 由用户人工维护；**禁止** create / edit / delete 其中文件。
+- 消化时：只读 External_Skills → 合并到项目根（scripts、文档、requirements）；详见 `EXTERNAL_SKILLS.md`。
+- 重复能力（如 bilibili-transcribe vs bilibili_fetch）按 EXTERNAL_SKILLS.md 对照表取长补短，勿双轨维护。
