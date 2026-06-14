@@ -1006,7 +1006,7 @@ def build_stock_verdict(
         from chan.report import format_chan_markdown
 
         chan_summary = analyze_code(code, name=name, has_position=has_position)
-        chan_md = format_chan_markdown(chan_summary).rstrip()
+        chan_md = format_chan_markdown(chan_summary, has_position=has_position).rstrip()
     except Exception as exc:
         chan_md = f"- **缠论**：分析异常（{exc}）"
 

@@ -130,7 +130,10 @@ def deliver_result(
         err = f"附件发送失败：{e}"
         if result.text and len(result.text) < 800:
             err += f"\n\n{result.text}"
-        _send_text(cfg, chat_id, message_id, err)
+        try:
+            _send_text(cfg, chat_id, message_id, err)
+        except Exception:
+            log.exception("错误提示发送失败（请检查网络/代理；可设 FEISHU_HTTP_PROXY 或关闭失效的系统代理）")
     finally:
         if temp_path:
             remove_temp_file(temp_path)

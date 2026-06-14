@@ -27769,8 +27769,8 @@
       }
     },
     {
-      "id": "2026-06-13_002701_刘岚_sug",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002701_刘岚_sug",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug",
       "session": "午盘",
@@ -27819,8 +27819,8 @@
             "pick_method": "mode",
             "pick_target": 4.64
           },
-          "params_version": "2026-06-13",
-          "track_from": "2026-06-13",
+          "params_version": "2026-06-12",
+          "track_from": "2026-06-12",
           "due_date": "2026-06-15",
           "review": null
         },
@@ -27876,8 +27876,8 @@
             "pick_method": "anchor_snap",
             "pick_target": 4.74
           },
-          "params_version": "2026-06-13",
-          "track_from": "2026-06-13",
+          "params_version": "2026-06-12",
+          "track_from": "2026-06-12",
           "due_date": "2026-06-17",
           "review": null
         },
@@ -27933,16 +27933,16 @@
             "pick_method": "mid_revert_7d",
             "pick_target": 4.92
           },
-          "params_version": "2026-06-13",
-          "track_from": "2026-06-13",
+          "params_version": "2026-06-12",
+          "track_from": "2026-06-12",
           "due_date": "2026-06-23",
           "review": null
         }
       }
     },
     {
-      "id": "2026-06-13_002384_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002384_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -28161,8 +28161,8 @@
       }
     },
     {
-      "id": "2026-06-13_600673_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_600673_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -28345,8 +28345,8 @@
       }
     },
     {
-      "id": "2026-06-13_000066_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_000066_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -28523,8 +28523,8 @@
       }
     },
     {
-      "id": "2026-06-13_688012_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_688012_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -28719,8 +28719,8 @@
       }
     },
     {
-      "id": "2026-06-13_300308_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300308_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -28903,8 +28903,8 @@
       }
     },
     {
-      "id": "2026-06-13_603986_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_603986_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -29093,8 +29093,8 @@
       }
     },
     {
-      "id": "2026-06-13_002281_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002281_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -29307,8 +29307,8 @@
       }
     },
     {
-      "id": "2026-06-13_603629_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_603629_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -29503,8 +29503,8 @@
       }
     },
     {
-      "id": "2026-06-13_002371_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002371_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -29681,8 +29681,8 @@
       }
     },
     {
-      "id": "2026-06-13_300394_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300394_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -29859,8 +29859,8 @@
       }
     },
     {
-      "id": "2026-06-13_301396_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_301396_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -30055,8 +30055,8 @@
       }
     },
     {
-      "id": "2026-06-13_688256_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_688256_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -30263,8 +30263,8 @@
       }
     },
     {
-      "id": "2026-06-13_001309_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_001309_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -30453,8 +30453,8 @@
       }
     },
     {
-      "id": "2026-06-13_688072_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_688072_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -30649,8 +30649,8 @@
       }
     },
     {
-      "id": "2026-06-13_300502_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300502_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -30833,8 +30833,8 @@
       }
     },
     {
-      "id": "2026-06-13_001267_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_001267_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -31011,8 +31011,8 @@
       }
     },
     {
-      "id": "2026-06-13_301308_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_301308_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -31207,8 +31207,8 @@
       }
     },
     {
-      "id": "2026-06-13_688041_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_688041_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -31397,8 +31397,8 @@
       }
     },
     {
-      "id": "2026-06-13_300442_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300442_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -31581,8 +31581,8 @@
       }
     },
     {
-      "id": "2026-06-13_688008_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_688008_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -31777,8 +31777,8 @@
       }
     },
     {
-      "id": "2026-06-13_300017_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300017_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -31967,8 +31967,8 @@
       }
     },
     {
-      "id": "2026-06-13_002156_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002156_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -32163,8 +32163,8 @@
       }
     },
     {
-      "id": "2026-06-13_688048_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_688048_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -32371,8 +32371,8 @@
       }
     },
     {
-      "id": "2026-06-13_600584_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_600584_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -32555,8 +32555,8 @@
       }
     },
     {
-      "id": "2026-06-13_688047_na_daily",
-      "date": "2026-06-13",
+      "id": "2026-06-12_688047_na_daily",
+      "date": "2026-06-12",
       "holder": "",
       "source": "daily",
       "session": "",
@@ -32739,8 +32739,8 @@
       }
     },
     {
-      "id": "2026-06-13_600021_Wilson_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_600021_Wilson_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "Wilson",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -32923,8 +32923,8 @@
       }
     },
     {
-      "id": "2026-06-13_000010_Wilson_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_000010_Wilson_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "Wilson",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -33107,8 +33107,8 @@
       }
     },
     {
-      "id": "2026-06-13_002730_Wilson_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002730_Wilson_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "Wilson",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -33291,8 +33291,8 @@
       }
     },
     {
-      "id": "2026-06-13_300061_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300061_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -33469,8 +33469,8 @@
       }
     },
     {
-      "id": "2026-06-13_300077_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300077_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -33647,8 +33647,8 @@
       }
     },
     {
-      "id": "2026-06-13_002348_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002348_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -33831,8 +33831,8 @@
       }
     },
     {
-      "id": "2026-06-13_002378_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002378_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -33997,8 +33997,8 @@
       }
     },
     {
-      "id": "2026-06-13_300748_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300748_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -34181,8 +34181,8 @@
       }
     },
     {
-      "id": "2026-06-13_300672_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300672_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -34359,8 +34359,8 @@
       }
     },
     {
-      "id": "2026-06-13_600570_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_600570_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -34537,8 +34537,8 @@
       }
     },
     {
-      "id": "2026-06-13_301517_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_301517_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -34727,8 +34727,8 @@
       }
     },
     {
-      "id": "2026-06-13_300476_刘岚_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_300476_刘岚_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "刘岚",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -34929,8 +34929,8 @@
       }
     },
     {
-      "id": "2026-06-13_002510_微_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002510_微_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "微",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -35113,8 +35113,8 @@
       }
     },
     {
-      "id": "2026-06-13_002570_微_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_002570_微_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "微",
       "source": "sug_portfolio",
       "session": "午盘",
@@ -35303,8 +35303,8 @@
       }
     },
     {
-      "id": "2026-06-13_000983_微_sug_portfolio",
-      "date": "2026-06-13",
+      "id": "2026-06-12_000983_微_sug_portfolio",
+      "date": "2026-06-12",
       "holder": "微",
       "source": "sug_portfolio",
       "session": "午盘",

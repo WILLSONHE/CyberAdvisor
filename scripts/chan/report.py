@@ -3,26 +3,39 @@ from __future__ import annotations
 
 from typing import Any
 
+from chan.guidance import build_chan_guidance
 
-def format_chan_brief(summary: dict[str, Any]) -> str:
+
+def format_chan_brief(
+    summary: dict[str, Any],
+    *,
+    has_position: bool | None = None,
+    include_guidance: bool = False,
+) -> str:
     if not summary.get("ok"):
         return f"缠论：{summary.get('error', '分析失败')}"
     bp = summary.get("buy_point", "—")
     act = summary.get("action", "—")
-    return (
+    head = (
         f"缠论 {summary.get('structure', '—')} | {bp} | 动作={act} | "
         f"保护≈{summary.get('protect_price', '—')} | 分={summary.get('score', 0):+.1f}"
     )
+    if include_guidance:
+        guide = summary.get("guidance") or build_chan_guidance(summary, has_position=has_position)
+        return f"{head} · 指引：{guide}"
+    return head
 
 
-def format_chan_markdown(summary: dict[str, Any]) -> str:
+def format_chan_markdown(summary: dict[str, Any], *, has_position: bool | None = None) -> str:
     if not summary.get("ok"):
         return f"- **缠论**：{summary.get('error', '分析失败')}\n"
 
     src = summary.get("sources") or {}
     src_s = " / ".join(f"{k}={v}" for k, v in src.items())
+    guide = build_chan_guidance(summary, has_position=has_position)
     lines = [
         f"- **缠论（第一优先级）**：{summary.get('structure')} | **{summary.get('buy_point')}**",
+        f"  - **操作指引**：{guide}",
         f"  - 理由：{summary.get('buy_reason', '—')}",
         f"  - 中枢区间 ZD≈**{summary.get('ZD')}** ~ ZG≈**{summary.get('ZG')}** | 保护位≈**{summary.get('protect_price')}**",
         f"  - 建议动作：**{summary.get('action')}**（score {summary.get('score', 0):+.1f}）",
@@ -60,15 +73,15 @@ def format_chan_section_for_report(codes: list[tuple[str, str]], *, index_code: 
     idx = analyze_index(index_code)
     lines.append("### 指数")
     lines.append("")
-    lines.append(format_chan_markdown(idx).rstrip())
+    lines.append(format_chan_markdown(idx, has_position=False).rstrip())
     lines.append("")
     if codes:
         lines.append("### 标的")
         lines.append("")
         for code, name in codes:
-            s = analyze_code(code, name=name)
+            s = analyze_code(code, name=name, has_position=True)
             lines.append(f"#### {name or code}（{code}）")
             lines.append("")
-            lines.append(format_chan_markdown(s).rstrip())
+            lines.append(format_chan_markdown(s, has_position=True).rstrip())
             lines.append("")
     return "\n".join(lines)

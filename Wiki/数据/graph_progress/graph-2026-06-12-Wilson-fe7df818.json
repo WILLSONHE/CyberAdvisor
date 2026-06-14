@@ -1,0 +1,93 @@
+{
+  "analysis_id": "graph-2026-06-14-Wilson-fe7df818",
+  "task": "sug",
+  "holder": "Wilson",
+  "session": null,
+  "updated_at": "2026-06-14T22:19:06",
+  "current_stage": "done",
+  "current_label": "完成",
+  "stages": [
+    {
+      "id": "init",
+      "label": "初始化",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "chan_local",
+      "label": "缠论本地分析",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "quality_gate",
+      "label": "Quality Gate",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "analysts",
+      "label": "七分析师",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "debate",
+      "label": "多空辩论",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "research_manager",
+      "label": "研究经理",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "hard_gate",
+      "label": "缠论硬门禁",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "trader",
+      "label": "交易员提案",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "risk_tiers",
+      "label": "三档风控",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "portfolio_manager",
+      "label": "投资组合经理",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "render",
+      "label": "报告渲染",
+      "done": true,
+      "current": false
+    },
+    {
+      "id": "done",
+      "label": "完成",
+      "done": true,
+      "current": true
+    }
+  ],
+  "budget": {
+    "cap_usd": 5.0,
+    "spent_usd": 0.0598,
+    "pct": 1.2,
+    "llm_calls": 15,
+    "degraded": false
+  },
+  "dry_run": true,
+  "errors": [],
+  "note": ""
+}

@@ -140,18 +140,10 @@ def _bar_date(df: pd.DataFrame | None) -> date | None:
 
 
 def _expected_latest_bar(*, as_of: date | None = None) -> date:
-    """收盘后流水线期望的最新交易日（简化：跳过周末）。"""
-    d = as_of or date.today()
-    now = datetime.now()
-    if d.weekday() >= 5:
-        while d.weekday() >= 5:
-            d -= timedelta(days=1)
-        return d
-    if now.hour < 16:
-        d -= timedelta(days=1)
-        while d.weekday() >= 5:
-            d -= timedelta(days=1)
-    return d
+    """收盘后流水线期望的最新交易日（Tushare 交易日历）。"""
+    from trading_calendar import expected_latest_bar_date
+
+    return expected_latest_bar_date(as_of=as_of)
 
 
 def merge_daily_frames(*frames: pd.DataFrame | None) -> pd.DataFrame | None:

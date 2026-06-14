@@ -99,6 +99,12 @@ class BiliClient:
             if code in (0,):
                 return data.get("data") or data
             if code in (-352, -412) and attempt + 1 < retries:
+                self._img_key = None
+                self._sub_key = None
+                try:
+                    self._refresh_wbi_keys()
+                except Exception:
+                    pass
                 time.sleep(min(60.0, 4.0 * (2 ** attempt)))
                 continue
             last_err = RuntimeError(f"API {url} code={code} msg={data.get('message')}")

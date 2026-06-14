@@ -1,9 +1,10 @@
 """交易时段与 tick 时间判断。"""
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import datetime, time
 
 from ai_sim.config import SESSION_TICKS
+from trading_calendar import is_trading_day
 
 
 def all_tick_times() -> list[str]:
@@ -25,11 +26,6 @@ def nearest_tick_label(now: datetime | None = None) -> str:
     if past:
         return past[-1].replace(":", "")
     return hm.replace(":", "")
-
-
-def is_trading_day(d: date | None = None) -> bool:
-    d = d or date.today()
-    return d.weekday() < 5
 
 
 LUNCH_TICKS = frozenset({"11:45"})

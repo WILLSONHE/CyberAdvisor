@@ -67,7 +67,7 @@ def _compact_stock_block(code: str, name: str) -> str:
 
     code = str(code).zfill(6)
     ch = analyze_code(code, name=name, has_position=True)
-    chan_s = format_chan_markdown(ch).strip() if ch.get("ok") else f"缠论：{ch.get('error', '—')}"
+    chan_s = format_chan_markdown(ch, has_position=True).strip() if ch.get("ok") else f"缠论：{ch.get('error', '—')}"
 
     b = bollinger_for_code(code)
     if not b or b.get("error"):

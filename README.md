@@ -177,6 +177,9 @@ python ai_sim_tick.py --force
 
 - **读报告**：飞书 `sug Wilson` / `sug 全员 午盘` → **.md 附件**（SugVault 已有归档）
 - **生成报告**：先 **`vipdoc`**，再 Cursor `sug {持有人}`，或飞书 `agent sug 全员 午盘`
+- **Graph 多 Agent（已开发，默认关闭）**：`.env` 设 `GRAPH_PIPELINE_ENABLED=1` 后可用 `agent graph sug {持有人}`；日常仍用单 Agent `agent sug`。本地试跑：`python scripts/graph/runner.py sug Wilson --dry-run`
+- **Streamlit 看板**：`dashboard.bat` → 持仓/K线/SugVault/outlook/缠论回测/Graph进度（只读）
+- **Graph CLI**：`graph.bat status` · `graph.bat sug Wilson --dry-run`
 - **自动生成**（可选）：`.env` 设 `FEISHU_AUTO_SUG=1` + `CURSOR_API_KEY`，`daily.bat` 在 **11:30–13:00** 可自动跑 `sug 全员 早盘`；**午盘**因 vipdoc 时序问题 **建议关闭自动、改 vipdoc 后手动**
 
 每次 sug **前先** `review --holder …`，**归档后** `record`（数据目录 `Wiki/数据/股价预测追踪/`，见 `ANALYSIS_REPORT_SPEC.md`）。
@@ -387,6 +390,8 @@ python douyin_cookie_check.py       # Cookie + 列表 API 自检
 | `agent sug {持有人} [早盘/午盘]` | Cloud Agent 异步生成 sug（附件；不写 SugVault） |
 | `agent sug 全员 午盘` | 全员各一份 |
 | `agent qry {问题}` | 深度 Wiki 问答 |
+| `agent graph sug {持有人} [早盘/午盘]` | 多 Agent 编排（**须 `GRAPH_PIPELINE_ENABLED=1`**；默认 stub/关闭） |
+| `agent graph qry {问题}` | Graph 深度 qry |
 | `agent 给我一份{标的}的分析报告` | 单标的深度报告（本机嵌入 vipdoc） |
 
 

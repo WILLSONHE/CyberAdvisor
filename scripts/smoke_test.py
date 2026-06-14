@@ -80,12 +80,18 @@ def test_imports(s: Suite) -> None:
         "chan.outlook_blend",
         "chan.policy",
         "chan.report",
+        "chan.backtest",
+        "llm_budget",
+        "dashboard.data",
+        "graph.orchestrator",
+        "graph.runner",
         "market_intraday",
         "market_daily.report",
         "market_daily.supplement",
         "outlook_tracker",
         "outlook_params",
         "outlook_universe",
+        "trading_calendar",
         "ai_sim.collector",
         "ai_sim.strategy",
         "ai_sim.agent_review",
@@ -137,6 +143,72 @@ def test_data_core(s: Suite) -> None:
         s.add("chan analyze_code", sc.get("ok"), sc.get("action", sc.get("error")))
     except Exception as exc:
         s.add("data_core", False, traceback.format_exc()[-500:])
+
+
+def test_trading_calendar(s: Suite) -> None:
+    try:
+        from datetime import date
+
+        from trading_calendar import (
+            add_trading_days,
+            ensure_calendar,
+            expected_latest_bar_date,
+            is_trading_day,
+            status,
+        )
+
+        ensure_calendar(start=date(2026, 1, 1), end=date(2026, 12, 31))
+        st = status()
+        s.add("trade_cal cache", st.get("days_cached", 0) > 200, str(st.get("days_cached")))
+        # 2026-06-12 周五开盘；13-14 休市（Tushare）
+        s.add("trade_cal 2026-06-12", is_trading_day(date(2026, 6, 12)), "open")
+        s.add("trade_cal 2026-06-14", not is_trading_day(date(2026, 6, 14)), "closed")
+        d1 = add_trading_days(date(2026, 6, 10), 1)
+        s.add("add_trading_days +1", str(d1) == "2026-06-11", str(d1))
+        s.add("expected_bar", expected_latest_bar_date(as_of=date(2026, 6, 14)) <= date(2026, 6, 12), str(st.get("expected_bar")))
+    except Exception as exc:
+        s.add("trading_calendar", False, str(exc))
+
+
+def test_graph_dry_run(s: Suite) -> None:
+    try:
+        from graph.llm import graph_pipeline_enabled
+        from graph.orchestrator import run_sug_pipeline
+
+        state = run_sug_pipeline("Wilson", dry_run=True)
+        s.add(
+            "graph sug dry-run",
+            bool(state.analysis_id) and state.current_stage == "done",
+            f"id={state.analysis_id[:24]}… spent=${state.budget.spent_usd:.2f} enabled={graph_pipeline_enabled()}",
+        )
+        rc, tail = _run_py(["graph/runner.py", "status"], timeout=30)
+        s.add("graph runner status", rc == 0, tail[-120:] if rc == 0 else tail[-200:])
+    except Exception as exc:
+        s.add("graph_dry_run", False, str(exc))
+
+
+def test_backtest_offline(s: Suite) -> None:
+    try:
+        from chan.analyze import analyze_day_frame
+        from chan.backtest import run_backtest, walk_code
+        from daily_bars import get_daily_bars
+        from llm_budget import check_budget, load_budget
+
+        df = get_daily_bars("600021", limit=120, min_bars=60)
+        if df is None or len(df) < 60:
+            s.add("backtest slice", True, "skip: insufficient bars", skipped=True)
+            return
+        snap = analyze_day_frame(df.iloc[:80].copy(), code="600021", name="上海电力")
+        s.add("analyze_day_frame", snap.get("ok"), snap.get("buy_point", snap.get("error")))
+        wc = walk_code("600021", "上海电力", lookback_days=60, horizons=(3, 5))
+        s.add("walk_code", True, f"outcomes={len(wc)}")
+        rep = run_backtest([("600021", "上海电力")], lookback_days=60, horizons=(3, 5))
+        s.add("run_backtest", rep.signal_count >= 0, f"signals={rep.signal_count}")
+        cfg = load_budget()
+        ok, msg = check_budget("sug", cfg)
+        s.add("llm_budget", ok or not ok, msg[:80])
+    except Exception as exc:
+        s.add("backtest_offline", False, str(exc))
 
 
 def test_bollinger_outlook(s: Suite) -> None:
@@ -271,6 +343,9 @@ def main() -> int:
         test_imports,
         test_env,
         test_data_core,
+        test_trading_calendar,
+        test_backtest_offline,
+        test_graph_dry_run,
         test_bollinger_outlook,
         test_verdict_index_gate,
         test_report_enrich,

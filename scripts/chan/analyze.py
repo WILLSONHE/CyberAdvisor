@@ -127,6 +127,70 @@ def _analyze_period(code: str, period: str, *, limit: int | None = None) -> dict
     }
 
 
+def _is_buy_hint(hint: str) -> bool:
+    return hint.startswith(("一买", "二买", "三买"))
+
+
+def analyze_day_frame(
+    day_df: pd.DataFrame,
+    *,
+    h60_df: pd.DataFrame | None = None,
+    has_position: bool = False,
+    code: str = "",
+    name: str = "",
+    source: str = "slice",
+) -> dict[str, Any]:
+    """对已切片日 K（及可选 60m）做缠论快照；供回测 walk-forward 与实时 analyze 共用。"""
+    code = str(code).zfill(6) if code else ""
+    if day_df is None or len(day_df) < 30:
+        return {
+            "ok": False,
+            "code": code,
+            "name": name or code or "—",
+            "error": "日K不足（需≥30根）",
+        }
+
+    trend = _trend_label(day_df)
+    zone = _pivot_zone(day_df)
+    hint, hint_reason = _buy_point_hint(day_df, h60_df, trend=trend)
+    action = _action_from_hint(hint, has_position=has_position)
+    score = _score(hint, action)
+    down_div = compare_macd_divergence(day_df, direction="down")
+    up_div = compare_macd_divergence(day_df, direction="up")
+
+    protect = zone["ZD"]
+    if "二买" in hint and down_div.get("price2"):
+        protect = down_div["price2"]
+    elif "三买" in hint:
+        protect = zone["ZG"]
+
+    last_time = str(day_df.iloc[-1].get("time") or day_df.iloc[-1].get("datetime", ""))[:10]
+    frame = {
+        "ok": True,
+        "code": code,
+        "name": name or code,
+        "as_of": last_time,
+        "trend_day": trend,
+        "structure": "盘整" if trend == "盘整" else f"{trend}趋势",
+        "ZD": zone["ZD"],
+        "ZG": zone["ZG"],
+        "buy_point": hint,
+        "buy_reason": hint_reason,
+        "action": action,
+        "score": score,
+        "protect_price": protect,
+        "divergence_down": down_div,
+        "divergence_up": up_div,
+        "last_close": float(day_df["close"].iloc[-1]),
+        "sources": {"day": source},
+        "priority_note": "缠论为第一优先级；布林/outlook 仅作辅助",
+    }
+    from chan.guidance import build_chan_guidance
+
+    frame["guidance"] = build_chan_guidance(frame, has_position=has_position)
+    return frame
+
+
 def analyze_code(
     code: str,
     *,
@@ -147,47 +211,25 @@ def analyze_code(
 
     day_df: pd.DataFrame = day["bars"]
     h60_df: pd.DataFrame | None = h60["bars"] if h60.get("ok") else None
-    trend = _trend_label(day_df)
-    zone = _pivot_zone(day_df)
-    hint, hint_reason = _buy_point_hint(day_df, h60_df, trend=trend)
-    action = _action_from_hint(hint, has_position=has_position)
-    score = _score(hint, action)
-    down_div = compare_macd_divergence(day_df, direction="down")
-    up_div = compare_macd_divergence(day_df, direction="up")
+    out = analyze_day_frame(
+        day_df,
+        h60_df=h60_df,
+        has_position=has_position,
+        code=code,
+        name=name,
+        source=str(day.get("source") or "day"),
+    )
+    if not out.get("ok"):
+        return out
 
-    protect = zone["ZD"]
-    if "二买" in hint and down_div.get("price2"):
-        protect = down_div["price2"]
-    elif "三买" in hint:
-        protect = zone["ZG"]
-
-    sources = {"day": day.get("source")}
-    if h60.get("ok"):
-        sources["60m"] = h60.get("source")
-
-    return {
-        "ok": True,
-        "code": code,
-        "name": name or code,
-        "trend_day": trend,
-        "structure": "盘整" if trend == "盘整" else f"{trend}趋势",
-        "ZD": zone["ZD"],
-        "ZG": zone["ZG"],
-        "buy_point": hint,
-        "buy_reason": hint_reason,
-        "action": action,
-        "score": score,
-        "protect_price": protect,
-        "divergence_down": down_div,
-        "divergence_up": up_div,
-        "levels": {
-            "day": _analyze_period(code, "day", limit=240),
-            "60m": _analyze_period(code, "60m", limit=240) if h60.get("ok") else {"ok": False, "error": h60.get("error")},
-            "30m": _analyze_period(code, "30m", limit=120),
-        },
-        "sources": sources,
-        "priority_note": "缠论为第一优先级；布林/outlook 仅作辅助",
+    out["levels"] = {
+        "day": _analyze_period(code, "day", limit=240),
+        "60m": _analyze_period(code, "60m", limit=240) if h60.get("ok") else {"ok": False, "error": h60.get("error")},
+        "30m": _analyze_period(code, "30m", limit=120),
     }
+    if h60.get("ok"):
+        out["sources"]["60m"] = h60.get("source")
+    return out
 
 
 def analyze_index(code: str = "000001", *, name: str = "上证指数") -> dict[str, Any]:

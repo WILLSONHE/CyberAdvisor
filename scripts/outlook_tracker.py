@@ -14,6 +14,11 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 from outlook_paths import LOG_PATH, REVIEW_DIR, migrate_legacy_files
+from trading_calendar import (
+    add_trading_days,
+    next_trading_day,
+    subtract_trading_days,
+)
 
 migrate_legacy_files()
 
@@ -22,46 +27,13 @@ HORIZON_KEYS = tuple(f"{d}d" for d in HORIZONS)
 
 
 def _today() -> date:
-    return date.today()
+    from trading_calendar import registration_trading_date
+
+    return registration_trading_date()
 
 
 def _parse_date(s: str) -> date:
     return datetime.strptime(s[:10], "%Y-%m-%d").date()
-
-
-def _is_trading_day(d: date) -> bool:
-    return d.weekday() < 5
-
-
-def add_trading_days(start: date, n: int) -> date:
-    """自 start 起第 n 个交易日（不含 start；周末顺延）。"""
-    if n <= 0:
-        return start
-    d = start
-    added = 0
-    while added < n:
-        d += timedelta(days=1)
-        if _is_trading_day(d):
-            added += 1
-    return d
-
-
-def subtract_trading_days(start: date, n: int) -> date:
-    """自 start 往前第 n 个交易日（周末顺延）。"""
-    if n <= 0:
-        return start
-    d = start
-    sub = 0
-    while sub < n:
-        d -= timedelta(days=1)
-        if _is_trading_day(d):
-            sub += 1
-    return d
-
-
-def next_trading_day(start: date | None = None) -> date:
-    """start 之后的下一个交易日（默认今天之后）。"""
-    return add_trading_days(start or _today(), 1)
 
 
 def default_track_from(code: str) -> date:
@@ -811,7 +783,8 @@ def run_batch(
     entries = iter_universe(universe)
     codes = [e.code for e in entries]
     nm = names_map(entries)
-    rd = report_date or _today()
+    data_day = default_track_from(codes[0]) if codes else None
+    rd = report_date or data_day or _today()
 
     reviews = review_due(codes=codes)
     cal_notes: list[str] = []

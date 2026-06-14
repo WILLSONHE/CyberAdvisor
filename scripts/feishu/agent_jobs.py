@@ -36,13 +36,14 @@ TEXT_CHUNK = 3500
 
 @dataclass
 class AgentTaskSpec:
-    kind: str  # sug | qry | agent
+    kind: str  # sug | qry | agent | graph_sug | graph_qry
     prompt: str = ""
     output_name: str = ""
     label: str = ""
     session: str | None = None
     sug_holder: str = ""  # sug：运行时再组装 prompt（含本机 vipdoc/模拟持仓抓取）
     user_request: str = ""  # agent 自由任务：运行时再组装 prompt（含本机行情抓取）
+    graph_live: bool = False  # graph_sug：是否 force_live（须 GRAPH_PIPELINE_ENABLED=1）
 
     def resolve_prompt(self) -> str:
         if self.prompt:
@@ -111,6 +112,9 @@ def _deliver_file(cfg: FeishuConfig, chat_id: str, message_id: str, path: str) -
 
 def run_agent_task(cfg: FeishuConfig, message_id: str, chat_id: str, task: AgentTaskSpec) -> None:
     apply_config_to_environ()
+    if task.kind in ("graph_sug", "graph_qry"):
+        run_graph_agent_task(cfg, message_id, chat_id, task)
+        return
     from ai_sim.agent_client import AgentClientError, run_analysis_prompt
 
     out_dir = resolve_feishu_output_dir()
@@ -231,3 +235,105 @@ def build_freeform_task(user_request: str) -> AgentTaskSpec:
         output_name=output_basename("agent", slug),
         label=label,
     )
+
+
+def graph_agent_enabled() -> bool:
+    apply_config_to_environ()
+    try:
+        from graph.llm import graph_pipeline_enabled
+
+        return graph_pipeline_enabled() and agent_enabled()
+    except Exception:
+        return False
+
+
+def build_graph_sug_tasks(holder: str, *, session: str | None = None) -> list[AgentTaskSpec]:
+    base = build_sug_tasks(holder, session=session)
+    out: list[AgentTaskSpec] = []
+    for t in base:
+        out.append(
+            AgentTaskSpec(
+                kind="graph_sug",
+                sug_holder=t.sug_holder,
+                output_name=t.output_name.replace("_sug", "_graph_sug"),
+                label=t.label.replace("sug", "graph sug"),
+                session=t.session,
+                graph_live=True,
+            )
+        )
+    return out
+
+
+def build_graph_qry_task(question: str) -> AgentTaskSpec:
+    short = question[:30] + ("…" if len(question) > 30 else "")
+    return AgentTaskSpec(
+        kind="graph_qry",
+        prompt=question,
+        output_name=output_basename("graph_qry", short.replace(" ", "_")),
+        label=f"graph qry {short}",
+        graph_live=True,
+    )
+
+
+def run_graph_agent_task(cfg: FeishuConfig, message_id: str, chat_id: str, task: AgentTaskSpec) -> None:
+    from graph.llm import graph_pipeline_enabled
+    from graph.orchestrator import run_qry_pipeline, run_sug_pipeline
+
+    if not graph_pipeline_enabled():
+        _deliver_text(
+            cfg,
+            chat_id,
+            message_id,
+            "❌ Graph 管线未启用。开发已完成；设置 `GRAPH_PIPELINE_ENABLED=1` 后再试 "
+            "（默认仍走 `agent sug` 单 Agent）。",
+        )
+        return
+
+    out_dir = resolve_feishu_output_dir()
+    out_path = os.path.join(out_dir, task.output_name)
+    log.info("Graph 任务开始 kind=%s label=%s", task.kind, task.label)
+
+    try:
+        if task.kind == "graph_sug":
+            state = run_sug_pipeline(
+                task.sug_holder,
+                session=task.session,
+                dry_run=False,
+                force_live=task.graph_live,
+            )
+        else:
+            state = run_qry_pipeline(task.prompt, dry_run=False, force_live=task.graph_live)
+    except Exception as e:
+        log.exception("Graph 失败")
+        _deliver_text(cfg, chat_id, message_id, f"❌ Graph 管线失败（{task.label}）：{e}")
+        return
+
+    body = (state.final_markdown or "").strip()
+    if not body:
+        _deliver_text(cfg, chat_id, message_id, f"❌ Graph 无输出（{task.label}）")
+        return
+
+    meta = (
+        f"<!-- feishu-graph analysis_id={state.analysis_id} "
+        f"spent_usd={state.budget.spent_usd:.2f} dry_run={state.dry_run} -->"
+    )
+    _write_output(out_path, body, meta_header=meta)
+
+    summary = (
+        f"✅ Graph 完成 `{state.analysis_id}` · "
+        f"${state.budget.spent_usd:.2f}/{state.budget.cap_usd:.2f} · "
+        f"{state.budget.llm_calls} calls"
+    )
+    _deliver_text(cfg, chat_id, message_id, summary)
+
+    try:
+        _deliver_file(cfg, chat_id, message_id, out_path)
+    except Exception as e:
+        log.warning("Graph 附件失败: %s", e)
+        fallback = write_temp_md(body, task.output_name.replace(".md", ""))
+        try:
+            _deliver_file(cfg, chat_id, message_id, fallback)
+        finally:
+            remove_temp_file(fallback)
+
+    _remove_output_file(out_path)

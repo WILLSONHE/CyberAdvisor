@@ -15,7 +15,15 @@ from portfolio_utils import (
     parse_sug_command,
     sug_archive_basename,
 )
-from feishu.agent_jobs import agent_enabled, build_freeform_task, build_qry_task, build_sug_tasks
+from feishu.agent_jobs import (
+    agent_enabled,
+    build_freeform_task,
+    build_graph_qry_task,
+    build_graph_sug_tasks,
+    build_qry_task,
+    build_sug_tasks,
+    graph_agent_enabled,
+)
 from feishu.command_result import CommandResult
 from feishu.wiki_local import WIKI_ROOT, build_wiki_tree, find_wiki_md
 from sim_portfolio import handle_sim_command
@@ -35,6 +43,8 @@ QRY_VERBS = ("qry", "问", "query")
 
 AGENT_PREFIX_RE = re.compile(r"^agent\s+(.+)$", re.IGNORECASE)
 AGENT_QRY_RE = re.compile(r"^(?:qry|问|query)\s+(.+)$", re.IGNORECASE)
+AGENT_GRAPH_SUG_RE = re.compile(r"^graph\s+sug\s+(.+)$", re.IGNORECASE)
+AGENT_GRAPH_QRY_RE = re.compile(r"^graph\s+qry\s+(.+)$", re.IGNORECASE)
 
 OPEN_RE = re.compile(r"^打开\s+(.+)$", re.IGNORECASE)
 
@@ -167,6 +177,33 @@ def _handle_agent_sug(rest: str) -> CommandResult:
     return CommandResult.async_agent(ack, tasks)
 
 
+def _handle_graph_agent_sug(rest: str) -> CommandResult:
+    if not graph_agent_enabled():
+        return _text_result(
+            "Graph 多 Agent 管线已开发但未启用。\n"
+            "• 日常仍用：`agent sug {持有人}`（单 Cloud Agent）\n"
+            "• 启用 Graph：`.env` 设 `GRAPH_PIPELINE_ENABLED=1` + `CURSOR_API_KEY`\n"
+            "• 本地试跑：`python scripts/graph/runner.py sug Wilson --dry-run`"
+        )
+    parsed = parse_sug_command(f"sug {rest}")
+    if parsed is None:
+        return _text_result("用法：agent graph sug {持有人} [早盘|午盘] | agent graph sug 全员 [早盘|午盘]")
+    holder, session, err = parsed
+    if err:
+        return _text_result(err)
+    assert holder is not None
+    tasks = build_graph_sug_tasks(holder, session=session)
+    label = f"graph sug {holder}" + (f" {session}" if session else "")
+    if holder == "__ALL__":
+        ack = _agent_ack(
+            f"graph sug 全员{f' {session}' if session else ''} × {len(tasks)}",
+            extra="Graph 编排（非 LangGraph）；含预算降级与缠论 hard_gate。",
+        )
+    else:
+        ack = _agent_ack(label, extra="Graph 编排；analysis_id 写入进度 JSON。")
+    return CommandResult.async_agent(ack, tasks)
+
+
 def _handle_agent_command(text: str) -> CommandResult | None:
     stripped = text.strip()
     if stripped.lower() == "agent":
@@ -174,6 +211,8 @@ def _handle_agent_command(text: str) -> CommandResult | None:
             "Cloud Agent 用法（须前缀 agent）：\n"
             "• agent sug {持有人} [早盘|午盘]\n"
             "• agent sug 全员 [早盘|午盘]\n"
+            "• agent graph sug {持有人} [早盘|午盘]（须 GRAPH_PIPELINE_ENABLED=1）\n"
+            "• agent graph qry {问题}\n"
             "• agent qry {问题}\n"
             "• agent 给我一份新易盛的分析报告\n\n"
             "普通 sug / qry 仍为本地读 SugVault / Wiki 检索（.md 附件）。"
@@ -189,6 +228,21 @@ def _handle_agent_command(text: str) -> CommandResult | None:
     rest = m.group(1).strip()
     if not rest:
         return _text_result("请在 agent 后输入任务，例如：agent sug Wilson 午盘")
+
+    gm = AGENT_GRAPH_SUG_RE.match(rest)
+    if gm:
+        return _handle_graph_agent_sug(gm.group(1).strip())
+
+    gq = AGENT_GRAPH_QRY_RE.match(rest)
+    if gq:
+        if not graph_agent_enabled():
+            return _text_result(
+                "Graph 未启用（GRAPH_PIPELINE_ENABLED=0）。"
+                "试跑：python scripts/graph/runner.py qry \"问题\" --dry-run"
+            )
+        question = gq.group(1).strip()
+        task = build_graph_qry_task(question)
+        return CommandResult.async_agent(_agent_ack(task.label), [task])
 
     if parse_sug_command(rest) is not None:
         return _handle_agent_sug(rest)

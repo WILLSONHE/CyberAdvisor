@@ -353,6 +353,16 @@ def sync_all(
     cfg = BiliConfig.load()
     targets = cfg.iter_targets(mid)
     print(f"配置来源: {cfg.source} | UP 数={len(targets)}")
+    try:
+        from .skill_transcript import check_login
+
+        ok, login_msg = check_login(cfg)
+        if not ok:
+            _safe_print(f"[WARN] B站 Cookie: {login_msg}")
+        elif videos:
+            _safe_print(f"[OK] B站已登录: {login_msg}")
+    except Exception:
+        pass
     for up in targets:
         label = up.name or "(未命名)"
         _safe_print(f"  - {label} ({up.mid})")
@@ -383,7 +393,12 @@ def sync_all(
                 _safe_print(f"\n[UP] {label} ({up.mid})")
                 client = BiliClient(up_cfg)
                 try:
-                    for v in client.iter_videos():
+                    try:
+                        video_iter = client.iter_videos()
+                    except RuntimeError as e:
+                        _safe_print(f"  [ERR] 投稿列表失败: {e}")
+                        continue
+                    for v in video_iter:
                         bvid = str(v.get("bvid") or "").strip()
                         if not bvid:
                             continue

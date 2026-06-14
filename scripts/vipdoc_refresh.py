@@ -21,6 +21,12 @@ def _today() -> date:
     return date.today()
 
 
+def _default_expect_bar() -> date:
+    from trading_calendar import expected_latest_bar_date
+
+    return expected_latest_bar_date()
+
+
 def _collect_codes() -> list[str]:
     from outlook_universe import iter_universe
 
@@ -50,7 +56,7 @@ def check_vipdoc_freshness(
 
     from tdx_vipdoc import vipdoc_root
 
-    expect = expect or _today()
+    expect = expect or _default_expect_bar()
     root = vipdoc_root()
     ok: list[str] = []
     stale: list[tuple[str, date | None]] = []
@@ -133,7 +139,7 @@ def main() -> int:
 
     run_bestip()
 
-    expect = date.fromisoformat(args.expect_date) if args.expect_date else _today()
+    expect = date.fromisoformat(args.expect_date) if args.expect_date else _default_expect_bar()
     codes = _collect_codes()
     print(f"vipdoc refresh | {datetime.now():%Y-%m-%d %H:%M} | 标的 {len(codes)} 只 | 期望 K 线 ≥ {expect}")
 

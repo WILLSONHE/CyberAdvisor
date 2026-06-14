@@ -6,9 +6,10 @@ from typing import Literal
 from .client import BiliClient
 from .env import BiliConfig
 from .transcript import pick_subtitle
+from .skill_transcript import check_login, fetch_transcript_via_skill
 from .web_transcript import fetch_transcript_via_web
 
-Source = Literal["api", "web"]
+Source = Literal["api", "web", "skill"]
 
 
 class TranscriptFetchError(RuntimeError):
@@ -47,6 +48,7 @@ def fetch_transcript(
     finally:
         client.close()
 
+    web_exc = ""
     try:
         lan, raw, _tracks = fetch_transcript_via_web(
             bvid,
@@ -55,11 +57,22 @@ def fetch_transcript(
         )
         resolved_title = title or bvid
         return resolved_title, lan, raw, "web"
-    except Exception as web_exc:
+    except Exception as exc:
+        web_exc = str(exc)
+
+    try:
+        title_res, lan, raw, _tracks = fetch_transcript_via_skill(
+            bvid, cfg=cfg, title=title
+        )
+        return title_res, lan, raw, "skill"
+    except Exception as skill_exc:
+        login_ok, login_msg = check_login(cfg)
+        login_hint = login_msg if not login_ok else "Cookie 有效但仍无字幕轨"
         hint = (
-            "请确认 UP 已开启 AI/CC 字幕，并在 .env 更新有效的 "
-            "BILIBILI_SESSDATA / bili_jct / DedeUserID（未登录时字幕列表为空）。"
+            f"{login_hint}；请确认 UP 已开启 AI/CC 字幕。"
+            "充电专属需会员权限；新片 AI 字幕可能延迟数小时。"
         )
         raise TranscriptFetchError(
-            f"{bvid} 字幕抓取失败 | API: {api_err} | Web: {web_exc} | {hint}"
-        ) from web_exc
+            f"{bvid} 字幕抓取失败 | API: {api_err} | Web: {web_exc} | "
+            f"Skill: {skill_exc} | {hint}"
+        ) from skill_exc

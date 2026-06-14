@@ -2,7 +2,13 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta
+import sys
+from datetime import date, datetime, timedelta
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if os.path.join(SCRIPT_DIR, "..") not in sys.path:
+    sys.path.insert(0, os.path.join(SCRIPT_DIR, ".."))
+from trading_calendar import filename_trading_date, format_filename_date  # noqa: E402
 
 INVALID_CHARS = re.compile(r'[\\/:*?"<>|\u200b\u200c\u200d\ufeff]')
 
@@ -62,21 +68,36 @@ def title_to_timestamp(title: str, pub_ts: int | None = None) -> int:
     return int(datetime(2000 + int(yy), int(mm), int(dd)).timestamp())
 
 
+def _short_to_date(ds: str) -> date:
+    parts = ds.split("-")
+    if len(parts) != 3:
+        return date.today()
+    y = int(parts[0])
+    if y < 100:
+        y += 2000
+    return date(y, int(parts[1]), int(parts[2]))
+
+
+def _normalize_short_date(ds: str) -> str:
+    return format_filename_date(filename_trading_date(_short_to_date(ds)), short=True)
+
+
 def extract_date_str(title: str, pub_ts: int | None = None) -> str:
     ds = parse_dot_date(title)
     if ds:
-        return ds
+        return _normalize_short_date(ds)
     for pat in DATE_PATTERNS:
         m = pat.search(title)
         if m:
             g = m.groups()
             if len(g) == 4:
-                return f"{g[1]}-{g[2]}-{g[3]}"
+                return _normalize_short_date(f"{g[1]}-{g[2]}-{g[3]}")
             if len(g) == 3:
-                return f"{g[0]}-{g[1]}-{g[2]}"
+                return _normalize_short_date(f"{g[0]}-{g[1]}-{g[2]}")
     if pub_ts and pub_ts > 0:
-        return datetime.fromtimestamp(pub_ts).strftime("%y-%m-%d")
-    return datetime.now().strftime("%y-%m-%d")
+        d = datetime.fromtimestamp(pub_ts).date()
+        return format_filename_date(filename_trading_date(d), short=True)
+    return format_filename_date(filename_trading_date(date.today()), short=True)
 
 
 def classify_prefix(title: str) -> str:

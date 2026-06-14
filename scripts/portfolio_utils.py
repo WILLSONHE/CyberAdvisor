@@ -146,8 +146,14 @@ def sug_archive_basename(
     """生成 SugVault 归档文件名（不含目录）。"""
     from datetime import datetime
 
-    d = date or datetime.now().strftime("%Y-%m-%d")
-    prefix = f"{d}_{hhmm}_" if hhmm else f"{d}_"
+    from trading_calendar import filename_trading_date, format_filename_date
+
+    if date:
+        d = filename_trading_date(datetime.strptime(date[:10], "%Y-%m-%d").date())
+    else:
+        d = filename_trading_date(datetime.now().date())
+    dstr = format_filename_date(d)
+    prefix = f"{dstr}_{hhmm}_" if hhmm else f"{dstr}_"
     if session and session in SUG_SESSIONS:
         return f"{prefix}{holder}_sug {session}.md"
     return f"{prefix}{holder}_sug.md"
