@@ -11,6 +11,7 @@ DAILY_REPORT = os.path.join(SCRIPT_DIR, "..", "Wiki", "数据", "市场状态日
 
 # 仅当 fetch 失败且无法从日报/Wiki 兜底时才写入缺口
 _GAP_LABELS = {
+    "chan": "缠论结构（日+60min，第一优先级）",
     "minute_kline": "分钟级 K 线（做 T 精确时点）",
     "rs_vs_hs300": "相对强度 RS（相对沪深300，20日）",
     "northbound": "北向/南向资金净流入",
@@ -20,14 +21,37 @@ _GAP_LABELS = {
 
 def fetch_vipdoc_stats(code: str, *, lookback: int = 20) -> dict[str, Any]:
     try:
+        from daily_bars import get_daily_bars
+
         from tdx_vipdoc import daily_vol_stats
 
+        # daily_vol_stats 仍走 tdx_vipdoc；波动率用统一日线（含 Tushare 补 bar）
         stats = daily_vol_stats(code, lookback=lookback)
+        df = get_daily_bars(code, limit=lookback + 5, min_bars=lookback + 1)
+        if df is not None and len(df) >= lookback + 1:
+            closes = df["close"].astype(float)
+            rets = closes.pct_change().dropna().tail(lookback) * 100.0
+            if len(rets) >= 5:
+                src = str(df.iloc[-1].get("source", ""))
+                src_label = {
+                    "vipdoc_day": "vipdoc",
+                    "tushare_qfq": "tushare",
+                    "mootdx_day": "mootdx",
+                }.get(src, src or "merged")
+                stats = {
+                    "lookback": len(rets),
+                    "stdev_pct": round(float(rets.std(ddof=0)), 2),
+                    "mean_abs_pct": round(float(rets.abs().mean()), 2),
+                    "max_abs_pct": round(float(rets.abs().max()), 2),
+                    "source": src_label,
+                    "path": src or stats.get("path") if stats else None,
+                    "last_bar": str(df.iloc[-1]["datetime"])[:10],
+                }
         if stats:
             return stats
     except Exception as exc:
         return {"error": str(exc)}
-    return {"error": "vipdoc 无本地日 K（检查 TDX_VIPDOC 路径）"}
+    return {"error": "无日 K（检查 TDX_VIPDOC / TUSHARE_TOKEN）"}
 
 
 def _parse_northbound_from_daily() -> dict[str, Any] | None:
@@ -84,6 +108,13 @@ def enrich_stock(code: str, *, name: str = "") -> dict[str, Any]:
 
     out["vipdoc"] = fetch_vipdoc_stats(code)
 
+    try:
+        from chan.analyze import analyze_code
+
+        out["chan"] = analyze_code(code, name=name or code)
+    except Exception as exc:
+        out["chan"] = {"ok": False, "error": str(exc)}
+
     out["gaps"] = compute_gaps(out)
     return out
 
@@ -92,6 +123,11 @@ def compute_gaps(enrichment: dict[str, Any]) -> list[str]:
     gaps: list[str] = []
     for key, label in _GAP_LABELS.items():
         block = enrichment.get(key)
+        if key == "chan":
+            if not isinstance(block, dict) or not block.get("ok"):
+                err = block.get("error", "分析失败") if isinstance(block, dict) else "缺失"
+                gaps.append(f"{label}（{err}）")
+            continue
         if not block:
             gaps.append(label)
             continue
@@ -117,8 +153,10 @@ def format_enrichment_markdown(enrichment: dict[str, Any]) -> str:
 
     mk = enrichment.get("minute_kline") or {}
     if mk and not mk.get("error"):
+        src = mk.get("source", "接口")
+        src_note = f"（{src}）" if src else ""
         lines.append(
-            f"- **5分钟K（近 {mk.get('bars_count')} 根）**：最新 {mk.get('last_time')} 收 **{mk.get('last_close')}** | "
+            f"- **5分钟K（近 {mk.get('bars_count')} 根）{src_note}**：最新 {mk.get('last_time')} 收 **{mk.get('last_close')}** | "
             f"段内高/低 **{mk.get('session_high')} / {mk.get('session_low')}**（做 T 时点参考）"
         )
     else:
@@ -152,6 +190,15 @@ def format_enrichment_markdown(enrichment: dict[str, Any]) -> str:
     else:
         lines.append(f"- **vipdoc 本地日 K**：{vd.get('error', '—')}")
 
+    ch = enrichment.get("chan") or {}
+    if ch.get("ok"):
+        from chan.report import format_chan_markdown
+
+        lines.append("")
+        lines.append(format_chan_markdown(ch).rstrip())
+    else:
+        lines.append(f"- **缠论**：{ch.get('error', '—')}")
+
     lines.append("")
     return "\n".join(lines)
 
@@ -160,7 +207,7 @@ def format_gaps_markdown(gaps: list[str]) -> str:
     if not gaps:
         return (
             "### 数据覆盖\n\n"
-            "当前报告所需 **分钟K / RS / 北向 / 财务 / vipdoc** 均已自动抓取并写入上文；**无未登记数据缺口**。\n"
+            "当前报告所需 **缠论 / 分钟K / RS / 北向 / 财务 / vipdoc** 均已自动抓取并写入上文；**无未登记数据缺口**。\n"
         )
     lines = ["### 数据缺口（待补全）", ""]
     for g in gaps:

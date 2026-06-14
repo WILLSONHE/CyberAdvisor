@@ -136,12 +136,32 @@ def _boll_from_quote(code: str, q: dict) -> dict:
     return {}
 
 
+def _index_chan(tick_path: str) -> dict:
+    if not os.path.isfile(tick_path):
+        return {}
+    try:
+        data = json.loads(open(tick_path, encoding="utf-8").read())
+        ic = data.get("index_chan")
+        if ic and ic.get("ok"):
+            return ic
+    except Exception:
+        pass
+    try:
+        from chan.analyze import analyze_index
+        from chan.policy import compact_chan
+
+        return compact_chan(analyze_index())
+    except Exception:
+        return {}
+
+
 def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
     from ai_sim.runtime_params import reload
 
     reload()
     universe = build_universe()
     quotes = _stock_map(tick_path)
+    index_chan = _index_chan(tick_path)
     sh = _sh_index(tick_path)
     target_ratio, regime = _target_equity_ratio(sh)
     current_ratio = equity_ratio()
@@ -149,20 +169,23 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
     held = {str(r["标的"]).strip(): _norm_code(r["代码"]) for _, r in pos.iterrows()}
     decisions: list[Decision] = []
     buy_skip = ""
-    tick_note = "每 15 分钟采集行情（含 vipdoc 波动与 1/3/7 最有可能价）；开新仓须 Agent buy_permission；布林作排序参考"
+    tick_note = "缠论第一优先级：指数+标的 chan 门禁 → Agent buy_permission → 布林/outlook 仅排序"
 
     agent_ok = bool(agent and agent.get("ok"))
     agent_buy = _agent_buy_allowed(agent)
+    chan_block = bool(index_chan.get("ok") and index_chan.get("action") == "sell")
 
-    if not agent_ok:
+    if chan_block:
+        buy_skip = f"指数缠论 {index_chan.get('buy_point')}，禁止新开仓（优先于 Agent）"
+    elif not agent_ok:
         buy_skip = "Agent 未成功分析，默认不开新仓（须读 Wiki 后 buy_permission.allowed=true）"
     elif not agent_buy:
         buy_skip = (
             "Agent 未允许开新仓（buy_permission.allowed=false）；"
-            "若 Wiki 指数纪律（如 L1 4033）支持建仓，请在 JSON 中显式允许并说明理由"
+            "须同时满足缠论买点与 Wiki 指数纪律"
         )
 
-    blocked = not agent_ok or not agent_buy
+    blocked = chan_block or not agent_ok or not agent_buy
 
     rebalance_slots = 0
     for _, row in pos.iterrows():
@@ -175,10 +198,28 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
             continue
         pnl_pct = (price - cost) / cost * 100
         vip = q.get("vipdoc") or {}
+        chan = q.get("chan") or {}
         vip_note = f"；vipdoc σ {vip['stdev_pct']}%" if vip.get("stdev_pct") is not None else ""
+        if chan.get("buy_point"):
+            vip_note += f"；缠论 {chan.get('structure')} | {chan.get('buy_point')} | 动作={chan.get('action')}"
         ol = q.get("outlook_1d") or {}
         if ol.get("price"):
             vip_note += f"；1日最有可能价 {ol['price']}"
+        from chan.policy import should_force_sell
+
+        force, freason = should_force_sell(chan if chan.get("ok") else None, price=price)
+        if force:
+            decisions.append(
+                Decision(
+                    "sell",
+                    name,
+                    code,
+                    "缠论减仓",
+                    f"{freason}" + vip_note,
+                    "缠论",
+                )
+            )
+            continue
         if pnl_pct <= param("STOP_LOSS_PCT"):
             kind, detail = _sell_reason_kind(pnl_pct)
             decisions.append(Decision("sell", name, code, kind, detail + vip_note, "短线"))
@@ -232,9 +273,18 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
                 score += max(-0.3, min(0.3, float(chg) / 20.0))
             boll_note = ""
             boll = _boll_from_quote(_norm_code(e.code), q)
+            chan = q.get("chan") or {}
+            from chan.policy import allows_new_buy, score_for_ranking
+
+            ok_buy, chan_reason = allows_new_buy(chan, index_chan)
+            if not ok_buy:
+                continue
+            if chan:
+                score += score_for_ranking(chan) * 2.5
+                boll_note = f"；缠论 {chan.get('structure')} | {chan.get('buy_point')}（{chan_reason}）"
             if boll:
-                score += _sim_buy_score(boll) * 0.35
-                boll_note = f"；布林 {boll.get('zone')}（{boll.get('signal')}）"
+                score += _sim_buy_score(boll) * 0.25
+                boll_note += f"；布林 {boll.get('zone')}（{boll.get('signal')}）"
             vip = q.get("vipdoc") or {}
             if vip.get("stdev_pct") is not None:
                 boll_note += f"；vipdoc σ {vip['stdev_pct']}%"
@@ -250,7 +300,7 @@ def plan_trades(tick_path: str, *, agent: dict | None = None) -> TradePlan:
         max_buys = param("MAX_BUYS_PER_TICK")
         candidates.sort(key=lambda x: -x[0])
         if not candidates:
-            buy_skip = "标的池无可用候选（需 tick 有报价），跳过买入"
+            buy_skip = "标的池无缠论合格买点（或 tick 无报价），跳过买入"
         elif slot < param("MIN_TRADE_YUAN") or budget_left < param("MIN_TRADE_YUAN"):
             buy_skip = f"可用预算 {budget_left:,.0f} 元低于最小成交额 {param('MIN_TRADE_YUAN'):,.0f} 元"
         elif max_buys < 1:

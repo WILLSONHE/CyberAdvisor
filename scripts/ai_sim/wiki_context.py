@@ -18,6 +18,9 @@ _DAILY_REVIEW_NAME = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 # 每 tick 必读（策略与框架）；最新日更 / 指数纪律在 build 时动态插入
 CORE_READ_PATHS: tuple[str, ...] = (
     STRATEGY_MD,
+    os.path.join(WIKI_ROOT, "投资方法论", "缠论.md"),
+    os.path.join(WIKI_ROOT, "投资方法论", "缠论-实战法.md"),
+    os.path.join(WIKI_ROOT, "投资方法论", "缠论-数据接入.md"),
     INDEX_DISCIPLINE_MD,
     os.path.join(WIKI_ROOT, "投资方法论", "宏观分析框架.md"),
     os.path.join(WIKI_ROOT, "投资方法论", "选股框架.md"),

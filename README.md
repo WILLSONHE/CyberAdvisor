@@ -22,10 +22,10 @@
 
 ```bash
 pip install -r requirements.txt
-python -m mootdx bestip
+python scripts/mootdx_bestip.py
 ```
 
-> 需要国内 IP（mootdx 连通达信服务器）。若 `bestip` 测速失败导致 `BESTIP` 为空，可手动编辑 `~/.mootdx/config.json`，在 `BESTIP.HQ` 填入可用服务器，例如 `["110.41.147.114", 7709]`。
+> 需要国内 IP（mootdx 连通达信服务器）。`daily.bat` 第 1 步与 `vipdoc` 指令会自动跑 bestip（同日只测速一次）；失败不阻断流水线。若测速失败导致 `BESTIP` 为空，可 `python scripts/mootdx_bestip.py --force`，或手动编辑 `~/.mootdx/config.json`，在 `BESTIP.HQ` 填入可用服务器，例如 `["110.41.147.114", 7709]`。
 
 ### 2. 加载 skill（Cursor 推荐）
 
@@ -114,7 +114,7 @@ sim 卖 利通电子            # 模拟卖出并冻结盈亏
 
 **布林七轨 + vipdoc + 1/3/7 最有可能价**（`scripts/bollinger_utils.py` / `scripts/tdx_vipdoc.py`）：读取本地 `.day` 计算 `vipdoc`（σ）、七轨、`outlook_1d/3d/7d`；**无独立定时任务**——在 `vipdoc_refresh.py`、`analysis_report.py`、飞书 `agent sug` 预抓取、AI 模拟盘 tick 采集时 **按需计算**。`.env` 设 `TDX_VIPDOC=C:\new_tdx64\vipdoc`（A 股）；期货/期权目录 `TDX_VIPDOC_QH=C:\new_tdxqh\vipdoc` **当前未接入**。
 
-**vipdoc 与 daily 的时序**：通达信 PC 版通常在 **15:45 后**才写入当日 `.day`；计划任务 **15:00** 的 `daily.bat` 第 6 步 `outlook_tracker batch` **早于**该更新，**不能**当作午盘 sug 的 vipdoc 数据源。收盘后请 **手动** Cursor 指令 **`vipdoc`**（≈15:50），再 **`sug 全员 午盘`** / **`agent sug 全员 午盘`**。
+**vipdoc 与 daily 的时序**：通达信 PC 版通常在 **15:45 后**才写入当日 `.day`；计划任务 **15:00** 的 `daily.bat` 第 6 步 `outlook_tracker batch` **早于**该更新。**15:00–15:45 空窗**：缠论/布林日 K 可经 **`TUSHARE_TOKEN`**（`pro_bar` 前复权，约 15:00 后入库）或 mootdx 在线补最新 bar；**长历史仍以 vipdoc 为主**。收盘后请 **手动** Cursor 指令 **`vipdoc`**（≈15:50），再 **`sug 全员 午盘`**。
 
 ```powershell
 # 项目根目录（PowerShell 须加 .\）
@@ -195,6 +195,7 @@ python ai_sim_tick.py --force
 
 ```env
 TDX_VIPDOC=C:\new_tdx64\vipdoc
+# TUSHARE_TOKEN=...          # 2000 积分；15:00 后补日 K（scripts/tushare_daily.py）
 # TDX_VIPDOC_QH=C:\new_tdxqh\vipdoc   # 期货/期权；当前未接入
 CURSOR_API_KEY=...
 # FEISHU_AUTO_SUG=1          # 可选；午盘 sug 建议在 vipdoc 后手动 agent sug，勿依赖 15:00 自动

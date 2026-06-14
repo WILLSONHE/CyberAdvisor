@@ -35,6 +35,14 @@ def _quote_row(entry: UniverseEntry) -> dict:
     vip = fetch_vipdoc_stats(entry.code)
     if vip and not vip.get("error"):
         row["vipdoc"] = vip
+    try:
+        from chan.analyze import analyze_code
+        from chan.policy import compact_chan
+
+        ch = analyze_code(entry.code, name=entry.name)
+        row["chan"] = compact_chan(ch)
+    except Exception:
+        pass
     if boll and "error" not in boll:
         row["boll_zone"] = boll.get("zone")
         row["boll_signal"] = boll.get("signal")
@@ -81,6 +89,15 @@ def collect_tick(*, force_label: str = "") -> str:
         }
         for q in indices
     ]
+    index_chan = {}
+    try:
+        from chan.analyze import analyze_index
+        from chan.policy import compact_chan
+
+        index_chan = compact_chan(analyze_index())
+    except Exception:
+        pass
+
     stocks = [_quote_row(e) for e in universe]
 
     try:
@@ -97,6 +114,7 @@ def collect_tick(*, force_label: str = "") -> str:
         "tick": label,
         "phase": phase,
         "indices": idx_rows,
+        "index_chan": index_chan,
         "universe_size": len(universe),
         "stocks": stocks,
         "supplement": supplement,
@@ -117,6 +135,12 @@ def collect_tick(*, force_label: str = "") -> str:
     ]
     for q in idx_rows:
         lines.append(f"| {q['name']} | {q['close']:.2f} | {q['change_pct']:+.2f}% |")
+    if index_chan.get("ok"):
+        lines.extend([
+            "",
+            f"> **缠论·上证（第一优先级）**：{index_chan.get('structure')} | {index_chan.get('buy_point')} | "
+            f"动作={index_chan.get('action')} | 保护≈{index_chan.get('protect_price')}",
+        ])
     lines.extend(["", "## 标的池现价", "", "| 标的 | 代码 | 来源 | 现价 |", "|------|------|------|------|"])
     for s in stocks:
         p = s["price"]

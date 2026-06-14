@@ -9,8 +9,9 @@
 
 1. **全库覆盖**：`Wiki/` 下所有 `.md` 均为可用知识（日更复盘、方法论、其他材料、标的追踪、数据日报等）。tick 提示中会附带 **全库文件清单**；分析时按需引用，不必每次重读全文。
 2. **优先级（必读摘要）**：
+   - **[[缠论]]** + **[[缠论-实战法]]** + **[[缠论-数据接入]]**（**第一优先级**：所有买卖须先过结构/买卖点；`scripts/chan/`）
    - 本文件
-   - **[[指数纪律框架]]**（L1–L5 多层指数纪律；**高于**单纯 4033 叙述）
+   - **[[指数纪律框架]]**（L1–L5；与缠论上级联立，**不替代**缠论）
    - **最新 `Wiki/每日复盘/YYYY-MM-DD.md`**（tick 注入时会附带最近一篇）
    - [[宏观分析框架]]（含高盛四篇整合）
    - [[选股框架]]（含 F10/PB/PEG/PS 讲义整合）
@@ -44,9 +45,12 @@
 ## 三、规则引擎边界
 
 - Agent **只调** `AI模拟盘参数.override.json` 中 schema 允许的键；**不直接改** `模拟持仓.xlsx`。
-- **开新仓**：唯一门禁为 Agent JSON **`buy_permission.allowed`**（读 Wiki 后的显式判断；**若 Wiki 仍视 4033 为清仓线，你应在此禁止并说明**）。
-- **可调参数**：`EQUITY_TARGET_NORMAL`、`STOP_LOSS_PCT`、`TAKE_PROFIT_PCT`、`MAX_BUYS_PER_TICK` 等；**无** `NO_BUY_BELOW_CLEAR` / 4033 硬编码。
-- 布林七轨在买入时 **仅作排序加分**，不自动过滤顶轨/下跌标的；卖出 **不**自动触发布林离场。
+- **开新仓**：须 **同时** 满足：
+  1. **缠论**：`tick.index_chan` + 标的 `chan` 为合格买点（见 `scripts/chan/policy.py`；指数一卖 **禁止** 开仓）
+  2. Agent JSON **`buy_permission.allowed=true`**（读 Wiki + 缠论后显式判断）
+- **平仓**：**缠论破保护位 / 一卖** 优先于固定止盈止损；其次 `STOP_LOSS_PCT` / `TAKE_PROFIT_PCT`
+- **可调参数**：`EQUITY_TARGET_NORMAL`、`STOP_LOSS_PCT`、`TAKE_PROFIT_PCT`、`MAX_BUYS_PER_TICK` 等
+- 布林七轨 **仅作排序**（权重低于缠论 score）；**不**单独触发买卖
 - 默认 **observe-only 倾向**：`buy_permission.allowed=false` 时不成交。
 - 判断须用 **补充数据包**（`tick.supplement` + `Wiki/数据/市场历史摘要.json`）：
   - **60 分钟 K 线**（L3 底部结构）

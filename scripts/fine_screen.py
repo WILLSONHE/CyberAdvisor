@@ -27,13 +27,26 @@ TRACK_STOCKS = {
     "通富微电": "002156",
 }
 
-client = get_quotes_client()
+client = None
+
+
+def _finance_client():
+    global client
+    if client is None:
+        try:
+            client = get_quotes_client()
+        except Exception:
+            client = False  # type: ignore
+    return client if client is not False else None
 
 
 def get_finance_data(code):
-    market = 1 if code.startswith(("6","9")) else 0
+    c = _finance_client()
+    if c is None:
+        return {}
+    market = 1 if code.startswith(("6", "9")) else 0
     try:
-        df = client.finance(symbol=code, market=market)
+        df = c.finance(symbol=code, market=market)
         if df is not None and len(df) > 0:
             row = df.iloc[-1]
             jlr = float(row.get("jinglirun", 0) or 0)
@@ -108,6 +121,10 @@ def generate_zuot_tips():
         normalize_stock_code,
         resolve_a_share_proxy,
     )
+    from market_intraday import format_market_zuot_header, zuot_timing_note
+
+    market_header = format_market_zuot_header("000001", klt=5)
+    market_note = zuot_timing_note("000001", klt=5)
 
     def _spot_from_gtimg(code: str) -> float | None:
         sym = gtimg_symbol(code)
@@ -216,6 +233,8 @@ def generate_zuot_tips():
         else:
             lines.append("⚪ **不适合做T**")
             lines.append("- A股对标价在中轨~二轨之间，区间太窄")
+        if market_note:
+            lines.append(market_note.rstrip())
         lines.append("")
         lines.append("### 提醒")
         lines.append("- 单次做T不超过该标的持仓的 1/4")
@@ -228,6 +247,8 @@ def generate_zuot_tips():
         by_holder.setdefault(h.get("holder", "默认"), []).append(h)
 
     sections = []
+    if market_header.strip():
+        sections.append(market_header)
     holder_list = HOLDERS if HOLDERS else list(by_holder.keys())
     for holder in holder_list:
         items = by_holder.get(holder, [])

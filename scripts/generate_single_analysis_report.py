@@ -105,6 +105,15 @@ def generate(
         f"| L1 清仓线 | **{LINE_CLEAR:.0f}** |",
         f"| 纪律定调 | {discipline} |",
         "",
+    ]
+    try:
+        from chan.analyze import analyze_index
+        from chan.report import format_chan_markdown
+
+        lines.extend(["### 缠论·上证（第一优先级）", "", format_chan_markdown(analyze_index()).strip(), ""])
+    except Exception as exc:
+        lines.extend([f"### 缠论\n\n（{exc}）", ""])
+    lines.extend([
         f"**对本标的**：{'L1 破线环境下不宜新开仓/战略加仓；存量以技术位做 T 或持有评估。' if not index_ok else '指数未破 L1，仍须叠加 Wiki 主线与个股七轨位置。'}",
         "",
         "---",
@@ -170,7 +179,7 @@ def generate(
         "",
         "> **免责声明**：以上整理自项目内 Wiki/研报/Raw 与行情脚本，不构成投资建议。",
         "",
-    ]
+    ])
     md = "\n".join(lines)
     if out_path:
         with open(out_path, "w", encoding="utf-8") as f:

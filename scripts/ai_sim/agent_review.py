@@ -77,6 +77,9 @@ def _positions_summary(tick_path: str = "") -> str:
             extra += f" | 1日最有可能价 {ol['price']}（{ol.get('label', '')}）"
         if q.get("boll_zone"):
             extra += f" | 布林 {q['boll_zone']}"
+        chan = q.get("chan") or {}
+        if chan.get("buy_point"):
+            extra += f" | 缠论 {chan.get('structure')} {chan.get('buy_point')} 动作={chan.get('action')}"
         lines.append(
             f"- {r['标的']}({code}) 成本{r['成本']} 现价{r.get('现价')} "
             f"股数{r['股数']} 盈亏比{r.get('盈亏比')}{extra}"
@@ -145,11 +148,12 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 - {phase_instructions}
 
 ## 你的职责
-1. 阅读下方 **Wiki 策略上下文**（含全库索引 + 核心框架）、行情 tick、持仓、日志与市场日报
-2. 给出简短中文行情分析（3–6 句）
+1. 阅读下方 **Wiki 策略上下文**（含缠论必读）、行情 tick（**`index_chan` + 每只 `chan`**）、持仓、日志与市场日报
+2. 给出简短中文行情分析（3–6 句）；**先缠论结构，再指数纪律/布林**
 3. **可选**调整规则引擎参数（充分分析后可 **维持不变**）
 4. **可选**通过 `data_requests` **启用/禁用**已注册补充指标（不可自定义 HTTP URL）
-5. 禁止建议直接改 xlsx 持仓；执行仍由本地规则引擎负责
+5. **`buy_permission`**：须缠论无指数一卖/标的破保护位，且 Wiki 允许；`reason` 引用 `chan.buy_point`
+6. 禁止建议直接改 xlsx 持仓；规则引擎 **缠论门禁优先于** Agent allow
 
 ## 补充指标 registry（仅 enable/disable/request）
 {registry_txt}
@@ -193,7 +197,7 @@ def build_prompt(tick_path: str, *, phase: str | None = None) -> str:
 
 ## 最新 tick JSON（`{tick_path}`）
 
-每只股票含 **vipdoc**（本地日 K 波动 σ）、**outlook_1d/3d/7d**（最有可能价位）、**布林七轨**（`boll_zone` 等）。规则引擎买入排序须参考 vipdoc 波动与 outlook；分析时写入 `buy_permission.reason`。
+每只股票含 **chan**（缠论结构第一优先级）、**vipdoc**（本地日 K 波动 σ）、**outlook_1d/3d/7d**（最有可能价位）、**布林七轨**（`boll_zone` 等）。**买卖决策须以缠论结构为先**，布林/outlook 仅辅助；分析时写入 `buy_permission.reason`。
 
 ```json
 {tick_json}

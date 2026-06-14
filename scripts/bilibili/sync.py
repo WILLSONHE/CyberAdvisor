@@ -13,7 +13,6 @@ from .client import BiliClient
 from .env import BiliConfig, ROOT
 from .naming import pending_video_filename, raw_filename, title_to_timestamp
 from .rw_format import format_transcript
-from .transcript import pick_subtitle
 
 RAW_DIR = os.path.join(ROOT, "Raw")
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
@@ -144,6 +143,24 @@ def _parse_since(since: str | None) -> int | None:
         except ValueError:
             continue
     raise SystemExit(f"无效 --since 日期: {since}，用 YYYY-MM-DD")
+
+
+def _arc_is_free(v: dict) -> bool:
+    """投稿列表项：跳过付费课/充电抢先看等。"""
+    if int(v.get("is_pay") or 0) != 0:
+        return False
+    if int(v.get("is_steins_gate") or 0) != 0:
+        return False
+    return True
+
+
+def _view_is_free(view: dict) -> bool:
+    if view.get("is_upower_exclusive") or view.get("is_upower_play"):
+        return False
+    rights = view.get("rights") or {}
+    if rights.get("only_see"):
+        return False
+    return True
 
 
 def _rich_nodes_to_text(nodes: list) -> str:
@@ -327,10 +344,18 @@ def sync_all(
     videos: bool = True,
     dynamics: bool = False,
     articles: bool = False,
+    title_match: str = "",
+    stop_after_match: bool = True,
+    mid: str | None = None,
+    free_only: bool = True,
 ) -> dict[str, int]:
     _ensure_dirs()
     cfg = BiliConfig.load()
-    print(f"配置来源: {cfg.source} | UID={cfg.uid}")
+    targets = cfg.iter_targets(mid)
+    print(f"配置来源: {cfg.source} | UP 数={len(targets)}")
+    for up in targets:
+        label = up.name or "(未命名)"
+        _safe_print(f"  - {label} ({up.mid})")
     if dynamics or articles:
         print(
             "[提示] 专栏/动态/充电文已改为手动：请复制 md 到 Raw/未分析归档/，"
@@ -344,59 +369,136 @@ def sync_all(
     stats = {
         "videos": 0, "dynamics": 0, "articles": 0, "opus": 0,
         "skipped": 0, "no_subtitle": 0, "dyn_skipped_video": 0,
+        "matched": 0, "paid_skipped": 0,
     }
 
-    client = BiliClient(cfg)
     try:
         if videos:
             print("\n[视频] 拉取投稿列表 + 字幕 → Raw/未审阅视频文稿/")
-            for v in client.iter_videos():
-                bvid = v.get("bvid") or ""
-                if not bvid or bvid in known_bvids or bvid in state["videos"]:
-                    stats["skipped"] += 1
-                    continue
-                pub_ts = int(v.get("created") or 0)
-                if since_ts and pub_ts and pub_ts < since_ts:
-                    continue
-                title = v.get("title") or bvid
+            if free_only:
+                print("  仅抓取免费公开视频（跳过付费课/充电专属）")
+            for up in targets:
+                up_cfg = cfg.with_up(up)
+                label = up.name or up.mid
+                _safe_print(f"\n[UP] {label} ({up.mid})")
+                client = BiliClient(up_cfg)
                 try:
-                    view = client.video_view(bvid)
-                    cid = view.get("cid")
-                    subs = client.video_subtitles(bvid, cid) if cid else []
-                except Exception as e:
-                    print(f"  [WARN] {bvid} 详情/字幕失败: {e}")
-                    stats["skipped"] += 1
-                    continue
+                    for v in client.iter_videos():
+                        bvid = str(v.get("bvid") or "").strip()
+                        if not bvid:
+                            continue
+                        prev = state["videos"].get(bvid) or {}
+                        if prev.get("skip"):
+                            stats["skipped"] += 1
+                            continue
+                        if bvid in known_bvids or (
+                            bvid in state["videos"] and not prev.get("skip")
+                        ):
+                            stats["skipped"] += 1
+                            continue
+                        if free_only and not _arc_is_free(v):
+                            stats["paid_skipped"] += 1
+                            continue
+                        pub_ts = int(v.get("created") or 0)
+                        if since_ts and pub_ts and pub_ts < since_ts:
+                            continue
+                        title = v.get("title") or bvid
+                        if title_match and title_match not in title:
+                            continue
+                        stats["matched"] += 1
+                        if free_only:
+                            try:
+                                view = client.video_view(bvid)
+                                if not _view_is_free(view):
+                                    print(f"  [SKIP] {bvid} 充电/专属: {title}")
+                                    stats["paid_skipped"] += 1
+                                    continue
+                                title = view.get("title") or title
+                            except RuntimeError as e:
+                                msg = str(e)
+                                if "code=-404" in msg or "啥都木有" in msg:
+                                    stats["skipped"] += 1
+                                    continue
+                                print(f"  [WARN] {bvid} 详情失败: {e}")
+                                stats["skipped"] += 1
+                                continue
+                            except Exception as e:
+                                print(f"  [WARN] {bvid} 详情失败: {e}")
+                                stats["skipped"] += 1
+                                continue
+                        try:
+                            from .fetch_transcript import TranscriptFetchError, fetch_transcript
 
-                lan, body = pick_subtitle(subs, title)
-                if not body or len(body.strip()) < 30:
-                    print(f"  [SKIP] {bvid} 无有效字幕正文: {title}")
-                    stats["no_subtitle"] += 1
-                    continue
+                            title_res, lan, body, sub_src = fetch_transcript(
+                                bvid, cfg=up_cfg, title=title,
+                            )
+                            title = title_res
+                            if sub_src == "web":
+                                print(f"  [WEB] {bvid} API 无字幕，已用 transcript 兜底")
+                        except TranscriptFetchError as e:
+                            print(f"  [SKIP] {bvid} 字幕失败: {title} | {e}")
+                            stats["no_subtitle"] += 1
+                            if title_match and stop_after_match:
+                                break
+                            continue
+                        except Exception as e:
+                            print(f"  [WARN] {bvid} 详情/字幕失败: {e}")
+                            stats["skipped"] += 1
+                            continue
 
-                body = format_transcript(body, force_punctuate=True)
+                        if not body or len(body.strip()) < 30:
+                            print(f"  [SKIP] {bvid} 无有效字幕正文: {title}")
+                            stats["no_subtitle"] += 1
+                            if title_match and stop_after_match:
+                                break
+                            continue
 
-                fname = pending_video_filename(title, bvid, pub_ts)
-                path = _unique_path(PENDING_DIR, fname)
-                pub_date = datetime.fromtimestamp(pub_ts).strftime("%Y-%m-%d") if pub_ts else ""
-                content = _frontmatter({
-                    "bvid": bvid,
-                    "title": title,
-                    "source": "bilibili",
-                    "type": "video_transcript",
-                    "subtitle_lang": lan,
-                    "pub_time": pub_date,
-                    "fetched_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                    "review_status": "pending",
-                })
-                content += f"# {title}\n\n> B站视频字幕稿（待审阅）| {bvid}\n\n{body}\n"
-                _write(path, content, dry_run)
-                tag = "[DRY]" if dry_run else "[NEW]"
-                _safe_print(f"  {tag} {os.path.basename(path)}")
-                state["videos"][bvid] = {"path": path, "fetched_at": datetime.now().isoformat()}
-                known_bvids.add(bvid)
-                stats["videos"] += 1
-                time.sleep(0.5)
+                        from .asr_fixes import looks_like_mismatch
+
+                        if looks_like_mismatch(body, title, subtitle_via=sub_src):
+                            print(f"  [SKIP] {bvid} 字幕与标题不符（可能错配）: {title}")
+                            stats["no_subtitle"] += 1
+                            continue
+
+                        body = format_transcript(body, force_punctuate=True)
+
+                        fname = pending_video_filename(title, bvid, pub_ts)
+                        path = _unique_path(PENDING_DIR, fname)
+                        pub_date = (
+                            datetime.fromtimestamp(pub_ts).strftime("%Y-%m-%d") if pub_ts else ""
+                        )
+                        meta: dict[str, Any] = {
+                            "bvid": bvid,
+                            "title": title,
+                            "source": "bilibili",
+                            "type": "video_transcript",
+                            "subtitle_lang": lan,
+                            "subtitle_via": sub_src,
+                            "pub_time": pub_date,
+                            "fetched_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            "review_status": "pending",
+                            "up_mid": up.mid,
+                        }
+                        if up.name:
+                            meta["creator"] = up.name
+                        content = _frontmatter(meta)
+                        content += f"# {title}\n\n> B站视频字幕稿（待审阅）| {bvid}\n\n{body}\n"
+                        _write(path, content, dry_run)
+                        tag = "[DRY]" if dry_run else "[NEW]"
+                        _safe_print(f"  {tag} {os.path.basename(path)}")
+                        state["videos"][bvid] = {
+                            "path": path,
+                            "fetched_at": datetime.now().isoformat(),
+                            "up_mid": up.mid,
+                            "creator": up.name,
+                        }
+                        known_bvids.add(bvid)
+                        stats["videos"] += 1
+                        if title_match and stop_after_match:
+                            break
+                        time.sleep(0.5)
+                finally:
+                    client.close()
 
         if dynamics:
             stats["skipped"] += 1
@@ -407,7 +509,6 @@ def sync_all(
             print("\n[专栏] 已停用自动抓取（请手动放入 Raw/未分析归档/）")
 
     finally:
-        client.close()
         if not dry_run:
             _save_state(state)
 

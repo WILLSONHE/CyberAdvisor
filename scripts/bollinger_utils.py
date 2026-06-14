@@ -20,28 +20,19 @@ _client = None
 def get_quotes_client():
     global _client
     if _client is None and Quotes is not None:
-        _client = Quotes.factory(market="std")
-    return _client
-
-
-def get_kline(code: str, days: int = 60, *, min_bars: int = 25):
-    code = str(code).zfill(6)
-    client = get_quotes_client()
-    if client is not None:
-        if code.startswith(("6", "9")) or code in ("000001", "000300", "000016", "000688", "000905"):
-            market = 1
-        else:
-            market = 0
         try:
-            k = client.bars(symbol=code, market=market, category=4, offset=days)
-            if k is not None and len(k) >= min_bars:
-                return k
+            _client = Quotes.factory(market="std")
         except Exception:
-            pass
-    try:
-        from tdx_vipdoc import read_daily_bars
+            _client = False  # type: ignore[assignment]
+    return _client if _client is not False else None
 
-        df = read_daily_bars(code, limit=max(days, min_bars + 5))
+
+def get_kline(code: str, days: int = 60, *, min_bars: int = 25, as_of=None):
+    code = str(code).zfill(6)
+    try:
+        from daily_bars import get_daily_bars
+
+        df = get_daily_bars(code, limit=max(days, min_bars + 5), min_bars=min_bars, as_of=as_of)
         if df is not None and len(df) >= min_bars:
             return df.rename(columns={"vol": "volume"}) if "volume" not in df.columns else df
     except Exception:
@@ -152,8 +143,8 @@ def _kline_extra(klines) -> dict[str, Any]:
         return {}
 
 
-def bollinger_for_code(code: str, days: int = 60) -> dict[str, Any]:
-    kl = get_kline(code, days)
+def bollinger_for_code(code: str, days: int = 60, *, as_of=None) -> dict[str, Any]:
+    kl = get_kline(code, days, as_of=as_of)
     b = compute_bollinger_position(kl)
     if b and "error" not in b:
         b["code"] = code
@@ -864,14 +855,33 @@ def build_stock_verdict(
         else "—"
     )
 
+    chan_md = ""
+    chan_summary: dict[str, Any] = {}
+    try:
+        from chan.analyze import analyze_code
+        from chan.report import format_chan_markdown
+
+        chan_summary = analyze_code(code, name=name, has_position=has_position)
+        chan_md = format_chan_markdown(chan_summary).rstrip()
+    except Exception as exc:
+        chan_md = f"- **缠论**：分析异常（{exc}）"
+
+    chan_score = float(chan_summary.get("score", 0)) if chan_summary.get("ok") else 0.0
+    chan_action = chan_summary.get("action") if chan_summary.get("ok") else None
+    if chan_summary.get("ok") and chan_action in ("sell",) and has_position:
+        hold_action = f"缠论优先：{chan_summary.get('buy_point')} → 减仓/清仓"
+    elif chan_summary.get("ok") and chan_action in ("buy", "hold_add") and not has_position:
+        can_open = can_open and index_ok_buy and chan_score > 0
+
     md_lines = [
         f"### {name or code}（{code}）",
+        chan_md,
         f"- **现价 {b['price']}** | 位置：**{b['zone']}** | 相对20MA：**{level}**（{b['pct_vs_mid']:+.1f}%）",
         f"- 轨道：顶 {b['top']} / 二 {b['track2']} / 中 {b['mid']} / 四 {b['track4']} / 五 {b['track5']} / 底 {b['bot']}",
         f"- 信号：**{b['signal']}** | 带宽 {b['bandwidth_pct']}%{'（收敛）' if b.get('converging') else ''}",
         f"- **宜**：{'；'.join(ok_list) or '—'}",
         f"- **忌**：{'；'.join(no_list) or '—'}",
-        f"- **建仓**：{'可试探' if can_open else '不宜'}（须叠加 Wiki 指数纪律）",
+        f"- **建仓**：{'可试探' if can_open else '不宜'}（须叠加 Wiki 指数纪律 + 缠论买点）",
         f"- **持仓处置**：{hold_action} | 权重参考：{pos_hint}",
         f"- **1日倾向**：{outlook['d1']}",
         "",
@@ -892,6 +902,7 @@ def build_stock_verdict(
         "code": code,
         "ok": True,
         "boll": b,
+        "chan": chan_summary if chan_summary.get("ok") else None,
         "level": level,
         "can_open": can_open,
         "hold_action": hold_action,
@@ -899,8 +910,8 @@ def build_stock_verdict(
         "outlook": outlook,
         "gaps": gaps,
         "markdown": "\n".join(md_lines),
-        "score_buy": _sim_buy_score(b),
-        "score_sell": _sim_sell_score(b),
+        "score_buy": _sim_buy_score(b) + chan_score * 2.0,
+        "score_sell": _sim_sell_score(b) + max(0.0, -chan_score) * 2.0,
     }
 
 
@@ -937,6 +948,94 @@ def _sim_sell_score(b: dict[str, Any]) -> float:
     return 0.0
 
 
+# 大盘/板块/外围指数 — 研判总结短表（1/3/7 日最有可能价）
+MARKET_INDEX_TARGETS: list[tuple[str, str]] = [
+    ("上证指数", "000001"),
+    ("深证成指", "399001"),
+    ("创业板指", "399006"),
+    ("科创50", "000688"),
+    ("沪深300", "000300"),
+    ("中证500", "000905"),
+    ("恒生国企", "HSCEI"),  # ds 扩展，可能无日 K
+    ("纳斯达克", "IXIC"),
+]
+
+
+def _most_likely_price(outlook: dict[str, Any], key: str) -> str:
+    ml = outlook.get(key) or {}
+    if not ml:
+        return "—"
+    price = ml.get("price")
+    label = ml.get("label") or ""
+    pct = ml.get("pct_vs_now")
+    if price is None:
+        return "—"
+    if pct is not None:
+        return f"{price}（{label} {pct:+.1f}%）"
+    return f"{price}（{label}）"
+
+
+def _sector_leaders_from_daily_report() -> list[tuple[str, str]]:
+    """从市场状态日报涨幅/跌幅 Top3 板块内取首只成分股代表板块。"""
+    import os
+    import re
+
+    path = os.path.join(os.path.dirname(__file__), "..", "Wiki", "数据", "市场状态日报.md")
+    if not os.path.isfile(path):
+        return []
+    text = open(path, encoding="utf-8").read()
+    out: list[tuple[str, str]] = []
+    # #### 氦气概念（BK0949，板块 +5.95%） 下一表格首行代码
+    for m in re.finditer(r"####\s*(.+?)（BK\d+[^）]*）", text):
+        sect = m.group(1).strip()
+        chunk = text[m.end() : m.end() + 800]
+        row = re.search(r"\|\s*[^|]+\|\s*(\d{6})\s*\|", chunk)
+        if row:
+            out.append((f"板块·{sect}", row.group(1)))
+    return out[:5]
+
+
+def build_market_index_outlook_table(*, extra_codes: list[tuple[str, str]] | None = None) -> str:
+    """生成大盘/指数 1·3·7 日最有可能价短表（嵌入 sug / 分析报告 §研判总结）。"""
+    targets: list[tuple[str, str]] = list(MARKET_INDEX_TARGETS)
+    try:
+        targets.extend(_sector_leaders_from_daily_report())
+    except Exception:
+        pass
+    if extra_codes:
+        targets.extend(extra_codes)
+
+    seen: set[str] = set()
+    lines = [
+        "### 大盘与指数预测（1/3/7 日最有可能价）",
+        "",
+        "> 与单标的同一套 vipdoc σ + 七轨概率模型；**非**盈利预测。",
+        "",
+        "| 标的 | 现价 | 1日 | 3日 | 7日 |",
+        "|------|------|-----|-----|-----|",
+    ]
+    for name, code in targets:
+        key = f"{name}|{code}"
+        if key in seen:
+            continue
+        seen.add(key)
+        if code in ("HSCEI", "IXIC", "DJI"):
+            lines.append(f"| {name} | — | — | — | — |")
+            continue
+        b = bollinger_for_code(str(code).zfill(6) if code.isdigit() else code)
+        if not b or b.get("error"):
+            lines.append(f"| {name} | — | 数据不足 | — | — |")
+            continue
+        outlook = _outlook_3d_7d(b, kline_extra=b.get("kline_extra"))
+        price = b.get("price", "—")
+        lines.append(
+            f"| {name} | {price} | {_most_likely_price(outlook, 'd1_most_likely')} | "
+            f"{_most_likely_price(outlook, 'd3_most_likely')} | {_most_likely_price(outlook, 'd7_most_likely')} |"
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
 def build_report_summary_section(
     *,
     holdings: list[dict[str, Any]],
@@ -949,15 +1048,28 @@ def build_report_summary_section(
     lines = [
         "## 研判总结",
         "",
-        "> 解释报告内布林与仓位数据；1/3/7 日为**技术倾向**（非盈利预测）。",
+        "> **缠论结构为第一优先级**（见 [[缠论]]）；布林与 1/3/7 日为辅助倾向。",
         "",
     ]
+    try:
+        from chan.analyze import analyze_index
+        from chan.report import format_chan_markdown
+
+        idx_chan = analyze_index()
+        lines.extend(["### 缠论·指数", "", format_chan_markdown(idx_chan).rstrip(), ""])
+    except Exception as exc:
+        lines.append(f"### 缠论·指数\n\n（生成失败：{exc}）\n")
     if sh_index is not None:
         lines.append(
             f"**大盘**：上证 {sh_index:.2f} vs 清仓线 {line_clear} → "
             f"{'指数允许考虑建仓' if index_ok else '指数纪律优先防守，新开仓原则上禁止'}。"
         )
         lines.append("")
+
+    try:
+        lines.append(build_market_index_outlook_table())
+    except Exception as exc:
+        lines.append(f"### 大盘与指数预测\n\n（生成失败：{exc}）\n")
 
     all_gaps: list[str] = []
     enrich_blocks: list[str] = []

@@ -64,6 +64,19 @@ def next_trading_day(start: date | None = None) -> date:
     return add_trading_days(start or _today(), 1)
 
 
+def default_track_from(code: str) -> date:
+    """vipdoc 最新日 K 日期；无本地数据时退回日历今日。"""
+    try:
+        from tdx_market_data import latest_bar_date
+
+        d = latest_bar_date(str(code).zfill(6))
+        if d:
+            return d
+    except Exception:
+        pass
+    return _today()
+
+
 def due_date_for_horizon(track_from: date, days: int) -> date:
     return add_trading_days(track_from, days)
 
@@ -278,19 +291,20 @@ def make_snapshot(
     source: str = "sug",
     session: str = "",
     track_from: date | None = None,
+    registration_date: date | None = None,
 ) -> dict[str, Any] | None:
     from bollinger_utils import bollinger_for_code, export_outlook_horizon
     from outlook_params import load_params
 
     code = str(code).zfill(6)
-    b = bollinger_for_code(code)
+    today = registration_date or _today()
+    if track_from is None:
+        track_from = default_track_from(code)
+    b = bollinger_for_code(code, as_of=track_from)
     if not b or b.get("error"):
         return None
     params = load_params()
     ke = b.get("kline_extra") or {}
-    today = _today()
-    if track_from is None:
-        track_from = today
     horizons: dict[str, Any] = {}
     for d in HORIZONS:
         h = export_outlook_horizon(b, days=d, kline_extra=ke, params=params)
@@ -321,12 +335,14 @@ def record_outlooks(
     source: str = "sug",
     session: str = "",
     track_from: date | None = None,
+    registration_date: date | None = None,
 ) -> list[str]:
     from outlook_universe import register_queried
 
     data = _load_log()
     names = names or {}
     added: list[str] = []
+    added_snaps: list[dict[str, Any]] = []
     for code in codes:
         code = str(code).zfill(6)
         nm = names.get(code, "")
@@ -337,14 +353,23 @@ def record_outlooks(
             source=source,
             session=session,
             track_from=track_from,
+            registration_date=registration_date,
         )
         if not snap:
             continue
         data["records"].append(snap)
+        added_snaps.append(snap)
         added.append(code)
         if source in ("analysis_report", "qry", "chat"):
             register_queried(code, nm or code, source=source)
     _save_log(data)
+    if added_snaps:
+        try:
+            from outlook_review_xlsx import append_prediction_rows
+
+            append_prediction_rows(added_snaps)
+        except Exception as exc:
+            print(f"[WARN] 数据复盘.xlsx 写入跳过: {exc}", file=sys.stderr)
     return added
 
 
@@ -384,6 +409,89 @@ def backfill_trading_due_dates(
     if not dry_run:
         _save_log(data)
     return {"changed": changed, "samples": samples, "dry_run": dry_run}
+
+
+def rerecord_pool_outlooks(
+    track_from: date,
+    *,
+    registration_date: date | None = None,
+    universes: tuple[str, ...] = ("track", "portfolio"),
+    purge_dates: tuple[date, ...] | None = None,
+    portfolio_session: str = "午盘",
+) -> dict[str, Any]:
+    """删除指定登记日的池内旧预测，并以 track_from 收盘重算 1/3/7。"""
+    from outlook_universe import iter_universe, names_map
+
+    registration_date = registration_date or _today()
+    reg_s = str(registration_date)
+    codes_by_uni: dict[str, set[str]] = {}
+    for uni in universes:
+        codes_by_uni[uni] = {e.code for e in iter_universe(uni)}
+
+    purge_set = {str(d) for d in (purge_dates or (registration_date, track_from))}
+
+    data = _load_log()
+    before = len(data.get("records", []))
+
+    def _should_drop(rec: dict[str, Any]) -> bool:
+        code = str(rec.get("code", "")).zfill(6)
+        rdate = rec.get("date", "")
+        src = rec.get("source", "")
+        if rdate not in purge_set:
+            return False
+        if code in codes_by_uni.get("track", set()) and src == "daily":
+            return True
+        if code in codes_by_uni.get("portfolio", set()) and src in (
+            "daily",
+            "sug",
+            "sug_portfolio",
+        ):
+            return True
+        return False
+
+    data["records"] = [r for r in data.get("records", []) if not _should_drop(r)]
+    removed = before - len(data["records"])
+    _save_log(data)
+
+    added_by_uni: dict[str, list[str]] = {}
+    new_records: list[dict[str, Any]] = []
+    for uni in universes:
+        entries = iter_universe(uni)
+        nm = names_map(entries)
+        if uni == "track":
+            codes = [e.code for e in entries]
+            added = record_outlooks(
+                codes,
+                names=nm,
+                source="daily",
+                session="",
+                track_from=track_from,
+                registration_date=registration_date,
+            )
+            added_by_uni[uni] = added
+        else:
+            added_all: list[str] = []
+            for e in entries:
+                added = record_outlooks(
+                    [e.code],
+                    names={e.code: e.name},
+                    holder=e.holder,
+                    source="sug_portfolio",
+                    session=portfolio_session,
+                    track_from=track_from,
+                    registration_date=registration_date,
+                )
+                added_all.extend(added)
+            added_by_uni[uni] = added_all
+
+    return {
+        "registration_date": reg_s,
+        "track_from": str(track_from),
+        "purge_dates": sorted(purge_set),
+        "removed": removed,
+        "added": added_by_uni,
+        "new_records": new_records,
+    }
 
 
 def rerecord_daily_outlooks(
@@ -510,6 +618,13 @@ def review_due(
                 results.append({"record": rec, "horizon": hk, "review": rev})
     if persist and changed:
         _save_log(data)
+    if results:
+        try:
+            from outlook_review_xlsx import fill_review_rows
+
+            fill_review_rows(results)
+        except Exception as exc:
+            print(f"[WARN] 数据复盘.xlsx 复盘写入跳过: {exc}", file=sys.stderr)
     return results
 
 
@@ -683,8 +798,9 @@ def run_batch(
     *,
     session: str = "",
     source: str = "",
+    report_date: date | None = None,
 ) -> dict[str, Any]:
-    """批处理：复盘到期 + 无历史预测则登记（追踪自次日）+ 写复盘结论。"""
+    """批处理：复盘到期 + 无历史预测则登记（追踪自 vipdoc 最新日 K）+ 写复盘结论。"""
     from outlook_universe import iter_universe, names_map
 
     label_map = {
@@ -695,6 +811,7 @@ def run_batch(
     entries = iter_universe(universe)
     codes = [e.code for e in entries]
     nm = names_map(entries)
+    rd = report_date or _today()
 
     reviews = review_due(codes=codes)
     cal_notes: list[str] = []
@@ -702,19 +819,19 @@ def run_batch(
         cal = calibrate(min_samples=3)
         cal_notes = cal.get("notes") or []
 
-    tomorrow = next_trading_day(_today())
     new_codes: list[str] = []
     skipped: list[str] = []
     for e in entries:
         if has_any_prediction(e.code):
             continue
+        bar_from = default_track_from(e.code)
         added = record_outlooks(
             [e.code],
             names={e.code: e.name},
             holder=e.holder,
             source=batch_source,
             session=session,
-            track_from=tomorrow,
+            track_from=bar_from,
         )
         if added:
             new_codes.extend(added)
@@ -724,12 +841,14 @@ def run_batch(
     lines = [
         f"# 股价预测追踪 · {title}",
         "",
-        f"- 日期：**{_today()}**",
+        f"- 日期：**{rd}**",
+        f"- 数据日（vipdoc）：**{default_track_from(codes[0]) if codes else rd}**",
+        f"- 1日预测到期：**{due_date_for_horizon(default_track_from(codes[0]) if codes else rd, 1)}**（按交易日顺延）",
         f"- 标的池：**{len(entries)}** 只 | 新登记：**{len(new_codes)}** | 到期复盘：**{len(reviews)}**",
         "",
     ]
     if new_codes:
-        lines.append("## 新登记（无历史预测，追踪自次日）")
+        lines.append("## 新登记（无历史预测，追踪自 vipdoc 最新日 K）")
         lines.append("")
         for c in new_codes:
             lines.append(f"- {nm.get(c, c)}（{c}）")
@@ -765,7 +884,7 @@ def run_batch(
     body = "\n".join(lines)
     os.makedirs(REVIEW_DIR, exist_ok=True)
     sess_tag = f"_{session}" if session else ""
-    out_path = os.path.join(REVIEW_DIR, f"{_today().isoformat()}_{universe}{sess_tag}.md")
+    out_path = os.path.join(REVIEW_DIR, f"{rd.isoformat()}_{universe}{sess_tag}.md")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(body)
 
@@ -804,6 +923,8 @@ def main() -> int:
     p_rec.add_argument("--name", action="append", default=[])
     p_rec.add_argument("--source", default="sug", choices=("sug", "analysis_report", "qry", "daily", "sug_portfolio"))
     p_rec.add_argument("--session", default="")
+    p_rec.add_argument("--track-from", default="", help="数据日 YYYY-MM-DD（仅用该日及以前 K 线）")
+    p_rec.add_argument("--registration-date", default="", help="登记日 YYYY-MM-DD（默认今天）")
     p_rec.add_argument("--track-from-tomorrow", action="store_true", help="追踪窗口自次日起算")
 
     p_rev = sub.add_parser("review", help="复盘到期预测")
@@ -869,6 +990,26 @@ def main() -> int:
         help="默认 track+portfolio",
     )
 
+    p_rp = sub.add_parser(
+        "rerecord-pools",
+        help="重做 track+portfolio 预测（删 purge 日旧记录，按 track_from 重算）",
+    )
+    p_rp.add_argument("--track-from", required=True, help="vipdoc 数据日 YYYY-MM-DD")
+    p_rp.add_argument("--registration-date", default="", help="登记日（默认今天）")
+    p_rp.add_argument(
+        "--purge-date",
+        action="append",
+        default=[],
+        help="要删除的旧登记日，可重复（默认 registration + track-from）",
+    )
+    p_rp.add_argument("--session", default="午盘", help="portfolio 盘次")
+    p_rp.add_argument(
+        "--universe",
+        action="append",
+        default=[],
+        choices=("track", "portfolio"),
+    )
+
     args = parser.parse_args()
 
     if args.cmd == "record":
@@ -883,6 +1024,9 @@ def main() -> int:
             print("无标的可登记", file=sys.stderr)
             return 1
         track_from = next_trading_day(_today()) if args.track_from_tomorrow else None
+        if getattr(args, "track_from", ""):
+            track_from = _parse_date(args.track_from)
+        reg_date = _parse_date(args.registration_date) if getattr(args, "registration_date", "") else None
         added = record_outlooks(
             codes,
             names=names,
@@ -890,6 +1034,7 @@ def main() -> int:
             source=args.source,
             session=args.session,
             track_from=track_from,
+            registration_date=reg_date,
         )
         print(f"已登记 {len(added)} 只：{', '.join(added)} → {LOG_PATH}")
         return 0
@@ -981,6 +1126,23 @@ def main() -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2))
         for uni, added in result["added"].items():
             print(f"  {uni}: {len(added)}/{len(added)} registered")
+        return 0
+
+    if args.cmd == "rerecord-pools":
+        tf = _parse_date(args.track_from)
+        reg = _parse_date(args.registration_date) if args.registration_date else _today()
+        universes = tuple(args.universe) if args.universe else ("track", "portfolio")
+        purge = tuple(_parse_date(d) for d in args.purge_date) if args.purge_date else None
+        result = rerecord_pool_outlooks(
+            tf,
+            registration_date=reg,
+            universes=universes,
+            purge_dates=purge,
+            portfolio_session=args.session,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        for uni, added in result["added"].items():
+            print(f"  {uni}: {len(added)} registered")
         return 0
 
     return 1

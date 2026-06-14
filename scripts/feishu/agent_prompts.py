@@ -42,8 +42,8 @@ def _local_paths_note() -> str:
     root = vipdoc_root()
     ok = os.path.isdir(root)
     return (
-        f"vipdoc 根目录 `{root}`（{'本机可读' if ok else '未找到，检查 .env TDX_VIPDOC'}）。"
-        " Cloud Agent 在云端运行、**不能**直接读你电脑上的文件夹；"
+        f"vipdoc 根目录 `{root}`（含 `ds/lday` 扩展日线、`ds/minline` 1 分钟；T0002 为客户端缓存 `{os.environ.get('TDX_T0002', r'C:\\new_tdx64\\T0002')}`）。"
+        + " Cloud Agent 在云端运行、**不能**直接读你电脑上的文件夹；"
         "下方「本机只读数据」由 Bot 在本机抓取后嵌入 prompt。"
         " `CURSOR_CLOUD_REPO`（GitHub）可选，仅作 Wiki 补充，**不能**替代 vipdoc。"
     )
@@ -58,15 +58,20 @@ def _sim_portfolio_block() -> str:
 
 
 def _compact_stock_block(code: str, name: str) -> str:
-    """持仓标的轻量快照：现价、七轨、vipdoc σ、1/3/7 最有可能价。"""
+    """持仓标的轻量快照：缠论（第一）+ 七轨 + vipdoc + outlook。"""
     from bollinger_utils import bollinger_for_code, export_outlook_horizon
+    from chan.analyze import analyze_code
+    from chan.report import format_chan_markdown
     from outlook_params import load_params
     from report_data import fetch_vipdoc_stats
 
     code = str(code).zfill(6)
+    ch = analyze_code(code, name=name, has_position=True)
+    chan_s = format_chan_markdown(ch).strip() if ch.get("ok") else f"缠论：{ch.get('error', '—')}"
+
     b = bollinger_for_code(code)
     if not b or b.get("error"):
-        return f"**{name}**（{code}）：布林不可用 — {b.get('error') if b else '无'}"
+        return f"**{name}**（{code}）\n{chan_s}\n布林不可用 — {b.get('error') if b else '无'}"
 
     params = load_params()
     ke = b.get("kline_extra") or {}
@@ -83,7 +88,9 @@ def _compact_stock_block(code: str, name: str) -> str:
         vip_s = str(vip.get("error") or "无 vipdoc 本地日 K")
 
     return (
-        f"**{name}**（{code}）现价 **{b.get('price')}** | 七轨 **{b.get('zone')}** | {vip_s}\n"
+        f"**{name}**（{code}）现价 **{b.get('price')}**\n"
+        f"{chan_s}\n"
+        f"  七轨 **{b.get('zone')}** | {vip_s}\n"
         f"  最有可能价：{' | '.join(ol_parts)}"
     )
 
@@ -135,10 +142,10 @@ def build_sug_prompt(holder: str, *, session: str | None = None) -> str:
 ## 硬性约束
 1. **仅输出 Markdown 正文**（从 `## 今日一句话` 起），不要修改任何仓库文件、不要执行 git、不要写 SugVault。
 2. 严格遵循 `trade_template.md` 结构与金额格式（千位逗号 + 两位小数）。
-3. 表述须可核查，标注 Wiki/日更/研报来源；指数纪律优先读市场状态日报。
+3. 表述须可核查，标注 Wiki/日更/研报来源；**§零 缠论须先于布林/outlook**。
 4. {session_note or "未指定盘次：按当前最新日更与大盘状态撰写。"}
 5. 金额单位用「元」；不推荐科创板（688xxx）新开仓。
-6. §七 1/3/7 日须引用下方「持仓标的本机快照」中的 **最有可能价** 与 vipdoc σ；AI 模拟盘章节参考「模拟持仓」。
+6. §七 1/3/7 日须引用下方「持仓标的本机快照」中的 **最有可能价** 与 vipdoc σ；**须含「大盘与指数预测」短表**（上证/深成指/创业板/科创50/沪深300 + 板块代表股，1/3/7 日最有可能价）；AI 模拟盘章节参考「模拟持仓」。
 7. §八 只写复盘结论；**禁止**写「未在本环境执行」「outlook_tracker 未运行」等元信息（登记由本机归档脚本完成）。
 {vipdoc_note}
 
@@ -154,7 +161,7 @@ def build_sug_prompt(holder: str, *, session: str | None = None) -> str:
 ## 持有人持仓（portfolio.md 章节）
 {filter_portfolio_md(holder)}
 
-## 持仓标的本机快照（vipdoc + 七轨 + 1/3/7 最有可能价）
+## 持仓标的本机快照（缠论第一 + vipdoc + 七轨 + 1/3/7 最有可能价）
 {_holdings_local_data(holder)}
 
 ## 模拟持仓（AI 自主盘 · 本机 xlsx）

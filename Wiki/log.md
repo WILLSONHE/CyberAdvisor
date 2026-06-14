@@ -2,6 +2,65 @@
 
 ---
 
+## [2026-06-05] 缠论系统化 | Wiki 文献 + chan 模块 + 全链路第一优先级
+
+- **Wiki 新建**：
+  - [[缠论-108课索引]] · [[缠论-108课逐课对照]] · [[缠论-市场哲学的数学原理]] · [[缠论-实战法]] · [[缠论-数据接入]]
+- **代码**：`scripts/chan/`（kline / indicators / analyze / report）
+- **接入**：`report_data` · `bollinger_utils.build_stock_verdict` · `ai_sim/collector` · `ai_sim/strategy`（缠论 score×2.5 优先于布林）
+- **规范**：`ANALYSIS_REPORT_SPEC.md` · `trade_template.md` · Agent prompt 缠论优先
+
+## [2026-06-05] 方法论 | 缠论体系入库
+
+- 操作类型：Wiki 结构化整理（非 ingest）
+- **新建**：
+  - [[缠论]] — 总纲（公理、级别联立、包含/分型/笔/线段/中枢、A股约束、术语速查）
+  - [[缠论-结构与递归]] — 结构算法与边界案例
+  - [[缠论-背驰与买卖点]] — 背驰比较、三类买卖点 IF-THEN、区间套、复盘清单
+- **更新**：[[index]] · [[技术分析体系]] 索引与交叉链接
+
+## [2026-06-14] ingest × 106 | 钱加贝抖音视频批量入库
+
+- 操作类型：ingest（`scripts/video_ingest_batch.py` 双轨）
+- **视频**：106 篇 → `Wiki/每日复盘/` + `Wiki/视频专题/复盘/`
+- Raw：`review_status: ingested` + `wiki_topic_path` 回写
+
+## [2026-06-14] txtcfm × 123 | 批量审批文稿
+
+- 操作类型：txtcfm（`scripts/txtcfm.py`）
+- 视频未审阅：123 篇 → approved，移入 Raw/已审阅视频文稿/
+- 原状态：rewritten 18, subtitle_mismatch 105
+## [2026-06-14] ingest × 1 | 动态·山雨欲来风满楼
+
+- 操作类型：ingest（专栏/动态）
+- **Raw**：`动态：26-06-12：山雨欲来风满楼，静待主线回归.md` → `Raw/已分析归档/`
+- **Wiki**：[[2026-06-12]] §动态（10:47 · 青枫浦上Q）
+
+## [2026-06-14] 万孚生物 300482 | 补登 6/11→6/12 预测
+
+- `track_from=2026-06-11`（`price_at=18.95`，屏蔽 6/12 K 线防作弊）
+- 1日 due **2026-06-12** 已复盘（实际收 19.75，区间命中）
+- `vipdoc_refresh` 已纳入 **queried** 宇宙持续跟踪
+
+## [2026-06-14] ingest × 3 | 视频双轨入库（含周复盘结构化）
+
+- 操作类型：ingest（`video_ingest_batch.py` + 周复盘人工结构化）
+- **视频**：6/11·6/12 午评（抖音）+ **BV1fwEC6vEXL 周复盘** → `Wiki/每日复盘/2026-06-12.md` + `Wiki/视频专题/`
+- 周复盘专题：[[视频26-06-12-全球资产的地心引力变了周复盘]]（宏观，已校正 ASR：沃什/七巨头等）
+- Raw：`review_status: ingested`
+
+## [2026-06-14] ingest × 3 | 钱加贝抖音视频批量入库
+
+- 操作类型：ingest（`scripts/video_ingest_batch.py` 双轨）
+- **视频**：3 篇 → `Wiki/每日复盘/` + `Wiki/视频专题/复盘/`
+- Raw：`review_status: ingested` + `wiki_topic_path` 回写
+
+## [2026-06-14] txtcfm × 4 | 批量审批文稿
+
+- 操作类型：txtcfm（`scripts/txtcfm.py`）
+- 视频未审阅：3 篇 → approved，移入 Raw/已审阅视频文稿/
+- Raw/未分析归档：1 篇 → review_status: approved
+- 原状态：(none) 1, rewritten 3
 ## [2026-06-12] ingest × 2 | 6/11 专栏复盘 + 6/12 早盘
 
 - 操作类型：ingest

@@ -64,7 +64,11 @@ def _agent_ack(label: str, *, extra: str = "") -> str:
 
 def _handle_wiki_tree() -> CommandResult:
     tree = build_wiki_tree()
-    body = "Wiki 目录（`每日复盘/` 仅显示文件夹，不列文件）\n\n" + tree
+    body = (
+        "Wiki 目录（`每日复盘/`、`视频专题/` 仅显示文件夹摘要，不列文件）\n\n"
+        + tree
+        + "\n\n---\n\n示例：`打开 仓位管理` · `打开 每日复盘/2026-06-12`"
+    )
     return _md_result(body, filename="wiki目录")
 
 

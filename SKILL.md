@@ -348,7 +348,7 @@ CLI：`python scripts/wiki_cli.py trk 寒武纪` / `track-maintain`
 
 执行流程（单人或全员中的每一位）：
 0. **同步模拟持仓**：`python scripts/sim_portfolio.py sync`（跳过 `卖出？(Y/N)=Y` 的行）
-0a. **vipdoc 批刷新（`sug 全员 午盘` 前 · 必做）**：`python scripts/vipdoc_refresh.py`（或 Cursor 指令 **`vipdoc`**）→ 含 `outlook_tracker batch --universe track` + `batch --universe portfolio --session 午盘`；**须在通达信写入当日 .day 之后**（约 **15:45+**，建议 **15:50** 手动跑）。`daily.bat`（15:00）**不会**等 vipdoc 更新。A 股目录 `.env` → `TDX_VIPDOC=C:\new_tdx64\vipdoc`。  
+0a. **vipdoc 批刷新（`sug 全员 午盘` 前 · 必做）**：`python scripts/vipdoc_refresh.py`（或 Cursor 指令 **`vipdoc`**）→ 含 `outlook_tracker batch --universe track` + `batch --universe portfolio --session 午盘`；**须在通达信写入当日 .day 之后**（约 **15:45+**，建议 **15:50** 手动跑）。`daily.bat`（15:00）**不会**等 vipdoc 更新；**15:00–15:45** 缠论/布林日 K 可经 `.env` **`TUSHARE_TOKEN`**（`scripts/tushare_daily.py`）或 mootdx 补最新 bar。A 股目录 `.env` → `TDX_VIPDOC=C:\new_tdx64\vipdoc`。  
     **到期日**：1/3/7 按 **交易日** 顺延（6/10→11/15/19，6/11→12/16/22）。重做登记：`outlook_tracker.py rerecord-daily --track-from YYYY-MM-DD`；全量修正：`backfill-dues`。
 0b. **预测复盘（§八 · 必做）**：`python scripts/outlook_tracker.py review --holder {持有人}` → 粘贴输出；规范见 **`ANALYSIS_REPORT_SPEC.md`**
 1. 阅读 `portfolio.md` 中 **该持有人章节** 获取持仓（投资成本=成本×股数；市值=现价×股数；现金读该章「A 股现金」）
@@ -358,7 +358,8 @@ CLI：`python scripts/wiki_cli.py trk 寒武纪` / `track-maintain`
 4. 阅读 `Wiki/内容源/决策时间线.md` 了解 Wiki 最新操作节奏（输出称 **决策时间线**）
 5. 阅读 `Wiki/数据/标的池日报.md` 中 **该持有人的做T章节**（输出称 **标的池日报**）
 6. 严格按 `trade_template.md` 格式输出（二、三、五章金额 **仅含该持有人**）
-6b. **研判总结（§七 · 必写）**：`python scripts/analysis_report.py --holder {持有人}` 或等价调用；含七轨、补充数据（含 **vipdoc**）、1/3/7 日 **最有可能价位** + 挡位概率表；见 **`ANALYSIS_REPORT_SPEC.md`**
+5. **缠论结构**（`scripts/chan/`）为 **第一优先级**参考，优先于布林/outlook；见 [[缠论-数据接入]]
+6b. **研判总结（§七 · 必写）**：含 **缠论块** + 七轨/outlook
 7. **归档**（持有人名用 xlsx 中的 canonical 拼写）：
    - 未指定盘次：`SugVault/YYYY-MM-DD_{持有人}_sug.md`（同日多次则 `YYYY-MM-DD_HHMM_{持有人}_sug.md`）
    - 指定早盘/午盘：`SugVault/YYYY-MM-DD_{持有人}_sug 早盘.md` 或 `..._sug 午盘.md`（同日多次可加 `HHMM`：`YYYY-MM-DD_HHMM_{持有人}_sug 午盘.md`）

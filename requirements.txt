@@ -1,3 +1,4 @@
+tushare
 mootdx
 requests
 pandas

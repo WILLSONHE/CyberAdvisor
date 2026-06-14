@@ -26,7 +26,7 @@ VIDEO_TOPIC_CATEGORIES = ("复盘", "宏观", "产业", "方法论")
 
 # 分类启发式（先匹配方法论/宏观/产业，其余默认复盘）
 _CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    (
+        (
         "方法论",
         (
             "K线",
@@ -38,6 +38,32 @@ _CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
             "信息差",
             "复盘SOP",
             "四屏",
+            "财务模型",
+            "财务建模",
+            "LBO",
+            "DCF",
+            "三表",
+            "Cap table",
+            "Cap Table",
+            "FP&A",
+            "Project Finance",
+            "Excel Model",
+            "waterfall",
+            "估值模型",
+            "杠杆收购",
+            "滚动预测",
+            "WACC",
+            "Sensitivity",
+            "Commercial Real Estate",
+            "Real Estate",
+            "Paper LBO",
+            "Model Test",
+            "3-statement",
+            "3-Statement",
+            "IRR",
+            "NPV",
+            "M&A model",
+            "SaaS",
         ),
     ),
     (
@@ -103,7 +129,7 @@ def _read_fm(path: str) -> tuple[dict[str, str], str]:
 
 def _sanitize_slug(text: str, *, max_len: int = 40) -> str:
     s = text.strip().strip('"').strip("'")
-    for ch in "?？!！。，,、；;：:\"'（）()【】[]《》<> ":
+    for ch in '?？!！。，,、；;：:\"\'（）()【】[]《》<>|/\\:*' + " ":
         s = s.replace(ch, "")
     s = s.replace("（", "").replace("）", "")
     s = re.sub(r"\s+", "", s)
@@ -165,9 +191,13 @@ def list_approved_video_files() -> list[str]:
 def _video_ing_tasks(fm: dict[str, str]) -> list[str]:
     status = fm.get("review_status", "")
     has_topic = bool(fm.get("wiki_topic_path"))
+    creator = fm.get("creator", "")
+    up_mid = fm.get("up_mid", "")
+    is_model_up = creator == "大弯区董事长" or up_mid == "518715314"
     tasks: list[str] = []
     if status == "approved":
-        tasks.append("daily_wiki")
+        if not is_model_up:
+            tasks.append("daily_wiki")
         if not has_topic:
             tasks.append("video_topic")
     elif status == "ingested" and not has_topic:

@@ -271,10 +271,21 @@ def format_full_market_context(tick_path: str, *, days: int = 10) -> str:
 
     parts: list[str] = [
         "## 中长期市场上下文（判修复/上涨）",
+    ]
+    try:
+        from chan.analyze import analyze_index
+        from chan.report import format_chan_markdown
+
+        parts.append("")
+        parts.append("## 缠论·上证（第一优先级）")
+        parts.append(format_chan_markdown(analyze_index()).strip())
+    except Exception as exc:
+        parts.append(f"（缠论上下文失败：{exc}）")
+    parts.extend([
         "",
         *format_multi_index_section(history),
         *format_turnover_section(history),
-    ]
+    ])
     if supplement.get("kline_60m"):
         parts.extend(format_kline_60m_section(supplement["kline_60m"]))
     else:

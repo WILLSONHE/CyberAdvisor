@@ -121,10 +121,10 @@ class DouyinClient:
                         "DOUYIN_TTWID / DOUYIN_SESSIONID 或 DOUYIN_COOKIE。"
                     )
                 return resp
-            except requests.SSLError as e:
+            except requests.exceptions.SSLError as e:
                 last_err = e
                 time.sleep(1.0 + attempt)
-            except requests.ConnectionError as e:
+            except requests.exceptions.ConnectionError as e:
                 last_err = e
                 time.sleep(1.0 + attempt)
         hint = (

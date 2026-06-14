@@ -13,6 +13,7 @@ SKIP_FILES = frozenset({"feishu_debug.log"})
 # 策略文件树：只显示目录，不展开子文件
 COLLAPSE_DIRS: dict[str, str] = {
     "每日复盘": "文件列表已省略，可用「打开 每日复盘/YYYY-MM-DD」获取",
+    "视频专题": "专题页过多，不展开；可用「打开 视频专题/…」指定文件",
 }
 
 FOLDER_HINTS: dict[str, str] = {
@@ -21,6 +22,7 @@ FOLDER_HINTS: dict[str, str] = {
     "每日复盘": "按日归档复盘",
     "内容源": "标的总览、追踪、决策时间线",
     "数据": "脚本输出（市场日报、标的池、粗筛/精筛 CSV）",
+    "视频专题": "已审阅视频重组页（按复盘/宏观/产业/方法论）",
     "待审阅视频文稿": "bilibili_fetch / douyin_fetch 写入，待 txtcfm",
     "标的追踪": "活跃池标的专页",
     "不活跃标的": "已移出活跃池的追踪页",
@@ -87,7 +89,8 @@ def build_wiki_tree(wiki_root: str = WIKI_ROOT) -> str:
                 lines.append(f"{prefix}{branch}{entry.name}{suffix}")
 
     walk(root, "")
-    return "\n".join(lines)
+    # 飞书 Markdown 预览常折叠单换行；目录树用双换行分隔
+    return "\n\n".join(lines)
 
 
 def _norm_query(q: str) -> str:

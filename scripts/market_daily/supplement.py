@@ -121,7 +121,30 @@ def fetch_stock_kline_em(code: str, *, klt: int = 5, limit: int = 48) -> list[di
 
 
 def fetch_minute_kline(code: str, *, klt: int = 5, limit: int = 48) -> dict[str, Any]:
-    """5 分钟 K 摘要（做 T 时点参考）。"""
+    """分钟 K 摘要：优先本地通达信 vipdoc minline/ds，失败再东方财富。"""
+    try:
+        from tdx_market_data import read_minute_bars
+
+        local_klt = 1 if klt == 1 else 5
+        df = read_minute_bars(code, klt=local_klt, limit=max(limit, 48))
+        if df is not None and not df.empty:
+            last = df.iloc[-1]
+            highs = [float(x) for x in df["high"].tolist() if x]
+            lows = [float(x) for x in df["low"].tolist() if x]
+            recent = df.tail(6).to_dict("records")
+            return {
+                "code": code,
+                "klt": klt,
+                "bars_count": len(df),
+                "last_time": str(last.get("time", "")),
+                "last_close": float(last.get("close", 0)),
+                "session_high": max(highs) if highs else None,
+                "session_low": min(lows) if lows else None,
+                "recent_bars": recent,
+                "source": "tdx_local",
+            }
+    except Exception:
+        pass
     bars = fetch_stock_kline_em(code, klt=klt, limit=limit)
     if not bars:
         return {"code": code, "error": "分钟K线抓取失败"}

@@ -12,16 +12,10 @@ def send_text(webhook_url: str, text: str) -> None:
 
 
 def send_post(webhook_url: str, title: str, lines: list[tuple[str, str]]) -> None:
-    """发送富文本 post 消息。lines: [(tag, text), ...]，tag 为 text / a 等。"""
+    """发送富文本 post 消息。每行单独一行，避免两列挤在一起。"""
     content: list[list[dict]] = []
-    row: list[dict] = []
     for tag, text in lines:
-        row.append({"tag": tag, "text": text})
-        if len(row) >= 2:
-            content.append(row)
-            row = []
-    if row:
-        content.append(row)
+        content.append([{"tag": tag, "text": text}])
     payload = {
         "msg_type": "post",
         "content": {

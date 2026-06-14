@@ -56,10 +56,17 @@ class BiliClient:
         self.session.close()
 
     def _refresh_wbi_keys(self) -> None:
-        data = self.get_json("https://api.bilibili.com/x/web-interface/nav")
-        inner = data.get("wbi_img") or {}
+        resp = self.session.get("https://api.bilibili.com/x/web-interface/nav", timeout=20)
+        resp.raise_for_status()
+        payload = resp.json()
+        # code=-101 时 data.wbi_img 仍可用（访客 nav）
+        inner = (payload.get("data") or {}).get("wbi_img") or payload.get("wbi_img") or {}
         img_url = inner.get("img_url", "")
         sub_url = inner.get("sub_url", "")
+        if not img_url or not sub_url:
+            raise RuntimeError(
+                f"无法获取 WBI keys: nav code={payload.get('code')} msg={payload.get('message')}"
+            )
         self._img_key = img_url.rsplit("/", 1)[-1].split(".")[0]
         self._sub_key = sub_url.rsplit("/", 1)[-1].split(".")[0]
 

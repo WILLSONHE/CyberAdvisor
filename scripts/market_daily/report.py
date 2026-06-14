@@ -211,7 +211,7 @@ def _generate_summary(
 
     # --- 5.4 方法论 ---
     lines.append("### 5.4 投资方法论要点对照")
-    lines.append("- **指数纪律**：L1 4033/4130 机械层 + L3 4120/60 分钟回补 + L4 4000→3950 + L5 缩量（[[指数纪律框架]]）")
+    lines.append("- **缠论**：结构/买卖点 **第一优先级**（[[缠论]]）；指数纪律与缠论 **联立**（[[指数纪律框架]]）")
     lines.append("- **仓位管理**：4033 破线 → L1 机械防守；**回补须 L3**，非仅站回 4033（[[仓位管理]]）")
     lines.append("- **情绪周期**：缩量调整末期的定性需 **收盘确认**；破 4033 则进入 L1 防守窗口（[[情绪周期与操作节奏]]）")
     lines.append("- **选股框架**：主线仍在 AI 基建/国产算力产业逻辑，但 **点位纪律 > 板块叙事**（[[选股框架]]）")
@@ -274,6 +274,18 @@ def build_report() -> str:
                 lines.append(f"> 上证处于 **{LINE_CLEAR}–{LINE_FULL}** 区间")
     else:
         lines.append("（指数数据获取失败）")
+    lines.append("")
+
+    try:
+        from chan.analyze import analyze_index
+        from chan.report import format_chan_markdown
+
+        ich = analyze_index()
+        lines.append("## 一·二、缠论结构（上证 · 第一优先级）")
+        lines.append("")
+        lines.append(format_chan_markdown(ich).strip())
+    except Exception as exc:
+        lines.append(f"## 一·二、缠论结构\n\n（生成失败：{exc}）")
     lines.append("")
 
     # 2. 板块涨跌幅

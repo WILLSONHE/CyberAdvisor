@@ -260,12 +260,16 @@ def _append_video_index(slug: str, iso_date: str, vid_id: str, summary: str, cat
     index_path = ROOT / "Wiki" / "视频专题" / "视频专题索引.md"
     if not index_path.is_file():
         return
-    text = index_path.read_text(encoding="utf-8")
+    try:
+        text = index_path.read_text(encoding="utf-8")
+    except OSError:
+        return
     link = f"[[{slug}]]"
     if link in text:
         return
     short = iso_date[5:].replace("-", "-")
-    row = f"| {link} | {short} | {vid_id or '—'} | {summary[:40]} |"
+    safe_summary = re.sub(r"[\|\r\n]", " ", summary)[:40]
+    row = f"| {link} | {short} | {vid_id or '—'} | {safe_summary} |"
     header = f"## {category}（"
     pos = text.find(header)
     if pos < 0:
@@ -282,7 +286,10 @@ def _append_video_index(slug: str, iso_date: str, vid_id: str, summary: str, cat
         text,
         count=1,
     )
-    index_path.write_text(text, encoding="utf-8")
+    try:
+        index_path.write_text(text, encoding="utf-8")
+    except OSError:
+        pass
 
 
 def _append_log(n: int, *, dry_run: bool) -> None:

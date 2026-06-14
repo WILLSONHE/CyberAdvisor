@@ -124,17 +124,32 @@ def read_journal_delta(*, reset: bool = False) -> str:
 
 
 def push_pipeline_done(cfg: FeishuConfig, *, dry_run: bool = False) -> bool:
-    if not cfg.webhook_enabled:
-        print("跳过飞书推送：未配置 FEISHU_WEBHOOK_URL")
+    if not cfg.webhook_enabled and not cfg.notify_chat_enabled:
+        print("跳过飞书推送：未配置 FEISHU_WEBHOOK_URL / FEISHU_NOTIFY_CHAT_ID")
         return False
     text, post_lines = build_pipeline_summary()
     if dry_run:
         print("=== [DRY-RUN] 飞书推送内容 ===")
         print(text)
         return True
-    send_post(cfg.webhook_url, "CyberAdvisor 每日流水线", post_lines)
-    print("已推送到飞书群（Webhook）")
-    return True
+    sent = False
+    if cfg.webhook_enabled:
+        try:
+            send_post(cfg.webhook_url, "CyberAdvisor 每日流水线", post_lines)
+            print("已推送到飞书群（Webhook）")
+            sent = True
+        except Exception as e:
+            print(f"Webhook 推送失败：{e}")
+    if not sent and cfg.notify_chat_enabled:
+        try:
+            from feishu.client import send_text_to_chat
+
+            send_text_to_chat(cfg.app_id, cfg.app_secret, cfg.notify_chat_id, text[:8000])
+            print("已推送到飞书群（应用消息）")
+            sent = True
+        except Exception as e:
+            print(f"应用消息推送失败：{e}")
+    return sent
 
 
 def push_sug_done(
@@ -145,8 +160,8 @@ def push_sug_done(
     all_holders: bool = False,
     dry_run: bool = False,
 ) -> bool:
-    if not cfg.webhook_enabled:
-        print("跳过飞书推送：未配置 FEISHU_WEBHOOK_URL")
+    if not cfg.webhook_enabled and not cfg.notify_chat_enabled:
+        print("跳过飞书推送：未配置 FEISHU_WEBHOOK_URL / FEISHU_NOTIFY_CHAT_ID")
         return False
     holders = load_holder_names() if all_holders else [holder]
     if not holders or not holders[0]:
@@ -159,9 +174,22 @@ def push_sug_done(
             print(text)
             sent = True
             continue
-        send_post(cfg.webhook_url, f"sug 完成 — {h}", post_lines)
-        print(f"已推送 sug 完成通知：{h}")
-        sent = True
+        if cfg.webhook_enabled:
+            try:
+                send_post(cfg.webhook_url, f"sug 完成 — {h}", post_lines)
+                print(f"已推送 sug 完成通知：{h}")
+                sent = True
+            except Exception as e:
+                print(f"Webhook sug 推送失败 {h}：{e}")
+        if cfg.notify_chat_enabled and not cfg.webhook_enabled:
+            try:
+                from feishu.client import send_text_to_chat
+
+                send_text_to_chat(cfg.app_id, cfg.app_secret, cfg.notify_chat_id, text[:8000])
+                print(f"已推送 sug 应用消息：{h}")
+                sent = True
+            except Exception as e:
+                print(f"应用消息 sug 推送失败 {h}：{e}")
     return sent
 
 

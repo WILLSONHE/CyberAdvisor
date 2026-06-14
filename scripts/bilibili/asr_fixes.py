@@ -80,8 +80,82 @@ MISMATCH_MARKERS = re.compile(
     r"监狱|露丝|凯蒂|贾士官|"
     r"小米|试驾|南京大学|五菱|星驰|"
     r"麦当劳|帕尼尼|板烧鸡腿|腌料|"
-    r"兴趣爱好|尤克里里|架子鼓"
+    r"兴趣爱好|尤克里里|架子鼓|"
+    r"IPHONE|iPhone|appleintelligence|Apple Intelligence|国行IPHONE|"
+    r"打翻的牛奶|爱老虎有|落子无悔|木已成舟"
 )
+
+_TITLE_STOP = frozenset({
+    "视频", "模型", "如何", "什么", "一个", "这个", "那个", "教程", "学习", "入门",
+    "完整", "手把手", "免费", "下载", "附", "版", "课程", "训练", "测试", "实战",
+    "讲解", "操作", "搭建", "分钟", "小时", "你的", "已经", "整理", "好了", "终于",
+    "公开", "适合", "初级", "高级", "入门级", "沉浸式", "一起来", "据说",
+})
+
+
+_CN_SPLITS = (
+    "财务模型", "资源库", "太阳能", "光伏", "董事长", "杠杆收购", "并购", "估值",
+    "现金流", "三表", "LBO", "DCF", "M&A", "SaaS", "REPE", "Cap table", "Paper LBO",
+    "Project Finance", "Real Estate", "cohort", "Cap Table", "Cap table",
+    "财务", "模型", "预算", "预测", "投行", "私募", "股权", "债券", "光伏",
+)
+
+
+def _expand_chinese_segment(seg: str) -> list[str]:
+    found: list[str] = []
+    for pat in _CN_SPLITS:
+        if pat in seg:
+            found.append(pat)
+    if len(seg) <= 8:
+        found.append(seg)
+    elif not found:
+        for i in range(len(seg) - 1):
+            found.append(seg[i : i + 2])
+    return found
+
+
+def extract_title_terms(title: str) -> list[str]:
+    chunks = re.split(r"[\s\!！\?？\.,，、\-\[\]【】\(\)（）|：:_]+", title)
+    terms: list[str] = []
+    for chunk in chunks:
+        for m in re.finditer(r"[\u4e00-\u9fff]+", chunk):
+            terms.extend(_expand_chinese_segment(m.group()))
+        for m in re.finditer(r"[A-Za-z]{4,}", chunk):
+            terms.append(m.group().lower())
+    out: list[str] = []
+    seen: set[str] = set()
+    for t in terms:
+        if t in _TITLE_STOP or len(t) < 2:
+            continue
+        if t not in seen:
+            seen.add(t)
+            out.append(t)
+    return out
+
+
+def body_text_for_check(markdown: str) -> str:
+    """从 md 取正文（去掉 frontmatter 与标题行），供错配检测。"""
+    parts = markdown.split("---", 2)
+    body = parts[-1] if len(parts) >= 3 else markdown
+    body = re.sub(r"^#\s+.+\n", "", body, count=1, flags=re.M)
+    body = re.sub(r"^>\s*.+\n", "", body, count=1, flags=re.M)
+    return body.strip()
+
+
+def title_body_mismatch(title: str, body: str) -> bool:
+    """标题关键词与正文严重不符（常见于 Web 兜底抓到推荐位字幕）。"""
+    terms = extract_title_terms(title)
+    significant = [
+        t for t in terms[:12]
+        if t in _CN_SPLITS or len(t) >= 4 or re.fullmatch(r"[A-Za-z][A-Za-z0-9 ]+", t)
+    ]
+    pool = significant if len(significant) >= 2 else terms[:12]
+    if len(pool) < 2:
+        return False
+    body_l = body.lower()
+    hits = sum(1 for t in pool if t.lower() in body_l)
+    need = max(2, len(pool) // 2)
+    return hits < need
 
 
 def apply_asr_fixes(text: str) -> tuple[str, list[str]]:
@@ -96,14 +170,21 @@ def apply_asr_fixes(text: str) -> tuple[str, list[str]]:
     return out, changes
 
 
-def looks_like_mismatch(body: str, title: str = "") -> bool:
+def looks_like_mismatch(body: str, title: str = "", *, subtitle_via: str = "") -> bool:
     if not body or len(body.strip()) < 30:
         return True
     if re.fullmatch(r"(音乐[♪\s]*)+", body.strip()):
         return True
     if MISMATCH_MARKERS.search(body):
-        # 标题含投资关键词但正文像段子
-        invest_kw = re.search(r"复盘|产业链|大盘|华为|K线|房地产|充电|抄底|牛市", title)
+        invest_kw = re.search(
+            r"复盘|产业链|大盘|华为|K线|房地产|充电|抄底|牛市|财务模型|LBO|DCF|"
+            r"Solar|Project Finance|Cap table|三表",
+            title,
+            re.I,
+        )
         if invest_kw:
             return True
+    # 标题/正文关键词校验仅用于 Web 兜底（API 轨极少错配）
+    if subtitle_via == "web" and title_body_mismatch(title, body):
+        return True
     return False

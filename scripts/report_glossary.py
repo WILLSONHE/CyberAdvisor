@@ -76,7 +76,7 @@ def format_glossary_markdown(
             (
                 f"σ **{vip.get('stdev_pct')}%**，平均绝对涨跌 **{vip.get('mean_abs_pct')}%**"
                 if vip.get("stdev_pct") is not None
-                else "本 tick 无本地文件，区间退回 mootdx/布林公式。"
+                else "本 tick 无本地日 K，已尝试 Tushare/mootdx 在线补充。"
             ),
         ),
         (

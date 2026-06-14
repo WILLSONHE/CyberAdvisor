@@ -12,6 +12,19 @@ LOG_PATH = os.path.join(PREDICT_DIR, "预测登记.json")
 PARAMS_PATH = os.path.join(PREDICT_DIR, "参数.json")
 QUERIED_PATH = os.path.join(PREDICT_DIR, "询问标的.json")
 REVIEW_DIR = os.path.join(PREDICT_DIR, "复盘")
+REVIEW_XLSX_PATH = os.path.join(REVIEW_DIR, "数据复盘.xlsx")
+
+REVIEW_XLSX_COLUMNS = (
+    "标的代码",
+    "标的名称",
+    "当前日期",
+    "预测日期",
+    "预测周期",
+    "预测价格",
+    "实际价格",
+    "差距%",
+    "原因",
+)
 
 _OLD_LOG = os.path.join(ROOT, "Wiki", "数据", "技术预测追踪.json")
 _OLD_PARAMS = os.path.join(ROOT, "Wiki", "数据", "技术预测参数.json")
