@@ -5,6 +5,8 @@ secrets/
 *.cookie
 __pycache__/
 *.pyc
+.venv/
+venv/
 Wiki/数据/feishu_debug.log
 Wiki/数据/_rw_run2.log
 .obsidian/
