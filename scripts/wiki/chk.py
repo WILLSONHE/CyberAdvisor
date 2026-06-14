@@ -40,7 +40,7 @@ def _check_broken_links(max_show: int = 8) -> tuple[int, list[str]]:
             continue
         for m in WIKI_LINK.finditer(text):
             target = m.group(1).strip()
-            if target in ("标的总览", "index", "log"):
+            if target in ("标的总览", "index", "log", "YYYY-MM-DD", "每日复盘"):
                 continue
             if not resolve_wiki_link(target, index):
                 rel = p.relative_to(Path(WIKI))
@@ -71,7 +71,7 @@ def _stale_active_overview() -> list[str]:
 def _last_log_line() -> str:
     if not os.path.isfile(LOG_MD):
         return "（无 log.md）"
-    for line in reversed(read_text(LOG_MD).splitlines()):
+    for line in read_text(LOG_MD).splitlines():
         if line.startswith("## ["):
             return line.strip()
     return "（log 无条目）"
