@@ -77,6 +77,7 @@ def test_imports(s: Suite) -> None:
         "report_data",
         "chan.kline",
         "chan.analyze",
+        "chan.outlook_blend",
         "chan.policy",
         "chan.report",
         "market_intraday",
@@ -140,7 +141,7 @@ def test_data_core(s: Suite) -> None:
 
 def test_bollinger_outlook(s: Suite) -> None:
     try:
-        from bollinger_utils import bollinger_for_code, get_kline, _outlook_3d_7d
+        from bollinger_utils import bollinger_for_code, export_outlook_horizon, get_kline, _outlook_3d_7d
 
         k = get_kline("600021", 60)
         b = bollinger_for_code("600021")
@@ -148,6 +149,9 @@ def test_bollinger_outlook(s: Suite) -> None:
         if b:
             ol = _outlook_3d_7d(b, kline_extra=b.get("kline_extra"))
             s.add("outlook 1/3/7", bool(ol.get("d1_most_likely")), str(ol.get("d1_most_likely")))
+            s.add("outlook chan blend", ol.get("chan") is not None or "缠论" in str(ol.get("d1", "")), str(ol.get("note", ""))[:60])
+            h1 = export_outlook_horizon(b, days=1, kline_extra=b.get("kline_extra"))
+            s.add("export_outlook chan", bool(h1.get("chan")), str(h1.get("params_version")))
     except Exception as exc:
         s.add("bollinger_outlook", False, str(exc))
 

@@ -247,11 +247,40 @@ def _most_likely_for_horizon(
     mid: float,
     b: dict[str, Any],
     days: int,
+    chan: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
-    """1日=带内 mode；3日→锚点最近挡；7日→Wiki 均值回归目标（通道上下段→中轨）。"""
+    """1日=带内 mode；3日→锚点/缠论结构；7日→Wiki 均值回归或缠论 ZD/ZG。"""
     if not probs:
         return None
     zone = b.get("zone", "")
+    if chan and chan.get("ok") is not False:
+        try:
+            from chan.outlook_blend import pick_target_with_chan
+
+            target, method = pick_target_with_chan(
+                days=days,
+                zone=zone,
+                anchor=anchor,
+                prob_center=prob_center,
+                mid=mid,
+                chan=chan,
+                price=price,
+            )
+            if days <= 1:
+                out = _most_likely_level(probs)
+                if out:
+                    out = dict(out)
+                    out["pick_method"] = "mode"
+                    out["pick_target"] = prob_center
+                return out
+            row = _nearest_level_to_target(probs, target)
+            if row:
+                row = dict(row)
+                row["pick_method"] = method
+                row["pick_target"] = round(target, 2)
+                return row
+        except Exception:
+            pass
     if days <= 1:
         out = _most_likely_level(probs)
         if out:
@@ -287,6 +316,9 @@ def _format_most_likely_line(ml: dict[str, Any] | None, *, horizon: str) -> str:
     method_note = {
         "mode": "1日带内概率最高挡",
         "anchor_snap": f"3日取离锚点 {ml.get('pick_target')} 最近挡",
+        "chan_struct_3d": f"3日缠论结构锚 {ml.get('pick_target')} 最近挡",
+        "chan_zg_7d": f"7日三买→ZG 结构 {ml.get('pick_target')} 最近挡",
+        "chan_zd_7d": f"7日卖点→ZD 结构 {ml.get('pick_target')} 最近挡",
         "mid_revert_7d": f"7日 Wiki 均值回归→中轨 {ml.get('pick_target')} 最近挡",
         "center_snap": f"取离概率中心 {ml.get('pick_target')} 最近挡",
         "snap": "取离回归目标最近挡",
@@ -481,12 +513,131 @@ def _outlook_prob_sigma(
     return max(half * scale, 0.01)
 
 
+def _merge_extra_levels(
+    base: list[tuple[str, float]], extra: list[tuple[str, float]]
+) -> list[tuple[str, float]]:
+    if not extra:
+        return base
+    return _dedupe_levels(base + extra, min_gap_pct=1.0)
+
+
+def _resolve_chan_for_outlook(
+    b: dict[str, Any], params: dict[str, Any], *, has_position: bool = False
+) -> dict[str, Any] | None:
+    if not params.get("chan_blend_enabled", True):
+        return None
+    code = str(b.get("code") or "")
+    if not code.isdigit():
+        return None
+    try:
+        from chan.outlook_blend import load_chan_snapshot
+
+        return load_chan_snapshot(code, has_position=has_position)
+    except Exception:
+        return None
+
+
+def _build_horizon_bundle(
+    b: dict[str, Any],
+    *,
+    days: int,
+    params: dict[str, Any],
+    ke: dict[str, Any],
+    chan: dict[str, Any] | None = None,
+    bias: str | None = None,
+) -> dict[str, Any]:
+    """单 horizon 完整计算（布林 + 可选缠论融合）。"""
+    price = float(b.get("price") or 0)
+    mid = float(b.get("mid") or price)
+    track2 = float(b.get("track2") or mid)
+    dev = (track2 - mid) if track2 else 0
+    move = _band_move(dev, days, params, price=price, code=str(b.get("code") or ""))
+    lo, hi = round(price - move, 2), round(price + move, 2)
+    if bias is None:
+        slope = float(b.get("ma20_slope_pct") or 0)
+        zone = b.get("zone", "")
+        if slope > 1 and b.get("ma5_above_mid"):
+            bias = "偏多震荡"
+        elif slope < -1 and not b.get("ma5_above_mid"):
+            bias = "偏空震荡"
+        elif zone in ("顶轨以上", "二轨~顶轨"):
+            bias = "偏高回落风险"
+        elif zone in ("底轨~五轨", "五轨~四轨"):
+            bias = "偏低反弹机会"
+        else:
+            bias = "中枢震荡"
+    anchor = _outlook_anchor(b, days, lo, hi)
+    prob_center = _outlook_prob_center(price, anchor, b, params, days=days, lo=lo, hi=hi)
+    blended = None
+    if chan:
+        try:
+            from chan.outlook_blend import blend_horizon
+
+            blended = blend_horizon(
+                price=price,
+                lo=lo,
+                hi=hi,
+                anchor=anchor,
+                prob_center=prob_center,
+                bias=bias,
+                b=b,
+                params=params,
+                days=days,
+                chan=chan,
+            )
+            lo, hi = blended["lo"], blended["hi"]
+            anchor, prob_center, bias = blended["anchor"], blended["prob_center"], blended["bias"]
+        except Exception:
+            blended = None
+    lv = _levels_in_interval(b, lo, hi, ke)
+    if blended and blended.get("extra_levels"):
+        lv = _merge_extra_levels(lv, blended["extra_levels"])
+    boost = _track_boost_for_horizon(params, days)
+    uni = float(params.get("prob_uniform_weight") or 0.06)
+    chan_map = (blended or {}).get("chan_boost_map") or {}
+    probs = _level_probabilities(
+        lv,
+        anchor=prob_center,
+        sigma=_outlook_prob_sigma(lo, hi, params),
+        b=b,
+        track_boost=boost,
+        uniform_weight=uni,
+        chan_boost_map=chan_map or None,
+        params=params,
+    )
+    ml = _most_likely_for_horizon(
+        probs,
+        price=price,
+        prob_center=prob_center,
+        anchor=anchor,
+        mid=mid,
+        b=b,
+        days=days,
+        chan=chan,
+    )
+    return {
+        "days": days,
+        "lo": lo,
+        "hi": hi,
+        "anchor": anchor,
+        "prob_center": prob_center,
+        "bias": bias,
+        "levels": lv,
+        "probs": probs,
+        "most_likely": ml,
+        "chan_note": (blended or {}).get("chan_note") or "",
+        "chan": chan,
+    }
+
+
 def export_outlook_horizon(
     b: dict[str, Any],
     *,
     days: int,
     kline_extra: dict[str, Any] | None = None,
     params: dict[str, Any] | None = None,
+    chan: dict[str, Any] | None = None,
+    has_position: bool = False,
 ) -> dict[str, Any]:
     """导出可登记/复盘的 1日/3日/7日 预测快照（供 outlook_tracker）。"""
     from outlook_params import load_params
@@ -494,46 +645,23 @@ def export_outlook_horizon(
     params = params or load_params()
     ke = kline_extra or b.get("kline_extra") or {}
     price = float(b.get("price") or 0)
-    mid = float(b.get("mid") or price)
-    track2 = float(b.get("track2") or mid)
-    dev = (track2 - mid) if track2 else 0
-    move = _band_move(dev, days, params, price=price, code=str(b.get("code") or ""))
-    lo, hi = round(price - move, 2), round(price + move, 2)
-    lv = _levels_in_interval(b, lo, hi, ke)
-    anchor = _outlook_anchor(b, days, lo, hi)
-    prob_center = _outlook_prob_center(price, anchor, b, params, days=days, lo=lo, hi=hi)
-    prob_sigma = _outlook_prob_sigma(lo, hi, params)
-    boost = _track_boost_for_horizon(params, days)
-    uni = float(params.get("prob_uniform_weight") or 0.06)
-    probs = _level_probabilities(
-        lv, anchor=prob_center, sigma=prob_sigma, b=b, track_boost=boost, uniform_weight=uni
-    )
-    top = _most_likely_for_horizon(
-        probs, price=price, prob_center=prob_center, anchor=anchor, mid=mid, b=b, days=days
-    )
-    slope = float(b.get("ma20_slope_pct") or 0)
-    zone = b.get("zone", "")
-    if slope > 1 and b.get("ma5_above_mid"):
-        bias = "偏多震荡"
-    elif slope < -1 and not b.get("ma5_above_mid"):
-        bias = "偏空震荡"
-    elif zone in ("顶轨以上", "二轨~顶轨"):
-        bias = "偏高回落风险"
-    elif zone in ("底轨~五轨", "五轨~四轨"):
-        bias = "偏低反弹机会"
-    else:
-        bias = "中枢震荡"
-    return {
+    if chan is None:
+        chan = _resolve_chan_for_outlook(b, params, has_position=has_position)
+    pack = _build_horizon_bundle(b, days=days, params=params, ke=ke, chan=chan)
+    lo, hi = pack["lo"], pack["hi"]
+    probs = pack["probs"]
+    top = pack["most_likely"]
+    out = {
         "days": days,
         "lo": lo,
         "hi": hi,
         "lo_pct": _pct_vs_price(price, lo),
         "hi_pct": _pct_vs_price(price, hi),
-        "anchor": anchor,
-        "anchor_pct": _pct_vs_price(price, anchor),
-        "prob_center": prob_center,
-        "prob_center_pct": _pct_vs_price(price, prob_center),
-        "bias": bias,
+        "anchor": pack["anchor"],
+        "anchor_pct": _pct_vs_price(price, pack["anchor"]),
+        "prob_center": pack["prob_center"],
+        "prob_center_pct": _pct_vs_price(price, pack["prob_center"]),
+        "bias": pack["bias"],
         "levels": [
             {"label": r["label"], "price": r["price"], "pct_vs_now": r["pct_vs_now"], "prob_pct": r["prob_pct"]}
             for r in probs
@@ -541,6 +669,18 @@ def export_outlook_horizon(
         "most_likely": top,
         "params_version": params.get("version"),
     }
+    if chan:
+        out["chan"] = {
+            "buy_point": chan.get("buy_point"),
+            "action": chan.get("action"),
+            "ZD": chan.get("ZD"),
+            "ZG": chan.get("ZG"),
+            "protect_price": chan.get("protect_price"),
+            "score": chan.get("score"),
+        }
+        if pack.get("chan_note"):
+            out["chan_note"] = pack["chan_note"]
+    return out
 
 
 def _level_probabilities(
@@ -551,10 +691,14 @@ def _level_probabilities(
     b: dict[str, Any],
     track_boost: float = 1.25,
     uniform_weight: float = 0.06,
+    chan_boost_map: dict[float, float] | None = None,
+    params: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
-    """vipdoc 带内高斯（中心=现价×权重+锚点×权重）+ 七轨加成 + 均匀底噪 → 倾向概率。"""
+    """vipdoc 带内高斯 + 七轨/缠论结构挡位加成 + 均匀底噪 → 倾向概率。"""
     if not levels or sigma <= 0:
         return []
+    chan_boost_map = chan_boost_map or {}
+    params = params or {}
     track_prices = {
         round(float(x), 2)
         for x in (
@@ -573,8 +717,15 @@ def _level_probabilities(
     weights: list[float] = []
     for _label, p in levels:
         w = gauss_w * math.exp(-0.5 * ((p - anchor) / sigma) ** 2)
-        if round(p, 2) in track_prices:
-            w *= track_boost
+        boost = track_boost if round(p, 2) in track_prices else 1.0
+        if chan_boost_map:
+            try:
+                from chan.outlook_blend import apply_level_boost
+
+                boost = apply_level_boost(p, boost, chan_boost_map, params)
+            except Exception:
+                pass
+        w *= boost
         w += per_uni
         weights.append(w)
     total = sum(weights) or 1.0
@@ -605,6 +756,7 @@ def _format_prob_table(
     params_version: str | None = None,
     prob_sigma_scale: float = 0.92,
     prob_uniform_weight: float = 0.06,
+    chan_blended: bool = False,
 ) -> str:
     if not rows:
         return ""
@@ -629,8 +781,9 @@ def _format_prob_table(
         )
     lines.append("")
     ver = params_version or "—"
+    chan_line = "缠论 ZD/ZG/保护位已参与区间、概率中心与挡位加成；" if chan_blended else ""
     lines.append(
-        f"> **倾向概率**：带内分布以 **现价×权重 + 技术锚点×权重** 为中心（vipdoc 1σ 区间 + Wiki 均值回归），"
+        f"> **倾向概率**：{chan_line}带内分布以 **现价×权重 + 技术锚点×权重** 为中心（vipdoc 1σ 区间 + Wiki 均值回归），"
         f"σ≈半带宽×{prob_sigma_scale:g}；"
         f"七轨挡位 ×{track_boost:g}；"
         f"含 {prob_uniform_weight * 100:.0f}% 均匀底噪避免边界概率过低。"
@@ -668,82 +821,61 @@ def _outlook_3d_7d(
     slope = float(b.get("ma20_slope_pct") or 0)
     zone = b.get("zone", "")
     ke = kline_extra or {}
-
-    def _band(days: int) -> tuple[float, float]:
-        if not dev or not price:
-            return (price, price)
-        move = _band_move(dev, days, params, price=price, code=str(b.get("code") or ""))
-        return (round(price - move, 2), round(price + move, 2))
-
-    lo1, hi1 = _band(1)
-    lo3, hi3 = _band(3)
-    lo7, hi7 = _band(7)
-
-    if slope > 1 and b.get("ma5_above_mid"):
-        bias = "偏多震荡"
-    elif slope < -1 and not b.get("ma5_above_mid"):
-        bias = "偏空震荡"
-    elif zone in ("顶轨以上", "二轨~顶轨"):
-        bias = "偏高回落风险"
-    elif zone in ("底轨~五轨", "五轨~四轨"):
-        bias = "偏低反弹机会"
+    chan = _resolve_chan_for_outlook(b, params)
+    if chan:
+        zd, zg = chan.get("ZD"), chan.get("ZG")
+        supports = [x for x in [track4, mid, ke.get("low_10d"), zd, chan.get("protect_price")] if x]
+        resistances = [x for x in [track2, ke.get("high_10d"), top, zg] if x]
     else:
-        bias = "中枢震荡"
+        supports = [x for x in [track4, mid, ke.get("low_10d")] if x]
+        resistances = [x for x in [track2, ke.get("high_10d"), top] if x]
+    sup_str = " / ".join(f"{v:.2f}" for v in sorted(set(float(x) for x in supports))[:4])
+    res_str = " / ".join(f"{v:.2f}" for v in sorted(set(float(x) for x in resistances), reverse=True)[:4])
 
-    supports = [x for x in [track4, mid, ke.get("low_10d")] if x]
-    resistances = [x for x in [track2, ke.get("high_10d"), top] if x]
-    sup_str = " / ".join(f"{v:.2f}" for v in sorted(set(supports))[:3])
-    res_str = " / ".join(f"{v:.2f}" for v in sorted(set(resistances), reverse=True)[:3])
-
-    lv1 = _levels_in_interval(b, lo1, hi1, ke)
-    lv3 = _levels_in_interval(b, lo3, hi3, ke)
-    lv7 = _levels_in_interval(b, lo7, hi7, ke)
-    anchor1 = _outlook_anchor(b, 1, lo1, hi1)
-    anchor3 = _outlook_anchor(b, 3, lo3, hi3)
-    anchor7 = _outlook_anchor(b, 7, lo7, hi7)
-    pc1 = _outlook_prob_center(price, anchor1, b, params, days=1, lo=lo1, hi=hi1)
-    pc3 = _outlook_prob_center(price, anchor3, b, params, days=3, lo=lo3, hi=hi3)
-    pc7 = _outlook_prob_center(price, anchor7, b, params, days=7, lo=lo7, hi=hi7)
+    p1 = _build_horizon_bundle(b, days=1, params=params, ke=ke, chan=chan)
+    p3 = _build_horizon_bundle(b, days=3, params=params, ke=ke, chan=chan)
+    p7 = _build_horizon_bundle(b, days=7, params=params, ke=ke, chan=chan)
+    lo1, hi1 = p1["lo"], p1["hi"]
+    lo3, hi3 = p3["lo"], p3["hi"]
+    lo7, hi7 = p7["lo"], p7["hi"]
+    anchor1, anchor3, anchor7 = p1["anchor"], p3["anchor"], p7["anchor"]
+    pc1, pc3, pc7 = p1["prob_center"], p3["prob_center"], p7["prob_center"]
+    bias1, bias3, bias7 = p1["bias"], p3["bias"], p7["bias"]
+    prob1, prob3, prob7 = p1["probs"], p3["probs"], p7["probs"]
+    ml1, ml3, ml7 = p1["most_likely"], p3["most_likely"], p7["most_likely"]
     boost = _track_boost_for_horizon(params, 1)
-    uni = float(params.get("prob_uniform_weight") or 0.06)
-    prob1 = _level_probabilities(
-        lv1, anchor=pc1, sigma=_outlook_prob_sigma(lo1, hi1, params), b=b, track_boost=boost, uniform_weight=uni,
-    )
-    boost3 = _track_boost_for_horizon(params, 3)
-    prob3 = _level_probabilities(
-        lv3, anchor=pc3, sigma=_outlook_prob_sigma(lo3, hi3, params), b=b, track_boost=boost3, uniform_weight=uni,
-    )
-    boost7 = _track_boost_for_horizon(params, 7)
-    prob7 = _level_probabilities(
-        lv7, anchor=pc7, sigma=_outlook_prob_sigma(lo7, hi7, params), b=b, track_boost=boost7, uniform_weight=uni,
-    )
-    ml1 = _most_likely_for_horizon(prob1, price=price, prob_center=pc1, anchor=anchor1, mid=mid, b=b, days=1)
-    ml3 = _most_likely_for_horizon(prob3, price=price, prob_center=pc3, anchor=anchor3, mid=mid, b=b, days=3)
-    ml7 = _most_likely_for_horizon(prob7, price=price, prob_center=pc7, anchor=anchor7, mid=mid, b=b, days=7)
     track_boost = boost
     prob_sigma_scale = float(params.get("prob_sigma_halfband_scale") or 0.92)
     prob_uni = float(params.get("prob_uniform_weight") or 0.06)
+    chan_flag = bool(chan and params.get("chan_blend_enabled", True))
     table1 = _format_prob_table(
         prob1, price=price, lo=lo1, hi=hi1, track_boost=track_boost,
-        params_version=params.get("version"), prob_sigma_scale=prob_sigma_scale, prob_uniform_weight=prob_uni,
+        params_version=params.get("version"), prob_sigma_scale=prob_sigma_scale,
+        prob_uniform_weight=prob_uni, chan_blended=chan_flag,
     )
     table3 = _format_prob_table(
         prob3, price=price, lo=lo3, hi=hi3, track_boost=track_boost,
-        params_version=params.get("version"), prob_sigma_scale=prob_sigma_scale, prob_uniform_weight=prob_uni,
+        params_version=params.get("version"), prob_sigma_scale=prob_sigma_scale,
+        prob_uniform_weight=prob_uni, chan_blended=chan_flag,
     )
     table7 = _format_prob_table(
         prob7, price=price, lo=lo7, hi=hi7, track_boost=track_boost,
-        params_version=params.get("version"), prob_sigma_scale=prob_sigma_scale, prob_uniform_weight=prob_uni,
+        params_version=params.get("version"), prob_sigma_scale=prob_sigma_scale,
+        prob_uniform_weight=prob_uni, chan_blended=chan_flag,
     )
 
     d1_lines = [
-        f"**结论**：{bias}；下一交易日参考区间 **{lo1}–{hi1}**（下沿 {_pct_vs_price(price, lo1):+.2f}% / 上沿 {_pct_vs_price(price, hi1):+.2f}%）",
+        f"**结论**：{bias1}；下一交易日参考区间 **{lo1}–{hi1}**（下沿 {_pct_vs_price(price, lo1):+.2f}% / 上沿 {_pct_vs_price(price, hi1):+.2f}%）",
         _format_most_likely_line(ml1, horizon="1日"),
         f"**技术锚点价**：{anchor1}（较现价 {_pct_vs_price(price, anchor1):+.2f}%）",
+    ]
+    if p1.get("chan_note"):
+        d1_lines.append(p1["chan_note"])
+    d1_lines.extend([
         "**依据**：",
         f"- 通道：现价 {price} 位于 **{zone}**（距中轨 {b.get('pct_vs_mid', 0):+.1f}%）",
         f"- 均线：MA5 {b.get('ma5')} {'>' if b.get('ma5_above_mid') else '≤'} 中轨 {mid}",
-    ]
+    ])
     if ke.get("ret_5d_pct") is not None:
         d1_lines.append(f"- 动量：近5日 **{ke['ret_5d_pct']:+.1f}%**")
     if ke.get("vol_ratio") is not None:
@@ -755,13 +887,17 @@ def _outlook_3d_7d(
     d1_lines.append(table1)
 
     d3_lines = [
-        f"**结论**：{bias}；参考区间 **{lo3}–{hi3}**（下沿 {_pct_vs_price(price, lo3):+.2f}% / 上沿 {_pct_vs_price(price, hi3):+.2f}%）",
+        f"**结论**：{bias3}；参考区间 **{lo3}–{hi3}**（下沿 {_pct_vs_price(price, lo3):+.2f}% / 上沿 {_pct_vs_price(price, hi3):+.2f}%）",
         _format_most_likely_line(ml3, horizon="3日"),
         f"**技术锚点价**：{anchor3}（较现价 {_pct_vs_price(price, anchor3):+.2f}%）",
+    ]
+    if p3.get("chan_note"):
+        d3_lines.append(p3["chan_note"])
+    d3_lines.extend([
         "**依据**：",
         f"- 通道：现价 {price} 位于 **{zone}**（距中轨 {b.get('pct_vs_mid', 0):+.1f}%）",
         f"- 均线：MA5 {b.get('ma5')} {'>' if b.get('ma5_above_mid') else '≤'} 中轨 {mid}；20MA 5日斜率 **{slope:+.2f}%**",
-    ]
+    ])
     if b.get("n_pattern"):
         d3_lines.append("- 形态：**N字二轨候选**（近10日振幅>15%，现价回踩二轨）")
     if ke.get("ret_5d_pct") is not None:
@@ -775,13 +911,17 @@ def _outlook_3d_7d(
     d3_lines.append(table3)
 
     d7_lines = [
-        f"**结论**：{bias}；参考区间 **{lo7}–{hi7}**（下沿 {_pct_vs_price(price, lo7):+.2f}% / 上沿 {_pct_vs_price(price, hi7):+.2f}%）",
+        f"**结论**：{bias7}；参考区间 **{lo7}–{hi7}**（下沿 {_pct_vs_price(price, lo7):+.2f}% / 上沿 {_pct_vs_price(price, hi7):+.2f}%）",
         _format_most_likely_line(ml7, horizon="7日"),
         f"**技术锚点价**：{anchor7}（较现价 {_pct_vs_price(price, anchor7):+.2f}%）",
+    ]
+    if p7.get("chan_note"):
+        d7_lines.append(p7["chan_note"])
+    d7_lines.extend([
         "**依据**：",
         f"- 通道带宽 **{b.get('bandwidth_pct')}%**{'（收敛，波动收窄）' if b.get('converging') else '（未收敛，波动空间足）'}",
         f"- 七轨区间：底 {bot} ~ 顶 {top}；20MA 趋势斜率 **{slope:+.2f}%**",
-    ]
+    ])
     if ke.get("ret_20d_pct") is not None:
         d7_lines.append(f"- 中期：近20日 **{ke['ret_20d_pct']:+.1f}%**")
     if ke.get("last10_closes"):
@@ -800,10 +940,11 @@ def _outlook_3d_7d(
             return "—"
         return f"{ml['price']}（{ml['label']} {ml['pct_vs_now']:+.1f}%）"
 
+    chan_note_tail = "；缠论已融合区间/概率" if chan_flag else ""
     return {
-        "d1": f"{bias}；最有可能 {_ml_short(ml1)}；{lo1}–{hi1}（{_pct_vs_price(price, lo1):+.1f}%～{_pct_vs_price(price, hi1):+.1f}%）",
-        "d3": f"{bias}；最有可能 {_ml_short(ml3)}；{lo3}–{hi3}（{_pct_vs_price(price, lo3):+.1f}%～{_pct_vs_price(price, hi3):+.1f}%）",
-        "d7": f"{bias}；最有可能 {_ml_short(ml7)}；{lo7}–{hi7}（{_pct_vs_price(price, lo7):+.1f}%～{_pct_vs_price(price, hi7):+.1f}%）",
+        "d1": f"{bias1}；最有可能 {_ml_short(ml1)}；{lo1}–{hi1}（{_pct_vs_price(price, lo1):+.1f}%～{_pct_vs_price(price, hi1):+.1f}%）",
+        "d3": f"{bias3}；最有可能 {_ml_short(ml3)}；{lo3}–{hi3}（{_pct_vs_price(price, lo3):+.1f}%～{_pct_vs_price(price, hi3):+.1f}%）",
+        "d7": f"{bias7}；最有可能 {_ml_short(ml7)}；{lo7}–{hi7}（{_pct_vs_price(price, lo7):+.1f}%～{_pct_vs_price(price, hi7):+.1f}%）",
         "d1_detail": "\n".join(d1_lines),
         "d3_detail": "\n".join(d3_lines),
         "d7_detail": "\n".join(d7_lines),
@@ -813,7 +954,8 @@ def _outlook_3d_7d(
         "d1_most_likely": ml1,
         "d3_most_likely": ml3,
         "d7_most_likely": ml7,
-        "note": "vipdoc 1σ 区间 + Wiki 锚点偏移的带内倾向权重，非真实概率或盈利预测",
+        "chan": chan,
+        "note": f"vipdoc 1σ + Wiki 锚点 + 带内倾向权重{chan_note_tail}；非盈利预测",
     }
 
 

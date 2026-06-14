@@ -10,7 +10,7 @@ from outlook_paths import PARAMS_PATH, migrate_legacy_files
 migrate_legacy_files()
 
 DEFAULTS: dict[str, Any] = {
-    "version": "2026-06-10-vipdoc-prob",
+    "version": "2026-06-14-chan-blend",
     "sigma_divisor_1d": 3.0,
     "sigma_divisor_3d": 2.8,
     "sigma_divisor_7d": 2.4,
@@ -29,6 +29,17 @@ DEFAULTS: dict[str, Any] = {
     "prob_track_boost_decay_per_day": 0.04,
     "prob_sigma_halfband_scale": 0.92,
     "prob_uniform_weight": 0.06,
+    "chan_blend_enabled": True,
+    "chan_band_floor_protect": True,
+    "chan_center_pull": 0.18,
+    "chan_center_pull_per_day": 0.025,
+    "chan_buy_center_skew": 0.012,
+    "chan_sell_center_skew": 0.015,
+    "chan_sell_hi_shrink": 0.65,
+    "chan_buy_hi_expand": 1.06,
+    "chan_buy_hi_expand_cap": 1.12,
+    "chan_level_boost": 1.35,
+    "chan_level_match_pct": 0.8,
     "calibration_notes": [],
     "stats": {},
 }
