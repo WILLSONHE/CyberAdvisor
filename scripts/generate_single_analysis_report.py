@@ -65,13 +65,24 @@ def generate(
     today = date.today().isoformat()
     sh, daily_as_of = _parse_sh_index()
     index_ok = sh is None or sh >= LINE_CLEAR
+    index_chan = None
+    try:
+        from chan.analyze import analyze_index
+
+        index_chan = analyze_index()
+    except Exception:
+        pass
     b = bollinger_for_code(code)
     if not b or b.get("error"):
         raise SystemExit(f"无法计算 {code} 布林：{b.get('error') if b else '无数据'}")
 
     has_pos = "Wilson" in _holder_block(code) or "刘岚" in _holder_block(code)
     verdict = build_stock_verdict(
-        code, name=name, has_position=has_pos, index_ok_buy=index_ok
+        code,
+        name=name,
+        has_position=has_pos,
+        index_ok_buy=index_ok,
+        index_chan=index_chan,
     )
     enr = enrich_stock(code, name=name)
     b["finance"] = enr.get("finance") or get_finance_data(code)
@@ -107,10 +118,14 @@ def generate(
         "",
     ]
     try:
-        from chan.analyze import analyze_index
         from chan.report import format_chan_markdown
 
-        lines.extend(["### 缠论·上证（第一优先级）", "", format_chan_markdown(analyze_index()).strip(), ""])
+        if index_chan:
+            lines.extend(["### 缠论·上证（第一优先级）", "", format_chan_markdown(index_chan).strip(), ""])
+        else:
+            from chan.analyze import analyze_index
+
+            lines.extend(["### 缠论·上证（第一优先级）", "", format_chan_markdown(analyze_index()).strip(), ""])
     except Exception as exc:
         lines.extend([f"### 缠论\n\n（{exc}）", ""])
     lines.extend([

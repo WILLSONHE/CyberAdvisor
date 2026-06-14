@@ -156,6 +156,39 @@ def test_bollinger_outlook(s: Suite) -> None:
         s.add("bollinger_outlook", False, str(exc))
 
 
+def test_verdict_index_gate(s: Suite) -> None:
+    try:
+        from chan.policy import allows_new_buy, compact_chan
+        from bollinger_utils import build_stock_verdict
+
+        fake_index = {
+            "ok": True,
+            "buy_point": "一卖/减仓",
+            "action": "sell",
+            "score": -1.8,
+            "structure": "上涨趋势",
+            "ZD": 3000,
+            "ZG": 3100,
+            "protect_price": 3050,
+        }
+        fake_stock = {
+            "ok": True,
+            "buy_point": "二买候选",
+            "action": "buy",
+            "score": 1.6,
+            "structure": "盘整",
+            "ZD": 10,
+            "ZG": 12,
+            "protect_price": 10.5,
+        }
+        ok, _ = allows_new_buy(fake_stock, fake_index)
+        s.add("policy index 一卖 blocks", not ok, "allows_new_buy")
+        v = build_stock_verdict("600021", name="测试", index_ok_buy=True, index_chan=fake_index)
+        s.add("verdict index 一卖 can_open", v.get("can_open") is False, str(v.get("open_block_reason", ""))[:50])
+    except Exception as exc:
+        s.add("verdict_index_gate", False, str(exc))
+
+
 def test_report_enrich(s: Suite) -> None:
     try:
         from report_data import enrich_stock
@@ -239,6 +272,7 @@ def main() -> int:
         test_env,
         test_data_core,
         test_bollinger_outlook,
+        test_verdict_index_gate,
         test_report_enrich,
         test_ai_sim_offline,
         test_feishu_download,

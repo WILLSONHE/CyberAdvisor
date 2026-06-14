@@ -965,6 +965,7 @@ def build_stock_verdict(
     name: str = "",
     has_position: bool = False,
     index_ok_buy: bool = True,
+    index_chan: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """单标的研判（供 sug / 模拟盘 / 报告总结）。"""
     b = bollinger_for_code(code)
@@ -987,6 +988,7 @@ def build_stock_verdict(
     if not index_ok_buy:
         no_list.append("指数纪律（如 4033 破线）禁止新开仓")
     can_open = index_ok_buy and b.get("zone") not in ("顶轨以上", "二轨~顶轨")
+    open_block_reason = ""
     hold_action = (
         "清仓/大幅减仓"
         if b.get("zone") == "顶轨以上"
@@ -1012,8 +1014,37 @@ def build_stock_verdict(
     chan_action = chan_summary.get("action") if chan_summary.get("ok") else None
     if chan_summary.get("ok") and chan_action in ("sell",) and has_position:
         hold_action = f"缠论优先：{chan_summary.get('buy_point')} → 减仓/清仓"
-    elif chan_summary.get("ok") and chan_action in ("buy", "hold_add") and not has_position:
-        can_open = can_open and index_ok_buy and chan_score > 0
+
+    if not has_position:
+        try:
+            from chan.analyze import analyze_index
+            from chan.policy import allows_new_buy, compact_chan
+
+            idx = index_chan
+            if idx is None:
+                idx = analyze_index()
+            stock_c = compact_chan(chan_summary) if chan_summary.get("ok") else {"ok": False}
+            idx_c = compact_chan(idx) if idx and idx.get("ok") else None
+            ok_buy, chan_reason = allows_new_buy(stock_c, idx_c)
+            if not ok_buy:
+                can_open = False
+                open_block_reason = chan_reason
+                if chan_reason and chan_reason not in no_list:
+                    no_list.append(chan_reason)
+            elif not can_open:
+                open_block_reason = "七轨位置偏高或指数纪律未满足"
+        except Exception as exc:
+            if chan_summary.get("ok") and chan_action in ("buy", "hold_add"):
+                can_open = can_open and index_ok_buy and chan_score > 0
+            else:
+                can_open = False
+                open_block_reason = str(exc)[:80]
+
+    open_suffix = (
+        f"（{open_block_reason}）"
+        if open_block_reason and not can_open
+        else "（须叠加 Wiki 指数纪律 + 缠论买点；outlook 偏多≠可建仓）"
+    )
 
     md_lines = [
         f"### {name or code}（{code}）",
@@ -1023,7 +1054,7 @@ def build_stock_verdict(
         f"- 信号：**{b['signal']}** | 带宽 {b['bandwidth_pct']}%{'（收敛）' if b.get('converging') else ''}",
         f"- **宜**：{'；'.join(ok_list) or '—'}",
         f"- **忌**：{'；'.join(no_list) or '—'}",
-        f"- **建仓**：{'可试探' if can_open else '不宜'}（须叠加 Wiki 指数纪律 + 缠论买点）",
+        f"- **建仓**：{'可试探' if can_open else '不宜'}{open_suffix}",
         f"- **持仓处置**：{hold_action} | 权重参考：{pos_hint}",
         f"- **1日倾向**：{outlook['d1']}",
         "",
@@ -1047,6 +1078,7 @@ def build_stock_verdict(
         "chan": chan_summary if chan_summary.get("ok") else None,
         "level": level,
         "can_open": can_open,
+        "open_block_reason": open_block_reason or None,
         "hold_action": hold_action,
         "position_hint": pos_hint,
         "outlook": outlook,
@@ -1193,6 +1225,7 @@ def build_report_summary_section(
         "> **缠论结构为第一优先级**（见 [[缠论]]）；布林与 1/3/7 日为辅助倾向。",
         "",
     ]
+    idx_chan: dict[str, Any] | None = None
     try:
         from chan.analyze import analyze_index
         from chan.report import format_chan_markdown
@@ -1224,6 +1257,7 @@ def build_report_summary_section(
             name=h.get("name", ""),
             has_position=has_position,
             index_ok_buy=index_ok,
+            index_chan=idx_chan,
         )
         lines.append(v["markdown"])
         lines.append("")
